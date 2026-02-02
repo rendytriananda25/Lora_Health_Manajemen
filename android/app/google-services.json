@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "1015515769306",
+    "firebase_url": "https://lora-1-b0d0c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "lora-1-b0d0c",
+    "storage_bucket": "lora-1-b0d0c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1015515769306:android:938229b02a8380fcdd38e3",
+        "android_client_info": {
+          "package_name": "com.example.lora_1"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1015515769306-p4k5grsaqtmdmb60hq1q5rgtrukaqufi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.lora_1",
+            "certificate_hash": "40a8637477db7e84f8e4b5b076fe198ef7b2be55"
+          }
+        },
+        {
+          "client_id": "1015515769306-nttv9o9vto5e75lgdrebql9gheeilr10.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfhHv4npJh_yJ7Uc1hG58uotxOiNwrkX8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1015515769306-nttv9o9vto5e75lgdrebql9gheeilr10.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.lora1"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
