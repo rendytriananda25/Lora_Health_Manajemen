@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.lora_1"
+    namespace = "com.lora.healthmanagement"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -23,7 +23,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.lora_1"
+        applicationId = "com.lora.healthmanagement"
         minSdk = flutter.minSdkVersion
 
         targetSdk = flutter.targetSdkVersion

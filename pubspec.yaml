@@ -10,6 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  country_code_picker: ^3.0.0
   audioplayers: ^5.2.1
   cupertino_icons: ^1.0.8
   mobile_scanner: ^7.1.4
@@ -45,7 +46,7 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/audio/alarm.mp3
+    - assets/sounds/click.wav
 
 flutter_launcher_icons:
   android: "launcher_icon"

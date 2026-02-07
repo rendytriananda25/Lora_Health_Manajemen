@@ -1,9 +1,10 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ✅ Library untuk suara & getar
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:audioplayers/audioplayers.dart'; // ✅ WAJIB IMPORT
 
 class BMIPage extends StatefulWidget {
   const BMIPage({super.key});
@@ -14,31 +15,67 @@ class BMIPage extends StatefulWidget {
 
 class _BMIPageState extends State<BMIPage> {
   final PageController _pageController = PageController();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  
+  // ✅ VARIABEL ANTI MACET (THROTTLING)
+  DateTime _lastPlayTime = DateTime.now();
+  
   int _currentPage = 0;
-
-  // Data User
-  int _height = 170; // cm
-  int _weight = 60;  // kg
+  int _height = 170;
+  int _weight = 60;
   int _age = 24;
 
-  // Hasil BMI
   double _bmiResult = 0;
   String _bmiStatus = "";
   Color _statusColor = Colors.green;
 
-  // ✅ SIMPAN KE HISTORY FIREBASE
+  @override
+  void initState() {
+    super.initState();
+    _initAudio();
+  }
+
+  void _initAudio() async {
+    await _audioPlayer.setPlayerMode(PlayerMode.lowLatency);
+    // Preload biar enteng
+    await _audioPlayer.setSource(AssetSource('sounds/click.wav'));
+    await _audioPlayer.setVolume(1.0);
+  }
+
+  // ✅ FUNGSI SUARA "THE FLASH" SAFE
+  void _playPremiumTick() async {
+    final now = DateTime.now();
+    
+    // 🛑 LOGIKA REM: Kalau belum 70ms dari bunyi terakhir, JANGAN BUNYI.
+    // Ini mencegah HP 'tersedak' saat scroll super cepat.
+    if (now.difference(_lastPlayTime).inMilliseconds < 70) {
+      return; 
+    }
+
+    _lastPlayTime = now; // Catat waktu bunyi terakhir
+
+    try {
+      if (_audioPlayer.state == PlayerState.playing) {
+        await _audioPlayer.stop();
+      }
+      await _audioPlayer.resume(); // Resume lebih cepat daripada play ulang
+      
+      HapticFeedback.lightImpact(); 
+    } catch (e) {
+      debugPrint("Audio Error: $e");
+    }
+  }
+
   Future<void> _saveToHistory() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
         final dbRef = FirebaseDatabase.instance.ref("users/${user.uid}/history");
-        
         await dbRef.push().set({
           'activity': "Cek BMI: ${_bmiResult.toStringAsFixed(1)}",
           'time': DateTime.now().toIso8601String(),
           'status': _bmiStatus,
         });
-        debugPrint("BMI Saved to History!");
       } catch (e) {
         debugPrint("Gagal simpan history: $e");
       }
@@ -64,32 +101,25 @@ class _BMIPageState extends State<BMIPage> {
     }
 
     setState(() {});
-    _saveToHistory(); // ✅ Auto Save
+    _saveToHistory();
   }
 
   void _nextPage() {
-    // Efek suara saat pindah halaman
-    HapticFeedback.mediumImpact();
-    SystemSound.play(SystemSoundType.click);
+    HapticFeedback.mediumImpact(); 
+    // Kita bypass throttling khusus buat tombol Next biar pasti bunyi
+    _audioPlayer.stop();
+    _audioPlayer.resume();
 
     if (_currentPage < 2) {
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOutQuart,
-      );
-      if (_currentPage == 1) {
-        _calculateBMI();
-      }
+      _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOutQuart);
+      if (_currentPage == 1) _calculateBMI();
       setState(() => _currentPage++);
     }
   }
 
   void _prevPage() {
     if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOutQuart,
-      );
+      _pageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOutQuart);
       setState(() => _currentPage--);
     }
   }
@@ -101,17 +131,13 @@ class _BMIPageState extends State<BMIPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Header Navigation
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (_currentPage > 0)
-                    IconButton(
-                      onPressed: _prevPage,
-                      icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                    )
+                    IconButton(onPressed: _prevPage, icon: const Icon(Icons.arrow_back_ios, color: Colors.white))
                   else
                     const SizedBox(width: 40),
                   Text(
@@ -122,8 +148,6 @@ class _BMIPageState extends State<BMIPage> {
                 ],
               ),
             ),
-
-            // KONTEN UTAMA
             Expanded(
               child: PageView(
                 controller: _pageController,
@@ -135,7 +159,7 @@ class _BMIPageState extends State<BMIPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 80), 
+            const SizedBox(height: 80),
           ],
         ),
       ),
@@ -145,14 +169,13 @@ class _BMIPageState extends State<BMIPage> {
   // --- HALAMAN 1: TINGGI BADAN ---
   Widget _buildHeightPage() {
     double normalizedHeight = (_height - 100) / 150;
-    
+    if (normalizedHeight < 0) normalizedHeight = 0;
+    if (normalizedHeight > 1) normalizedHeight = 1;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        GlassCard(
-          padding: const EdgeInsets.all(5),
-          child: _buildToggleBtn("Centimeter", true),
-        ),
+        GlassCard(padding: const EdgeInsets.all(5), child: _buildToggleBtn("Centimeter", true)),
         const Spacer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -166,17 +189,16 @@ class _BMIPageState extends State<BMIPage> {
                 perspective: 0.005,
                 diameterRatio: 1.2,
                 physics: const FixedExtentScrollPhysics(),
-                controller: FixedExtentScrollController(initialItem: _height - 100),
+                controller: FixedExtentScrollController(initialItem: 250 - _height),
                 onSelectedItemChanged: (index) {
-                  // ✅ EFEK TIK-TIK SATISFYING SAAT DIGESER
-                  HapticFeedback.selectionClick();
-                  SystemSound.play(SystemSoundType.click);
-                  setState(() => _height = 100 + index);
+                  // ✅ AMAN: SUARA SCROLL ANTI MACET
+                  _playPremiumTick();
+                  setState(() => _height = 250 - index);
                 },
                 childDelegate: ListWheelChildBuilderDelegate(
                   childCount: 151,
                   builder: (context, index) {
-                    int value = 100 + index;
+                    int value = 250 - index;
                     bool isSelected = value == _height;
                     return Center(
                       child: Row(
@@ -204,7 +226,6 @@ class _BMIPageState extends State<BMIPage> {
               ),
             ),
             const SizedBox(width: 20),
-            // SILUET ORANG
             SizedBox(
               height: 400, width: 150,
               child: Stack(
@@ -212,8 +233,8 @@ class _BMIPageState extends State<BMIPage> {
                 children: [
                   Opacity(opacity: 0.1, child: CustomPaint(size: const Size(120, 350), painter: HumanPainter(color: Colors.white))),
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutBack,
+                    duration: const Duration(milliseconds: 100), 
+                    curve: Curves.easeOut,
                     height: 150 + (normalizedHeight * 200), 
                     width: 120, 
                     child: FittedBox(
@@ -255,7 +276,7 @@ class _BMIPageState extends State<BMIPage> {
             ),
           ),
         ),
-        // Slider Kontrol Berat
+        
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: SliderTheme(
@@ -267,10 +288,9 @@ class _BMIPageState extends State<BMIPage> {
             child: Slider(
               value: _weight.toDouble(), min: 30, max: 150,
               onChanged: (val) {
-                // ✅ EFEK SUARA JUGA DI SLIDER
                 if (val.toInt() != _weight) {
-                  HapticFeedback.selectionClick();
-                  SystemSound.play(SystemSoundType.click);
+                  // ✅ AMAN: SUARA SLIDER ANTI MACET
+                  _playPremiumTick();
                 }
                 setState(() => _weight = val.toInt());
               },
@@ -284,7 +304,7 @@ class _BMIPageState extends State<BMIPage> {
     );
   }
 
-  // --- HALAMAN 3: HASIL ---
+  // --- HALAMAN 3 & HELPERS (SAMA PERSIS) ---
   Widget _buildResultPage() {
     return Column(
       children: [
@@ -331,7 +351,6 @@ class _BMIPageState extends State<BMIPage> {
     );
   }
 
-  // --- WIDGET HELPERS ---
   Widget _buildToggleBtn(String text, bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -365,7 +384,7 @@ class _BMIPageState extends State<BMIPage> {
   }
 }
 
-// --- PAINTERS (HUMAN & GAUGE) ---
+// --- PAINTERS & GLASSCARD (SAMA) ---
 class HumanPainter extends CustomPainter {
   final Color color; HumanPainter({required this.color});
   @override

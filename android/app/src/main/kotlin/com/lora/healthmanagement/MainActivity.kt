@@ -1,4 +1,4 @@
-package com.example.lora_1
+package com.lora.healthmanagement
 
 import io.flutter.embedding.android.FlutterActivity
 

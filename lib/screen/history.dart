@@ -8,6 +8,9 @@ import 'package:intl/intl.dart';
 import 'riwayat/lari.dart';
 import 'riwayat/sepeda.dart';
 import 'riwayat/bmi.dart';
+import 'riwayat/home_workout.dart';
+import 'riwayat/basket.dart';
+import 'riwayat/bola.dart';
 
 class HistoryPage extends StatelessWidget {
   const HistoryPage({super.key});
@@ -111,6 +114,15 @@ class HistoryPage extends StatelessWidget {
                                     } else if (activity.contains('SEPEDA')) {
                                       // Membuka file sepeda.dart
                                       Navigator.push(context, MaterialPageRoute(builder: (context) => HistorySepedaDetailPage(data: data)));
+                                    } else if (activity.contains('HOME WORKOUT')) {
+                                      // Membuka file home_workout.dart
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryWorkoutDetailPage(data: data)));
+                                    } else if (activity.contains('BASKET')) {
+                                      // Membuka file basket.dart
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryBasketDetailPage(data: data)));
+                                    } else if (activity.contains('BOLA')) {
+                                      // Membuka file bola.dart
+                                      Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryBolaDetailPage(data: data)));
                                     }
                                   },
                                   borderRadius: BorderRadius.circular(20),
