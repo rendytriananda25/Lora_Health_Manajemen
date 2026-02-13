@@ -1,6 +1,7 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:lora_1/core/services/language_provider.dart';
 
 class HistoryBMIDetailPage extends StatelessWidget {
   final Map<dynamic, dynamic> data;
@@ -9,9 +10,30 @@ class HistoryBMIDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Format tanggal lokalisasi Indonesia
-    DateTime dt = DateTime.parse(data['time'] ?? DateTime.now().toIso8601String());
+    final lang = Provider.of<LanguageProvider>(context);
+
+    // Format tanggal
+    DateTime dt = DateTime.parse(
+      data['time'] ?? DateTime.now().toIso8601String(),
+    );
     String formattedDate = DateFormat('dd MMMM yyyy, HH:mm').format(dt);
+
+    // ✅ Parse BMI score dari field baru ATAU extract dari activity string (backward compat)
+    String bmiScore;
+    if (data['bmi_score'] != null) {
+      bmiScore = data['bmi_score'].toString();
+    } else {
+      // Fallback: parse dari "Cek BMI: 22.5"
+      String activity = data['activity']?.toString() ?? '';
+      bmiScore = activity.replaceAll(RegExp(r'[^0-9.]'), '').isNotEmpty
+          ? activity.replaceAll(RegExp(r'[^0-9.]'), '')
+          : '0';
+    }
+
+    // ✅ Parse height & weight dari data (baru disimpan setelah fix)
+    String weightVal = data['weight']?.toString() ?? '--';
+    String heightVal = data['height']?.toString() ?? '--';
+    String status = (data['status'] ?? 'Normal').toString().toUpperCase();
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -22,53 +44,84 @@ class HistoryBMIDetailPage extends StatelessWidget {
               // 1. VISUALISASI KARAKTER & ANGKA TINGGI/BERAT
               Expanded(
                 flex: 4,
-                child: _buildBMIVisualization(),
+                child: _buildBMIVisualization(
+                  status,
+                  weightVal,
+                  heightVal,
+                  lang,
+                ),
               ),
-              
-              // 2. PANEL STATISTIK BAWAH (Tanpa Tombol)
+
+              // 2. PANEL STATISTIK BAWAH
               Expanded(
-                flex: 2, // Flex dikurangi agar panel tidak terlalu tinggi
+                flex: 2,
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 30,
+                    vertical: 40,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF000000).withOpacity(0.85),
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(40)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(40),
+                    ),
                     border: Border.all(color: Colors.white.withOpacity(0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text("HASIL KALKULASI BMI", 
-                        style: TextStyle(color: Color(0xFF5EEAD4), fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 12)),
+                      Text(
+                        lang.translate('history.bmiResultTitle'),
+                        style: const TextStyle(
+                          color: Color(0xFF5EEAD4),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          fontSize: 12,
+                        ),
+                      ),
                       const SizedBox(height: 8),
-                      Text(formattedDate, 
-                        style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const Divider(color: Colors.white10, height: 40),
-                      
+
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          _buildStatItem("BMI SKOR", data['activity']?.replaceAll("Cek BMI: ", "") ?? "0", "INDEX"),
-                          _buildStatItem("STATUS", data['status'] ?? "NORMAL", "LEVEL"),
+                          _buildStatItem(
+                            lang.translate('history.bmiScore'),
+                            bmiScore,
+                            lang.translate('history.bmiIndex'),
+                          ),
+                          _buildStatItem(
+                            lang.translate('history.bmiStatus'),
+                            status,
+                            lang.translate('history.bmiLevel'),
+                          ),
                         ],
                       ),
-                      // Tombol Kembali dibuang agar lebih minimalis sesuai permintaan Rendy
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           ),
-          
-          // Tombol Kembali (Navigasi Utama)
+
+          // Tombol Kembali
           Positioned(
-            top: 50, left: 20,
+            top: 50,
+            left: 20,
             child: CircleAvatar(
               backgroundColor: Colors.black.withOpacity(0.5),
               child: IconButton(
-                onPressed: () => Navigator.pop(context), 
-                icon: const Icon(Icons.arrow_back, color: Colors.white)
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
               ),
             ),
           ),
@@ -77,20 +130,23 @@ class HistoryBMIDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildBMIVisualization() {
-    String status = (data['status'] ?? "NORMAL").toString().toUpperCase();
-    String weightVal = data['weight']?.toString() ?? "--";
-    String heightVal = data['height']?.toString() ?? "--";
-    
+  Widget _buildBMIVisualization(
+    String status,
+    String weightVal,
+    String heightVal,
+    LanguageProvider lang,
+  ) {
     Color bodyColor;
-    if (status.contains("KURANG")) {
+    if (status.contains('UNDERWEIGHT') || status.contains('KURANG')) {
       bodyColor = Colors.lightBlueAccent;
-    } else if (status.contains("NORMAL")) {
-      bodyColor = const Color(0xFF5EEAD4); 
-    } else if (status.contains("OVERWEIGHT")) {
+    } else if (status.contains('NORMAL')) {
+      bodyColor = const Color(0xFF5EEAD4);
+    } else if (status.contains('OVERWEIGHT') || status.contains('OVER')) {
       bodyColor = Colors.orangeAccent;
-    } else {
+    } else if (status.contains('OBESITY') || status.contains('OBES')) {
       bodyColor = Colors.redAccent;
+    } else {
+      bodyColor = const Color(0xFF5EEAD4);
     }
 
     return Container(
@@ -100,35 +156,63 @@ class HistoryBMIDetailPage extends StatelessWidget {
         alignment: Alignment.center,
         children: [
           Positioned(
-            left: 50, bottom: 60, top: 100,
-            child: _buildRulerColumn("Weight", weightVal, "kg", Icons.monitor_weight_outlined),
+            left: 50,
+            bottom: 60,
+            top: 100,
+            child: _buildRulerColumn(
+              lang.translate('bmi.weight'),
+              weightVal,
+              "kg",
+              Icons.monitor_weight_outlined,
+            ),
           ),
           Positioned(
-            right: 50, bottom: 60, top: 100,
-            child: _buildRulerColumn("Height", heightVal, "cm", Icons.height_rounded),
+            right: 50,
+            bottom: 60,
+            top: 100,
+            child: _buildRulerColumn(
+              lang.translate('bmi.height'),
+              heightVal,
+              "cm",
+              Icons.height_rounded,
+            ),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 60),
               Image.asset(
-                'assets/images/bmi_character.png', 
+                'assets/images/bmi_character.png',
                 height: 220,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.person, color: Colors.white24, size: 200);
+                  return const Icon(
+                    Icons.person,
+                    color: Colors.white24,
+                    size: 200,
+                  );
                 },
               ),
               const SizedBox(height: 25),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: bodyColor.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: bodyColor.withOpacity(0.2)),
                 ),
-                child: Text(status, 
-                  style: TextStyle(color: bodyColor, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 2)),
+                child: Text(
+                  status,
+                  style: TextStyle(
+                    color: bodyColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
               ),
             ],
           ),
@@ -137,12 +221,24 @@ class HistoryBMIDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRulerColumn(String label, String value, String unit, IconData icon) {
+  Widget _buildRulerColumn(
+    String label,
+    String value,
+    String unit,
+    IconData icon,
+  ) {
     return Column(
       children: [
         Icon(icon, color: Colors.white24, size: 22),
         const SizedBox(height: 10),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         Text(unit, style: const TextStyle(color: Colors.white38, fontSize: 10)),
         const SizedBox(height: 15),
         Expanded(
@@ -154,16 +250,26 @@ class HistoryBMIDetailPage extends StatelessWidget {
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(12, (index) => Container(
-                width: index % 4 == 0 ? 10 : 5, 
-                height: 1.5, 
-                color: Colors.white12
-              )),
+              children: List.generate(
+                12,
+                (index) => Container(
+                  width: index % 4 == 0 ? 10 : 5,
+                  height: 1.5,
+                  color: Colors.white12,
+                ),
+              ),
             ),
           ),
         ),
         const SizedBox(height: 15),
-        Text(label, style: const TextStyle(color: Colors.white24, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white24,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -171,9 +277,23 @@ class HistoryBMIDetailPage extends StatelessWidget {
   Widget _buildStatItem(String label, String value, String unit) {
     return Column(
       children: [
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white38,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 10),
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         Text(unit, style: const TextStyle(color: Colors.white54, fontSize: 10)),
       ],
     );

@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:lora_1/screen/login.dart';
-import 'login.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -18,20 +17,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, String>> _onboardingData = [
     {
       "title": "Discover Real-time Weather",
-      "desc":
-          "Pantau kondisi cuaca dan kualitas udara di sekitarmu secara akurat.",
+      "desc": "Pantau kondisi cuaca dan kualitas udara di sekitarmu secara akurat.",
       "image": "assets/images/lari1.jpg",
     },
     {
       "title": "Smart Sports Suggestion",
-      "desc":
-          "Dapatkan rekomendasi olahraga terbaik yang sesuai dengan kondisi alam.",
+      "desc": "Dapatkan rekomendasi olahraga terbaik yang sesuai dengan kondisi alam.",
       "image": "assets/images/sepeda.jpg",
     },
     {
       "title": "Track Your Progress",
-      "desc":
-          "Catat setiap aktivitas olahragamu dan lihat perkembangan kesehatanmu.",
+      "desc": "Catat setiap aktivitas olahragamu dan lihat perkembangan kesehatanmu.",
       "image": "assets/images/basket.jpg",
     },
     {
@@ -48,16 +44,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: Stack(
         children: [
           // 1. BACKGROUND IMAGE DENGAN GRADIENT DARK
-          PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() => _currentPage = index % _onboardingData.length);
-            },
-            // Logic Infinite Scroll: Pakai angka sangat besar
-            itemBuilder: (context, index) {
-              int realIndex = index % _onboardingData.length;
-              return _buildSlideContent(_onboardingData[realIndex]);
-            },
+          // ✅ FIX: Bungkus dengan ScrollConfiguration untuk mematikan efek melar/glow
+          ScrollConfiguration(
+            behavior: const ScrollBehavior().copyWith(overscroll: false),
+            child: PageView.builder(
+              controller: _pageController,
+              
+              // ✅ FIX: Physics Kaku (Clamping) + ScrollConfiguration di atas = KAKU TOTAL
+              physics: const ClampingScrollPhysics(), 
+              
+              itemCount: _onboardingData.length,
+              onPageChanged: (index) {
+                setState(() => _currentPage = index);
+              },
+              itemBuilder: (context, index) {
+                return _buildSlideContent(_onboardingData[index]);
+              },
+            ),
           ),
 
           // 2. OVERLAY CONTENT (Text & Button)
@@ -88,8 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // TOMBOL LANJUT (Hanya muncul/berubah di slide ke-3 atau sesuai index asli)
-                // Di gambar kamu, tombolnya ada di bawah "Get Started"
+                // TOMBOL LANJUT
                 SizedBox(
                   width: double.infinity,
                   height: 60,
@@ -103,7 +105,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                         );
                       } else {
-                        // Jika belum terakhir, geser ke slide berikutnya
                         _pageController.nextPage(
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.ease,
@@ -145,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           height: double.infinity,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(data['image']!), // Pastikan path benar
+              image: AssetImage(data['image']!), 
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
                 Colors.black.withOpacity(0.4),
@@ -185,7 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 data['desc']!,
                 style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
-              const SizedBox(height: 50), // Ruang untuk tombol di bawahnya
+              const SizedBox(height: 50), 
             ],
           ),
         ),

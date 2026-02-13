@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "Lora",
+    "version": "1.0.0",
+    "subtitle": "Sports Health Management"
+  },
+  "auth": {
+    "welcome": "Welcome to Lora",
+    "welcomeDesc": "Sign in to continue and enjoy your sports adventure with Lora",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "emailAddress": "Email Address",
+    "loginButton": "Login with Email",
+    "signUpButton": "CREATE ACCOUNT",
+    "signUp": "Sign Up",
+    "haveAccount": "Already have an account? ",
+    "noAccount": "Don't have an account? ",
+    "loginLink": "Login",
+    "signUpLink": "Sign Up",
+    "emailPasswordRequired": "Email and Password are required!",
+    "allFieldsRequired": "All fields are required!",
+    "passwordMismatch": "Passwords do not match!",
+    "registrationSuccess": "Registration successful! You will be redirected to the login page...",
+    "redirecting": "You will be redirected to the login page..."
+  },
+  "dashboard": {
+    "hello": "Hello",
+    "loadingLocation": "Loading Location...",
+    "connectionFailed": "Connection Failed",
+    "analyzing": "Analyzing your interests...",
+    "preparing": "Preparing tips for you...",
+    "lora": "LORA HEALTH MANAGEMENT",
+    "status": "Environmental Status",
+    "airQuality": "Air Quality",
+    "uvIndex": "UV Index",
+    "weatherCard": "Weather Analysis LORA",
+    "healthTips": "Health Tips",
+    "monthlyProgress": "View Monthly Progress",
+    "selectSport": "Please select a sport first in Settings!",
+    "good": "Good",
+    "moderate": "Moderate",
+    "unhealthy": "Unhealthy",
+    "low": "Low",
+    "high": "High"
+  },
+  "weather": {
+    "hotWeather": "Hot Weather: Indoor training / moderate cardio.",
+    "coldWeather": "Cold Weather: Extended warm-up.",
+    "safe": "Safe without mask.",
+    "caution": "Asthma sufferers be cautious.",
+    "wearMask": "Wear a mask!",
+    "outdoorSafe": "Safe for outdoors.",
+    "useSunscreen": "Use sunscreen.",
+    "reduceSun": "Reduce sun exposure."
+  },
+  "fitness": {
+    "weightLoss": "Focus: Burn calories & cardio.",
+    "muscleGain": "Focus: Strength & reps.",
+    "keepFit": "Focus: Balanced training.",
+    "cardio": "Priority: Cardio & HIIT.",
+    "strength": "Priority: Strength Training & Progressive Overload.",
+    "mobility": "Priority: Low impact cardio & Mobility.",
+    "indoorTraining": "Hot Weather: Take frequent breaks.",
+    "frequentRest": "Train in shade, don't forget to drink!"
+  },
+  "nutrition": {
+    "recommendedFoods": "Recommended Foods",
+    "badFoods": "Foods to Avoid",
+    "dailyFocus": "Daily Focus",
+    "calories": "Calories",
+    "protein": "Protein",
+    "hydration": "Hydration",
+    "expertNote": "Expert Note"
+  },
+  "settings": {
+    "settings": "Settings",
+    "personalInfo": "Personal Information",
+    "security": "Security & Privacy",
+    "notifications": "Notification Settings",
+    "language": "Language",
+    "logout": "Logout Account",
+    "version": "Lora Version 1.0.0",
+    "accountSettings": "Account Settings"
+  },
+  "navigation": {
+    "home": "Home",
+    "map": "Map",
+    "history": "History",
+    "bmi": "BMI",
+    "profile": "Profile"
+  },
+  "sports": {
+    "startDashboard": "START DASHBOARD",
+    "selectLevel": "Select Fitness Level",
+    "selectGoal": "Select Fitness Goal",
+    "never": "Never",
+    "sometimes": "Sometimes",
+    "regularly": "Regularly",
+    "professional": "Professional",
+    "weightLoss": "Weight Loss",
+    "muscleGain": "Muscle Gain",
+    "keepFit": "Keep Fit"
+  },
+  "errors": {
+    "loginFailed": "Login failed",
+    "registrationFailed": "Registration failed",
+    "connectionError": "Connection Error: Check Database URL!",
+    "verifyEmail": "Please verify your email",
+    "userNotFound": "User not found"
+  },
+  "messages": {
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  }
+}

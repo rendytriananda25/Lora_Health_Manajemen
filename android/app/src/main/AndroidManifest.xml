@@ -3,20 +3,23 @@
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.INTERNET" />
+    
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 
     <application
         android:label="Lora Health Management"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
-        android:enableOnBackInvokedCallback="true"> <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="MASUKKAN_API_KEY_GOOGLE_MAPS_DISINI"/>
+        android:enableOnBackInvokedCallback="true">
 
         <meta-data 
             android:name="com.facebook.sdk.ApplicationId" 
@@ -64,6 +67,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <service 
+            android:name="de.julianassmann.flutter_background.IsolateMethodCallService"
+            android:permission="android.permission.FOREGROUND_SERVICE"
+            android:foregroundServiceType="location"
+            android:exported="false"
+            android:stopWithTask="false" />
+
     </application>
 
     <queries>

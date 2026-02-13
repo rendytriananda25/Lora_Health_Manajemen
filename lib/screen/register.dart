@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:firebase_database/firebase_database.dart'; 
-import 'dashboard.dart'; 
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -155,7 +154,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F172A),
       resizeToAvoidBottomInset: true, 

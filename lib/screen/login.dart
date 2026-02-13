@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  "Sign in to continue your workout journey",
+                                  "Masuk untuk melanjutkan, dan nikmatti petualangan olahraga bersama Lora",
                                   style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 14),
                                 ),
                               ],

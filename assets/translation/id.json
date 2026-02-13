@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "Lora",
+    "version": "1.0.0",
+    "subtitle": "Manajemen Kesehatan Olahraga"
+  },
+  "auth": {
+    "welcome": "Selamat datang di Lora",
+    "welcomeDesc": "Masuk untuk melanjutkan, dan nikmati petualangan olahraga bersama Lora",
+    "email": "Email",
+    "password": "Kata Sandi",
+    "confirmPassword": "Konfirmasi Kata Sandi",
+    "fullName": "Nama Lengkap",
+    "emailAddress": "Alamat Email",
+    "loginButton": "Login dengan Email",
+    "signUpButton": "BUAT AKUN",
+    "signUp": "Daftar",
+    "haveAccount": "Sudah punya akun? ",
+    "noAccount": "Belum punya akun? ",
+    "loginLink": "Login",
+    "signUpLink": "Daftar",
+    "emailPasswordRequired": "Email dan Password wajib diisi!",
+    "allFieldsRequired": "Semua kolom wajib diisi!",
+    "passwordMismatch": "Password tidak cocok!",
+    "registrationSuccess": "Pendaftaran berhasil! Anda akan dialihkan ke halaman login...",
+    "redirecting": "Anda akan dialihkan ke halaman login..."
+  },
+  "dashboard": {
+    "hello": "Halo",
+    "loadingLocation": "Memuat Lokasi...",
+    "connectionFailed": "Koneksi Gagal",
+    "analyzing": "Menganalisis minatmu...",
+    "preparing": "Menyiapkan tips untukmu...",
+    "lora": "LORA HEALTH MANAGEMENT",
+    "status": "Status Lingkungan",
+    "airQuality": "Kualitas Udara",
+    "uvIndex": "Indeks UV",
+    "weatherCard": "Analisis Cuaca LORA",
+    "healthTips": "Saran Kesehatan",
+    "monthlyProgress": "Lihat Progress Bulanan",
+    "selectSport": "Yuk pilih olahraga dulu di Settings!",
+    "good": "Baik",
+    "moderate": "Sedang",
+    "unhealthy": "Tidak Sehat",
+    "low": "Rendah",
+    "high": "Tinggi"
+  },
+  "weather": {
+    "hotWeather": "Cuaca Panas: Latihan indoor / cardio sedang.",
+    "coldWeather": "Cuaca Dingin: Pemanasan lama.",
+    "safe": "Aman tanpa masker.",
+    "caution": "Asma harap waspada.",
+    "wearMask": "Gunakan masker!",
+    "outdoorSafe": "Aman luar ruangan.",
+    "useSunscreen": "Gunakan sunscreen.",
+    "reduceSun": "Kurangi paparan siang."
+  },
+  "fitness": {
+    "weightLoss": "Fokus: Bakar kalori & kardio.",
+    "muscleGain": "Fokus: Kekuatan & repetisi.",
+    "keepFit": "Fokus: Latihan seimbang.",
+    "cardio": "Prioritas: Cardio & HIIT.",
+    "strength": "Prioritas: Strength Training & Progressive Overload.",
+    "mobility": "Prioritas: Low impact cardio & Mobility.",
+    "indoorTraining": "Cuaca Panas: Istirahat lebih sering.",
+    "frequentRest": "Lakukan di tempat teduh, jangan lupa minum!"
+  },
+  "nutrition": {
+    "recommendedFoods": "Makanan Direkomendasikan",
+    "badFoods": "Makanan Dihindari",
+    "dailyFocus": "Fokus Harian",
+    "calories": "Kalori",
+    "protein": "Protein",
+    "hydration": "Hidrasi",
+    "expertNote": "Catatan Ahli"
+  },
+  "settings": {
+    "settings": "Pengaturan",
+    "personalInfo": "Informasi Pribadi",
+    "security": "Keamanan & Privasi",
+    "notifications": "Pengaturan Notifikasi",
+    "language": "Bahasa",
+    "logout": "Keluar Akun",
+    "version": "Lora Versi 1.0.0",
+    "accountSettings": "Pengaturan Akun"
+  },
+  "navigation": {
+    "home": "Beranda",
+    "map": "Peta",
+    "history": "Riwayat",
+    "bmi": "BMI",
+    "profile": "Profil"
+  },
+  "sports": {
+    "startDashboard": "MULAI DASHBOARD",
+    "selectLevel": "Pilih Level Kebugaran",
+    "selectGoal": "Pilih Tujuan Kebugaran",
+    "never": "Tidak Pernah",
+    "sometimes": "Kadang-kadang",
+    "regularly": "Teratur",
+    "professional": "Profesional",
+    "weightLoss": "Turun Berat Badan",
+    "muscleGain": "Naik Berat Badan",
+    "keepFit": "Jaga Kebugaran"
+  },
+  "errors": {
+    "loginFailed": "Login gagal",
+    "registrationFailed": "Pendaftaran gagal",
+    "connectionError": "Koneksi Error: Periksa URL Database!",
+    "verifyEmail": "Mohon verifikasi email Anda",
+    "userNotFound": "Pengguna tidak ditemukan"
+  },
+  "messages": {
+    "loading": "Memuat...",
+    "success": "Berhasil",
+    "error": "Kesalahan",
+    "retry": "Coba Lagi",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "delete": "Hapus",
+    "edit": "Edit"
+  }
+}

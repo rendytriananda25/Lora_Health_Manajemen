@@ -8,58 +8,102 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Parsing data dasar
-    DateTime dt = DateTime.parse(data['time'] ?? DateTime.now().toIso8601String());
+    // 1. Parsing Waktu & Tanggal (Safe Mode)
+    DateTime dt;
+    try {
+      dt = DateTime.parse(data['time']);
+    } catch (e) {
+      dt = DateTime.now();
+    }
     String formattedDate = DateFormat('dd MMMM yyyy, HH:mm').format(dt);
     
-    // Variabel spesifik workout (sesuaikan dengan isi Firebase kamu)
-    int durationMin = ((data['duration_sec'] ?? 0) / 60).round();
-    int sets = data['total_sets'] ?? 4;
-    String intensity = data['intensity'] ?? "8/10";
+    // 2. Parsing Durasi & Kalori (Pakai num biar aman int/double)
+    int durationSec = (data['duration_sec'] as num? ?? 0).toInt();
+    int durationMin = (durationSec / 60).ceil(); 
+    int calories = (data['calories'] as num? ?? 0).toInt();
+
+    // 3. Parsing Details
+    String detailsRaw = data['details'] ?? "";
+    List<String> exerciseList = [];
+    if (detailsRaw.isNotEmpty && detailsRaw != "Tidak ada gerakan diselesaikan") {
+      exerciseList = detailsRaw.split(", ");
+    }
+
+    // 4. Hitung Total Sets
+    int totalSets = exerciseList.isEmpty ? 0 : exerciseList.length;
+
+    // 5. Logic Intensitas
+    double calPerMin = durationMin > 0 ? (calories / durationMin) : 0;
+    String intensity = "RINGAN";
+    double intensityValue = 0.3;
+
+    if (calPerMin > 8) {
+      intensity = "TINGGI 🔥";
+      intensityValue = 0.9;
+    } else if (calPerMin > 4) {
+      intensity = "SEDANG ⚡";
+      intensityValue = 0.6;
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Home Workout", style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        title: Text(formattedDate, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20, color: Colors.white),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
-            // Row Atas: Total Sets & Kalori
+            // Row Atas: Total Sets & Kalori/Waktu
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start, // Biar sejajar atas
               children: [
+                // KOLOM KIRI: TOTAL SETS
                 Expanded(
                   flex: 2,
-                  child: _buildGridCard(
-                    color: const Color(0xFFC7B8F5),
+                  child: Container(
+                    height: 200, // Fixed height biar aman
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC7B8F5),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    // Gunakan SpaceBetween, JANGAN Spacer() di dalam ScrollView
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween, 
                       children: [
                         const Icon(Icons.fitness_center, color: Colors.black54),
-                        const Spacer(),
-                        const Text("TOTAL SETS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54)),
-                        Text("$sets", style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black)),
-                        const SizedBox(height: 10),
-                        LinearProgressIndicator(value: 0.7, backgroundColor: Colors.black12, color: Colors.black.withOpacity(0.3)),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("TOTAL GERAKAN", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.black54)),
+                            Text("$totalSets", style: const TextStyle(fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black)),
+                            const SizedBox(height: 10),
+                            LinearProgressIndicator(value: totalSets > 0 ? 1.0 : 0.0, backgroundColor: Colors.black12, color: Colors.black.withOpacity(0.3)),
+                          ],
+                        )
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(width: 15),
+                // KOLOM KANAN: KALORI & WAKTU
                 Expanded(
                   child: Column(
                     children: [
                       _buildSmallCard(
                         color: const Color(0xFFB2EBF2),
                         title: "KALORI",
-                        value: "${data['calories'] ?? 0}",
+                        value: "$calories",
                         unit: "KCAL",
                         icon: Icons.local_fire_department,
                       ),
@@ -79,10 +123,14 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
             const SizedBox(height: 15),
 
             // Card Intensitas
-            _buildGridCard(
+            Container(
               height: 140,
               width: double.infinity,
-              color: const Color(0xFF90CAF9),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF90CAF9),
+                borderRadius: BorderRadius.circular(30),
+              ),
               child: Row(
                 children: [
                   Column(
@@ -97,18 +145,18 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      Text(intensity, style: const TextStyle(fontSize: 35, fontWeight: FontWeight.bold, color: Colors.black)),
+                      Text(intensity, style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black)),
                     ],
                   ),
-                  const Spacer(),
-                  const SizedBox(
-                    width: 80,
-                    height: 80,
+                  const Spacer(), // Spacer di sini AMAN karena di dalam Row Horizontal
+                  SizedBox(
+                    width: 70,
+                    height: 70,
                     child: CircularProgressIndicator(
-                      value: 0.8,
+                      value: intensityValue,
                       strokeWidth: 8,
                       backgroundColor: Colors.black12,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.black45),
+                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.black45),
                     ),
                   )
                 ],
@@ -116,47 +164,55 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // Card Gerakan Terbaik
-            _buildGridCard(
+            // Card Detail Gerakan (List Real)
+            Container(
               width: double.infinity,
-              color: const Color(0xFF312E49),
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF312E49),
+                borderRadius: BorderRadius.circular(30),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("GERAKAN TERBAIK", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const Text("DETAIL GERAKAN", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, letterSpacing: 1)),
                   const SizedBox(height: 20),
-                  _buildMovementRow("Push-up", "60 REPS", 0.8),
-                  const SizedBox(height: 20),
-                  _buildMovementRow("Plank", "4 MENIT", 0.6),
+                  
+                  if (exerciseList.isEmpty)
+                    const Text("Tidak ada data gerakan.", style: TextStyle(color: Colors.white54))
+                  else
+                    ...exerciseList.map((item) {
+                      List<String> parts = item.split(": ");
+                      String name = parts[0];
+                      String val = parts.length > 1 ? parts[1] : "-";
+                      
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 20),
+                        child: _buildMovementRow(name, val, 0.8),
+                      );
+                    }).toList(),
                 ],
               ),
             ),
+            
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGridCard({required Widget child, Color? color, double? height, double? width}) {
-    return Container(
-      width: width,
-      height: height ?? 200,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: child,
-    );
-  }
+  // --- WIDGET COMPONENTS ---
 
   Widget _buildSmallCard({required Color color, required String title, required String value, required String unit, required IconData icon}) {
     return Container(
       width: double.infinity,
+      height: 92.5, // (200 - 15) / 2 -> Biar pas sejajar sama card kiri
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(25)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
             children: [
@@ -165,9 +221,13 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
               Text(title, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black54)),
             ],
           ),
-          const SizedBox(height: 5),
-          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black)),
-          Text(unit, style: const TextStyle(fontSize: 10, color: Colors.black45)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black, height: 1.0)),
+              Text(unit, style: const TextStyle(fontSize: 10, color: Colors.black45)),
+            ],
+          )
         ],
       ),
     );
@@ -179,8 +239,8 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-            Text(value, style: const TextStyle(color: Colors.white60, fontSize: 12)),
+            Expanded(child: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 16))),
+            Text(value, style: const TextStyle(color: Color(0xFFC7B8F5), fontWeight: FontWeight.bold, fontSize: 14)),
           ],
         ),
         const SizedBox(height: 8),

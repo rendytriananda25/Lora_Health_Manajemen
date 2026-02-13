@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:audioplayers/audioplayers.dart'; // ✅ WAJIB IMPORT
+import 'package:audioplayers/audioplayers.dart'; 
+import 'package:provider/provider.dart';
+import 'package:lora_1/core/services/language_provider.dart';
 
 class BMIPage extends StatefulWidget {
   const BMIPage({super.key});
@@ -17,7 +19,7 @@ class _BMIPageState extends State<BMIPage> {
   final PageController _pageController = PageController();
   final AudioPlayer _audioPlayer = AudioPlayer();
   
-  // ✅ VARIABEL ANTI MACET (THROTTLING)
+  // ✅ VARIABEL ANTI MACET
   DateTime _lastPlayTime = DateTime.now();
   
   int _currentPage = 0;
@@ -36,31 +38,29 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   void _initAudio() async {
+    // Mode Low Latency wajib biar responsif
     await _audioPlayer.setPlayerMode(PlayerMode.lowLatency);
-    // Preload biar enteng
-    await _audioPlayer.setSource(AssetSource('sounds/click.wav'));
-    await _audioPlayer.setVolume(1.0);
   }
 
-  // ✅ FUNGSI SUARA "THE FLASH" SAFE
+  // ✅ FUNGSI SUARA "TIK-TIK" (FIXED & TESTED)
   void _playPremiumTick() async {
     final now = DateTime.now();
     
-    // 🛑 LOGIKA REM: Kalau belum 70ms dari bunyi terakhir, JANGAN BUNYI.
-    // Ini mencegah HP 'tersedak' saat scroll super cepat.
-    if (now.difference(_lastPlayTime).inMilliseconds < 70) {
+    // Rem dikit (50ms) biar gak "keselek" kalau scroll super ngebut
+    if (now.difference(_lastPlayTime).inMilliseconds < 50) {
       return; 
     }
-
-    _lastPlayTime = now; // Catat waktu bunyi terakhir
+    _lastPlayTime = now;
 
     try {
-      if (_audioPlayer.state == PlayerState.playing) {
-        await _audioPlayer.stop();
-      }
-      await _audioPlayer.resume(); // Resume lebih cepat daripada play ulang
+      // 1. Stop paksa biar suara sebelumnya kepotong (reset ke 0)
+      await _audioPlayer.stop(); 
       
-      HapticFeedback.lightImpact(); 
+      // 2. Play ulang dari awal (Gunakan PLAY, bukan RESUME)
+      await _audioPlayer.play(AssetSource('sounds/click.wav'));
+      
+      // 3. Getaran halus biar kerasa fisik
+      HapticFeedback.selectionClick(); 
     } catch (e) {
       debugPrint("Audio Error: $e");
     }
@@ -106,9 +106,9 @@ class _BMIPageState extends State<BMIPage> {
 
   void _nextPage() {
     HapticFeedback.mediumImpact(); 
-    // Kita bypass throttling khusus buat tombol Next biar pasti bunyi
+    // Bunyi tombol Next (pasti bunyi)
     _audioPlayer.stop();
-    _audioPlayer.resume();
+    _audioPlayer.play(AssetSource('sounds/click.wav'));
 
     if (_currentPage < 2) {
       _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOutQuart);
@@ -126,6 +126,8 @@ class _BMIPageState extends State<BMIPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Agar halaman ikut rebuild saat bahasa berubah
+    final lang = Provider.of<LanguageProvider>(context);
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -141,7 +143,9 @@ class _BMIPageState extends State<BMIPage> {
                   else
                     const SizedBox(width: 40),
                   Text(
-                    _currentPage == 0 ? "Select Height" : _currentPage == 1 ? "Select Weight" : "BMI Result",
+                    _currentPage == 0 ? lang.translate('bmi.selectHeight') 
+                    : _currentPage == 1 ? lang.translate('bmi.selectWeight') 
+                    : lang.translate('bmi.result'),
                     style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 40),
@@ -153,9 +157,9 @@ class _BMIPageState extends State<BMIPage> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _buildHeightPage(),
-                  _buildWeightPage(),
-                  _buildResultPage(),
+                  _buildHeightPage(lang),
+                  _buildWeightPage(lang),
+                  _buildResultPage(lang),
                 ],
               ),
             ),
@@ -167,7 +171,7 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   // --- HALAMAN 1: TINGGI BADAN ---
-  Widget _buildHeightPage() {
+  Widget _buildHeightPage(LanguageProvider lang) {
     double normalizedHeight = (_height - 100) / 150;
     if (normalizedHeight < 0) normalizedHeight = 0;
     if (normalizedHeight > 1) normalizedHeight = 1;
@@ -191,7 +195,7 @@ class _BMIPageState extends State<BMIPage> {
                 physics: const FixedExtentScrollPhysics(),
                 controller: FixedExtentScrollController(initialItem: 250 - _height),
                 onSelectedItemChanged: (index) {
-                  // ✅ AMAN: SUARA SCROLL ANTI MACET
+                  // ✅ PANGGIL FUNGSI FIX DISINI
                   _playPremiumTick();
                   setState(() => _height = 250 - index);
                 },
@@ -248,14 +252,14 @@ class _BMIPageState extends State<BMIPage> {
           ],
         ),
         const Spacer(),
-        _buildNextButton("Next"),
+        _buildNextButton(lang.translate('bmi.next')),
         const SizedBox(height: 50),
       ],
     );
   }
 
   // --- HALAMAN 2: BERAT BADAN ---
-  Widget _buildWeightPage() {
+  Widget _buildWeightPage(LanguageProvider lang) {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -289,7 +293,7 @@ class _BMIPageState extends State<BMIPage> {
               value: _weight.toDouble(), min: 30, max: 150,
               onChanged: (val) {
                 if (val.toInt() != _weight) {
-                  // ✅ AMAN: SUARA SLIDER ANTI MACET
+                  // ✅ PANGGIL FUNGSI FIX DISINI
                   _playPremiumTick();
                 }
                 setState(() => _weight = val.toInt());
@@ -298,14 +302,14 @@ class _BMIPageState extends State<BMIPage> {
           ),
         ),
         const Spacer(),
-        _buildNextButton("Calculate"),
+        _buildNextButton(lang.translate('bmi.calculate')),
         const SizedBox(height: 50),
       ],
     );
   }
 
-  // --- HALAMAN 3 & HELPERS (SAMA PERSIS) ---
-  Widget _buildResultPage() {
+  // --- HALAMAN 3: RESULT ---
+  Widget _buildResultPage(LanguageProvider lang) {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -334,15 +338,15 @@ class _BMIPageState extends State<BMIPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildStatBox("Age", "$_age"),
+            _buildStatBox(lang.translate('bmi.age'), "$_age"),
             Container(width: 1, height: 40, color: Colors.white24),
-            _buildStatBox("Height", "$_height"),
+            _buildStatBox(lang.translate('bmi.height'), "$_height"),
             Container(width: 1, height: 40, color: Colors.white24),
-            _buildStatBox("Weight", "$_weight"),
+            _buildStatBox(lang.translate('bmi.weight'), "$_weight"),
           ],
         ),
         const Spacer(),
-        _buildNextButton("Recalculate", onTap: () {
+        _buildNextButton(lang.translate('bmi.recalculate'), onTap: () {
           _pageController.animateToPage(0, duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
           setState(() { _currentPage = 0; });
         }),
@@ -384,7 +388,7 @@ class _BMIPageState extends State<BMIPage> {
   }
 }
 
-// --- PAINTERS & GLASSCARD (SAMA) ---
+// --- PAINTERS & GLASSCARD ---
 class HumanPainter extends CustomPainter {
   final Color color; HumanPainter({required this.color});
   @override

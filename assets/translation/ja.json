@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "ローラ",
+    "version": "1.0.0",
+    "subtitle": "スポーツ健康管理"
+  },
+  "auth": {
+    "welcome": "ローラへようこそ",
+    "welcomeDesc": "ログインして続行し、ローラでスポーツアドベンチャーをお楽しみください",
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード確認",
+    "fullName": "フルネーム",
+    "emailAddress": "メールアドレス",
+    "loginButton": "メールでログイン",
+    "signUpButton": "アカウント作成",
+    "signUp": "会員登録",
+    "haveAccount": "すでにアカウントをお持ちですか？ ",
+    "noAccount": "アカウントをお持ちではありませんか？ ",
+    "loginLink": "ログイン",
+    "signUpLink": "登録",
+    "emailPasswordRequired": "メールアドレスとパスワードが必須です！",
+    "allFieldsRequired": "すべてのフィールドが必須です！",
+    "passwordMismatch": "パスワードが一致しません！",
+    "registrationSuccess": "登録成功！ログインページにリダイレクトされます...",
+    "redirecting": "ログインページにリダイレクトされた..."
+  },
+  "dashboard": {
+    "hello": "こんにちは",
+    "loadingLocation": "位置情報を読み込み中...",
+    "connectionFailed": "接続失敗",
+    "analyzing": "あなたの興味を分析中...",
+    "preparing": "あなたのためのヒントを準備中...",
+    "lora": "ローラ health管理",
+    "status": "環境状態",
+    "airQuality": "空気質",
+    "uvIndex": "UV指数",
+    "weatherCard": "天気分析 ローラ",
+    "healthTips": "健康ヒント",
+    "monthlyProgress": "月間の進捗を表示",
+    "selectSport": "設定で最初にスポーツを選択してください！",
+    "good": "良好",
+    "moderate": "中程度",
+    "unhealthy": "不健康",
+    "low": "低い",
+    "high": "高い"
+  },
+  "weather": {
+    "hotWeather": "暑い天気：室内トレーニング/中程度のカーディオ。",
+    "coldWeather": "寒い天気：長いウォームアップ。",
+    "safe": "マスクなしで安全です。",
+    "caution": "喘息患者は注意してください。",
+    "wearMask": "マスクをかぶってください！",
+    "outdoorSafe": "屋外で安全です。",
+    "useSunscreen": "日焼け止めを使用してください。",
+    "reduceSun": "日光への露出を減らしてください。"
+  },
+  "fitness": {
+    "weightLoss": "フォーカス：カロリーを燃やす＆カーディオ。",
+    "muscleGain": "フォーカス：力とreps。",
+    "keepFit": "フォーカス：バランスの取れたトレーニング。",
+    "cardio": "優先事項：カーディオ＆HIIT。",
+    "strength": "優先事項：強度トレーニング＆progressive overload。",
+    "mobility": "優先事項：低影響カーディオ＆Mobility。",
+    "indoorTraining": "暑い天気：頻繁に休憩を取ってください。",
+    "frequentRest": "日中は木陰でトレーニングし、水を飲むのを忘れずに！"
+  },
+  "nutrition": {
+    "recommendedFoods": "推奨食品",
+    "badFoods": "避けるべき食品",
+    "dailyFocus": "日次フォーカス",
+    "calories": "カロリー",
+    "protein": "プロテイン",
+    "hydration": "水分補給",
+    "expertNote": "専門家の注記"
+  },
+  "settings": {
+    "settings": "設定",
+    "personalInfo": "個人情報",
+    "security": "セキュリティとプライバシー",
+    "notifications": "通知設定",
+    "language": "言語",
+    "logout": "ログアウト",
+    "version": "ローラ バージョン 1.0.0",
+    "accountSettings": "アカウント設定"
+  },
+  "navigation": {
+    "home": "ホーム",
+    "map": "マップ",
+    "history": "履歴",
+    "bmi": "BMI",
+    "profile": "プロフィール"
+  },
+  "sports": {
+    "startDashboard": "ダッシュボード開始",
+    "selectLevel": "フィットネスレベルを選択",
+    "selectGoal": "フィットネスゴールを選択",
+    "never": "したことがない",
+    "sometimes": "時々",
+    "regularly": "定期的に",
+    "professional": "プロフェッショナル",
+    "weightLoss": "体重減少",
+    "muscleGain": "筋肉増加",
+    "keepFit": "フィット維持"
+  },
+  "errors": {
+    "loginFailed": "ログインに失敗しました",
+    "registrationFailed": "登録に失敗しました",
+    "connectionError": "接続エラー：データベースURLを確認してください！",
+    "verifyEmail": "メールアドレスを確認してください",
+    "userNotFound": "ユーザーが見つかりません"
+  },
+  "messages": {
+    "loading": "読み込み中...",
+    "success": "成功",
+    "error": "エラー",
+    "retry": "再試行",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "delete": "削除",
+    "edit": "編集"
+  }
+}

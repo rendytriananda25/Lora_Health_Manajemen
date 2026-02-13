@@ -63,16 +63,48 @@ class HistoryLariDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildRouteMap() {
-    List<LatLng> points = (data['path'] as List? ?? []).map((p) => LatLng(p['lat'], p['lng'])).toList();
+Widget _buildRouteMap() {
+    // 🔥 PERBAIKAN: Cara baca data yang lebih aman (cegah crash tipe data)
+    List<LatLng> points = [];
+    if (data['path'] != null && data['path'] is List) {
+      points = (data['path'] as List).map((p) {
+        // Pastikan lat/lng dibaca sebagai double
+        double lat = (p['lat'] as num).toDouble();
+        double lng = (p['lng'] as num).toDouble();
+        return LatLng(lat, lng);
+      }).toList();
+    }
+
     return FlutterMap(
-      options: MapOptions(initialCenter: points.isNotEmpty ? points[0] : const LatLng(-6.8898, 109.6713), initialZoom: 16),
+      options: MapOptions(
+        // Jika point kosong, default ke lokasi user (bisa disesuaikan) atau Monas/Pusat Kota
+        initialCenter: points.isNotEmpty ? points.last : const LatLng(-6.8898, 109.6713), 
+        initialZoom: 16
+      ),
       children: [
         TileLayer(
           urlTemplate: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-          retinaMode: true, // ✅ Menghilangkan peringatan log retina mode
+          subdomains: const ['a', 'b', 'c'], // Tambahkan subdomain agar map loading cepat
+          retinaMode: true,
         ),
-        PolylineLayer(polylines: [Polyline(points: points, color: const Color(0xFF008BFF), strokeWidth: 5, strokeCap: StrokeCap.round)]),
+        PolylineLayer(
+          polylines: [
+            Polyline(
+              points: points, 
+              color: const Color(0xFF008BFF), 
+              strokeWidth: 5, 
+              strokeCap: StrokeCap.round
+            )
+          ]
+        ),
+        // Opsional: Tambahkan Marker Start & Finish biar keren
+        if (points.isNotEmpty)
+          MarkerLayer(
+            markers: [
+              Marker(point: points.first, child: const Icon(Icons.circle, color: Colors.green, size: 15)), // Start
+              Marker(point: points.last, child: const Icon(Icons.location_on, color: Colors.red, size: 30)), // Finish
+            ],
+          ),
       ],
     );
   }

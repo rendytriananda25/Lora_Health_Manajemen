@@ -1,0 +1,123 @@
+{
+  "app": {
+    "name": "Lora",
+    "version": "1.0.0",
+    "subtitle": "Gestión de Salud Deportiva"
+  },
+  "auth": {
+    "welcome": "Bienvenido a Lora",
+    "welcomeDesc": "Inicia sesión para continuar y disfruta de tu aventura deportiva con Lora",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "fullName": "Nombre Completo",
+    "emailAddress": "Dirección de Correo Electrónico",
+    "loginButton": "Iniciar sesión con Correo",
+    "signUpButton": "CREAR CUENTA",
+    "signUp": "Registrarse",
+    "haveAccount": "¿Ya tienes una cuenta? ",
+    "noAccount": "¿No tienes una cuenta? ",
+    "loginLink": "Iniciar sesión",
+    "signUpLink": "Registrarse",
+    "emailPasswordRequired": "¡El correo electrónico y la contraseña son obligatorios!",
+    "allFieldsRequired": "¡Todos los campos son obligatorios!",
+    "passwordMismatch": "¡Las contraseñas no coinciden!",
+    "registrationSuccess": "¡Registro exitoso! Serás redirigido a la página de inicio de sesión...",
+    "redirecting": "Serás redirigido a la página de inicio de sesión..."
+  },
+  "dashboard": {
+    "hello": "Hola",
+    "loadingLocation": "Cargando ubicación...",
+    "connectionFailed": "Conexión Fallida",
+    "analyzing": "Analizando tus intereses...",
+    "preparing": "Preparando consejos para ti...",
+    "lora": "GESTIÓN DE SALUD LORA",
+    "status": "Estado del Ambiente",
+    "airQuality": "Calidad del Aire",
+    "uvIndex": "Índice UV",
+    "weatherCard": "Análisis Meteorológico LORA",
+    "healthTips": "Consejos de Salud",
+    "monthlyProgress": "Ver Progreso Mensual",
+    "selectSport": "¡Por favor selecciona un deporte primero en Configuración!",
+    "good": "Bueno",
+    "moderate": "Moderado",
+    "unhealthy": "Poco Saludable",
+    "low": "Bajo",
+    "high": "Alto"
+  },
+  "weather": {
+    "hotWeather": "Clima Cálido: Entrenamiento en interiores/cardio moderado.",
+    "coldWeather": "Clima Frío: Calentamiento prolongado.",
+    "safe": "Seguro sin máscara.",
+    "caution": "Los asmáticos deben tener cuidado.",
+    "wearMask": "¡Usa una máscara!",
+    "outdoorSafe": "Seguro para exteriores.",
+    "useSunscreen": "Usa protector solar.",
+    "reduceSun": "Reduce la exposición al sol."
+  },
+  "fitness": {
+    "weightLoss": "Enfoque: Quemar calorías y cardio.",
+    "muscleGain": "Enfoque: Fuerza y repeticiones.",
+    "keepFit": "Enfoque: Entrenamiento equilibrado.",
+    "cardio": "Prioridad: Cardio e HIIT.",
+    "strength": "Prioridad: Entrenamiento de Fuerza y Sobrecarga Progresiva.",
+    "mobility": "Prioridad: Cardio de bajo impacto y Movilidad.",
+    "indoorTraining": "Clima Cálido: Toma descansos frecuentes.",
+    "frequentRest": "¡Entrena a la sombra y no olvides beber agua!"
+  },
+  "nutrition": {
+    "recommendedFoods": "Alimentos Recomendados",
+    "badFoods": "Alimentos a Evitar",
+    "dailyFocus": "Enfoque Diario",
+    "calories": "Calorías",
+    "protein": "Proteína",
+    "hydration": "Hidratación",
+    "expertNote": "Nota del Experto"
+  },
+  "settings": {
+    "settings": "Configuración",
+    "personalInfo": "Información Personal",
+    "security": "Seguridad y Privacidad",
+    "notifications": "Configuración de Notificaciones",
+    "language": "Idioma",
+    "logout": "Cerrar Sesión",
+    "version": "Lora Versión 1.0.0",
+    "accountSettings": "Configuración de Cuenta"
+  },
+  "navigation": {
+    "home": "Inicio",
+    "map": "Mapa",
+    "history": "Historial",
+    "bmi": "IMC",
+    "profile": "Perfil"
+  },
+  "sports": {
+    "startDashboard": "INICIAR PANEL",
+    "selectLevel": "Selecciona tu Nivel de Fitness",
+    "selectGoal": "Selecciona tu Objetivo de Fitness",
+    "never": "Nunca",
+    "sometimes": "A veces",
+    "regularly": "Regularmente",
+    "professional": "Profesional",
+    "weightLoss": "Pérdida de Peso",
+    "muscleGain": "Ganancia Muscular",
+    "keepFit": "Mantenerse en Forma"
+  },
+  "errors": {
+    "loginFailed": "Error al iniciar sesión",
+    "registrationFailed": "Error al registrarse",
+    "connectionError": "Error de Conexión: ¡Verifica la URL de la Base de Datos!",
+    "verifyEmail": "Por favor verifica tu correo electrónico",
+    "userNotFound": "Usuario no encontrado"
+  },
+  "messages": {
+    "loading": "Cargando...",
+    "success": "Éxito",
+    "error": "Error",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar"
+  }
+}

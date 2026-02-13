@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
+// ✅ FILE INI STANDALONE - TANPA KONEKSI KE PAGE MANAPUN
+// Hanya untuk referensi atau testing isolasi
+
 class WeatherDetailPage extends StatefulWidget {
   final Map<String, dynamic> weatherData; // Data kiriman dari Dashboard
   const WeatherDetailPage({super.key, required this.weatherData});
@@ -36,73 +39,49 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Ambil data dari data cuaca yang dikirim
-    String temp = widget.weatherData['temp'] ?? "--";
-    String desc = widget.weatherData['desc'] ?? "Tidak diketahui";
-    String humidity = widget.weatherData['humidity']?.toString() ?? "0";
-    String wind = widget.weatherData['wind']?.toString() ?? "0";
-
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: const Text(
-          "Analisis Cuaca LORA",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text("WEATHER DETAIL PAGE - STANDALONE FILE", style: TextStyle(color: Colors.white)),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // CARD UTAMA CUACA
-            _buildMainWeatherCard(temp, desc),
-            const SizedBox(height: 25),
-            
-            // DETAIL STATS (ANGIN & KELEMBAPAN)
-            Row(
-              children: [
-                _buildSmallInfo(
-                  "Kelembapan",
-                  "$humidity%",
-                  Icons.water_drop,
-                  Colors.blueAccent,
-                ),
-                const SizedBox(width: 15),
-                _buildSmallInfo(
-                  "Kecepatan Angin",
-                  "${wind}m/s",
-                  Icons.air,
-                  Colors.tealAccent,
-                ),
-              ],
+            const Icon(Icons.warning_rounded, color: Colors.orange, size: 60),
+            const SizedBox(height: 20),
+            const Text(
+              "FILE STANDALONE",
+              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Ini file tidak terhubung ke page manapun\nGunakan untuk referensi atau testing isolasi",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 30),
-
-            // REKOMENDASI OLAHRAGA BERDASARKAN PILIHAN USER
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Saran Aktivitas Untukmu",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text("Content Include:", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 10),
+                  _buildContentItem("✅ Weather Detail Card"),
+                  _buildContentItem("✅ Humidity & Wind Speed Info"),
+                  _buildContentItem("✅ Sport Recommendations by Weather"),
+                  _buildContentItem("✅ User Sports Loading from Firebase"),
+                  _buildContentItem("✅ Weather Analysis per Sport"),
+                  _buildContentItem("✅ Glass Morphism UI Components"),
+                ],
               ),
             ),
-            const SizedBox(height: 15),
-
-            if (userSports.isEmpty)
-              const Text(
-                "Belum ada olahraga pilihan, Wak.",
-                style: TextStyle(color: Colors.white24),
-              )
-            else
-              ...userSports
-                  .map((sport) => _buildSportRecommendationCard(sport, temp))
-                  .toList(),
           ],
         ),
       ),
@@ -218,6 +197,13 @@ class _WeatherDetailPageState extends State<WeatherDetailPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildContentItem(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Text(text, style: const TextStyle(color: Colors.white70, fontSize: 13)),
     );
   }
 }

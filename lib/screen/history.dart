@@ -181,11 +181,23 @@ class HistoryPage extends StatelessWidget {
   }
 
   // --- WIDGET STATISTIK & HEADER ---
+// ✅ PERBAIKAN: Membulatkan angka agar tidak Overflow
   Widget _buildTrackingStats(Map data) {
+    // 1. Ambil data & Format jarak jadi 2 angka desimal (contoh: 2.31)
+    String distance = "0";
+    if (data['distance_km'] != null) {
+      try {
+        distance = double.parse(data['distance_km'].toString()).toStringAsFixed(2);
+      } catch (e) {
+        distance = data['distance_km'].toString(); // Fallback jika gagal parse
+      }
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        _buildStatItem(data['distance_km']?.toString() ?? "0", "km"),
+        // Gunakan variable distance yang sudah dirapikan
+        _buildStatItem(distance, "km"),
         const SizedBox(width: 12),
         _buildStatItem(data['calories']?.toString() ?? "0", "kcal"),
         const SizedBox(width: 10),
@@ -249,7 +261,6 @@ class HistoryPage extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("LORA SYSTEM", style: TextStyle(fontSize: 10, color: Colors.white70, letterSpacing: 2)),
                 Text("Activity History", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               ],
             ),
