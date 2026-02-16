@@ -7,16 +7,24 @@ import 'package:firebase_database/firebase_database.dart';
 
 import 'firebase_options.dart';
 import 'core/services/language_provider.dart'; // ✅ Pastikan path ini benar
-import 'screen/navbar.dart'; 
-import 'screen/onboarding_screen.dart'; 
-import 'screen/sports_selection.dart'; 
+import 'core/services/theme_provider.dart'; // ✅ Added ThemeProvider
+import 'features/notification/notification_service.dart';
+import 'features/notification/workout_reminder_service.dart';
+import 'screen/navbar.dart';
+import 'screen/onboarding_screen.dart';
+import 'screen/sports_selection.dart';
+import 'features/dashboard/data/nutrition_data.dart';
+import 'features/map/data/workout_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // 🌍 1. Inisialisasi Language Provider
+
+  // 🌍 1. Inisialisasi Language & Theme Provider
   final languageProvider = LanguageProvider();
   await languageProvider.initialize();
+
+  final themeProvider = ThemeProvider(); // ✅ Init Theme
+  await themeProvider.initialize();
 
   // 📱 2. Atur UI Overlay (Status Bar & Orientasi)
   SystemChrome.setSystemUIOverlayStyle(
@@ -32,13 +40,19 @@ void main() async {
   // 🔥 3. Inisialisasi Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Notifikasi + reminder
+  await NotificationService.instance.init();
+  await WorkoutReminderService.instance.initDefault();
+
+  // 🚀 4. Load Data Global (Background)
+  NutritionData.fetchFromFirebase();
+  WorkoutData.fetchFromFirebase();
+
   runApp(
     MultiProvider(
       providers: [
-        // ✅ Daftarkan Language Provider agar bisa diakses seluruh aplikasi
-        ChangeNotifierProvider<LanguageProvider>.value(
-          value: languageProvider,
-        ),
+        ChangeNotifierProvider.value(value: languageProvider),
+        ChangeNotifierProvider.value(value: themeProvider), // ✅ Inject Theme
       ],
       child: const MyApp(),
     ),
@@ -53,30 +67,46 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Gunakan Consumer agar saat bahasa berubah di Setting, seluruh App otomatis berubah
-    return Consumer<LanguageProvider>(
-      builder: (context, langProvider, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Lora Assistant',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF008BFF), 
-              brightness: Brightness.dark
+    // ✅ Watch Providers for Global Updates
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
+    // Note: Language is used inside consumers/widgets usually,
+    // but we can listen here if needed for Title updates.
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Lora Assistant',
+      theme: themeProvider.themeData, // ✅ Apply Dynamic Theme
+      // --- LOGIC ROUTING PINTAR (RENDY TRIANANDA) ---
+      home: Builder(
+        builder: (context) {
+          // 📱 Dynamic System UI Overlay
+          // Memastikan Navbar & Status Bar ikut berubah warna sesuai tema
+          final isDark = themeProvider.isDarkMode;
+          SystemChrome.setSystemUIOverlayStyle(
+            SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              systemNavigationBarColor:
+                  themeProvider.bgColor, // Ikuti warna background
+              systemNavigationBarIconBrightness: isDark
+                  ? Brightness.light
+                  : Brightness.dark,
             ),
-            useMaterial3: true,
-            scaffoldBackgroundColor: Colors.black, // Konsisten dengan tema gelap
-          ),
-          
-          // --- LOGIC ROUTING PINTAR (RENDY TRIANANDA) ---
-          home: StreamBuilder<User?>(
+          );
+
+          return StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, authSnapshot) {
               // A. Loading State
               if (authSnapshot.connectionState == ConnectionState.waiting) {
-                return const Scaffold(
-                  backgroundColor: Color(0xFF0F172A),
-                  body: Center(child: CircularProgressIndicator(color: Color(0xFF008BFF))),
+                return Scaffold(
+                  backgroundColor: themeProvider.bgColor, // Use Theme Color
+                  body: const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF008BFF)),
+                  ),
                 );
               }
 
@@ -86,18 +116,23 @@ class MyApp extends StatelessWidget {
 
                 // Cek ke Realtime Database untuk Favorite Sports
                 return FutureBuilder<DataSnapshot>(
-                  future: FirebaseDatabase.instanceFor(
-                          app: FirebaseAuth.instance.app,
-                          databaseURL: dbUrl,
-                        )
-                      .ref("users/${user.uid}/favorite_sports")
-                      .get()
-                      .timeout(const Duration(seconds: 10)), 
+                  future:
+                      FirebaseDatabase.instanceFor(
+                            app: FirebaseAuth.instance.app,
+                            databaseURL: dbUrl,
+                          )
+                          .ref("users/${user.uid}/favorite_sports")
+                          .get()
+                          .timeout(const Duration(seconds: 10)),
                   builder: (context, dbSnapshot) {
                     if (dbSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Scaffold(
-                        backgroundColor: Color(0xFF0F172A),
-                        body: Center(child: CircularProgressIndicator(color: Color(0xFF008BFF))),
+                      return Scaffold(
+                        backgroundColor: themeProvider.bgColor,
+                        body: const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF008BFF),
+                          ),
+                        ),
                       );
                     }
 
@@ -107,7 +142,7 @@ class MyApp extends StatelessWidget {
                     }
 
                     // Jika data olahraga TIDAK ADA -> Pilih Olahraga (Onboarding step 2)
-                    return const SportsSelectionPage(); 
+                    return const SportsSelectionPage();
                   },
                 );
               }
@@ -115,9 +150,9 @@ class MyApp extends StatelessWidget {
               // C. Jika User BELUM LOGIN -> Onboarding
               return const OnboardingScreen();
             },
-          ),
-        );
-      }
+          );
+        },
+      ),
     );
   }
 }

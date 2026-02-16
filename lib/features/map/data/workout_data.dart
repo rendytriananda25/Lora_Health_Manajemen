@@ -1,7 +1,600 @@
 import 'package:flutter/material.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 class WorkoutData {
+  // 🔄 VARIABLE RUNTIME (Diisi dari Firebase)
+  static Map<String, dynamic>? _onlineWorkoutData;
+
+  // 💾 DATA LOKAL (SOURCE CODE) - Editable oleh Admin di sini
+  static final Map<String, dynamic> _defaultWorkoutLibrary = {
+    "running": {
+      "title": "RUNNING MISSION",
+      "weather_advice": {
+        "danger":
+            "Bahaya! Suhu {temp}°C bisa bikin pingsan. Pindah ke treadmill indoor sekarang!",
+        "hot":
+            "Cuaca panas ({temp}°C). Kurangi target jarak 20% dan minum air tiap 10 menit!",
+        "ideal":
+            "Cuaca mantap! Kondisi paling ideal buat kejar target jarak hari ini.",
+        "cold":
+            "Suhu sejuk ({temp}°C). Pemanasan wajib 15 menit agar otot tidak cedera kaku!",
+      },
+      "levels": {
+        "NEVER": {
+          "male_target": "1.5 - 2.0 KM",
+          "female_base_km": 1.5,
+          "focus": "Jogging ringan + jalan cepat",
+        },
+        "SOMETIMES": {
+          "male_target": "3.0 - 4.0 KM",
+          "female_base_km": 3.0,
+          "focus": "Jogging stabil kontrol napas",
+        },
+        "OFTEN": {
+          "male_target": "5.0 - 7.5 KM",
+          "female_base_km": 5.5,
+          "focus": "Tempo run (Lari ritme cepat)",
+        },
+        "DAILY": {
+          "male_target": "10.0 - 15.0 KM",
+          "female_base_km": 10.0,
+          "focus": "Long endurance run (Lari jarak jauh)",
+        },
+      },
+      "template": [
+        {
+          "name": "Pemanasan",
+          "target": "10 Menit",
+          "type": "time",
+          "icon_code": 58788,
+        }, // Icons.accessibility_new
+        {
+          "name": "{focus}",
+          "target": "{target}",
+          "type": "dist",
+          "icon_code": 59382,
+        }, // Icons.directions_run
+        {
+          "name": "Cooling Down",
+          "target": "5 Menit",
+          "type": "time",
+          "icon_code": 60235,
+        }, // Icons.ac_unit
+      ],
+      "female_extra": {
+        "name": "Injury Prevention",
+        "target": "Tambahkan glute activation untuk stabilitas ACL.",
+        "type": "info",
+        "icon_code": 61279, // Icons.health_and_safety,
+      },
+    },
+
+    "cycling": {
+      "title": "CYCLING ENDURANCE",
+      "weather_advice": {
+        "danger": "Panas ekstrem! Gunakan sepeda statis di dalam ruangan saja.",
+        "cold":
+            "Terlalu dingin/berangin. Mending latihan di dalam ruangan demi keamanan.",
+        "ideal": "Cuaca mendukung untuk gowes outdoor.",
+      },
+      "levels": {
+        "NEVER": {
+          "male_target": "3.0 - 5.0 KM",
+          "female_base_km": 3.5,
+          "focus": "Kayuhan santai tempo ringan",
+        },
+        "SOMETIMES": {
+          "male_target": "7.5 - 12.0 KM",
+          "female_base_km": 8.0,
+          "focus": "Endurance sedang",
+        },
+        "OFTEN": {
+          "male_target": "15.0 - 25.0 KM",
+          "female_base_km": 18.0,
+          "focus": "Interval + tanjakan",
+        },
+        "DAILY": {
+          "male_target": "30.0 - 50.0 KM",
+          "female_base_km": 35.0,
+          "focus": "Endurance jarak jauh",
+        },
+      },
+      "template": [
+        {
+          "name": "Preparation",
+          "target": "5 Menit",
+          "type": "time",
+          "icon_code": 59846,
+        }, // Icons.settings_input_component
+        {
+          "name": "{focus}",
+          "target": "{target}",
+          "type": "dist",
+          "icon_code": 59361,
+        }, // Icons.directions_bike
+      ],
+      "female_extra": {
+        "name": "Sport Note",
+        "target": "Perhatikan kekuatan core & pinggul untuk efisiensi kayuhan.",
+        "type": "info",
+        "icon_code": 61279, // Icons.health_and_safety,
+      },
+    },
+
+    "basketball": {
+      "title": "BASKETBALL ELITE SYSTEM",
+      "levels": {
+        "NEVER": {"duration": 30}, // Beginner Session
+        "SOMETIMES": {"duration": 45}, // Intermediate Session
+        "OFTEN": {"duration": 75}, // Pro-Lite Session
+        "DAILY": {"duration": 90}, // Pro Athlete Session
+      },
+      "male_template": [
+        // 1. Warm Up (Beginner Data)
+        {
+          "name": "Dynamic Stretching",
+          "target": "10 Menit",
+          "type": "time",
+          "icon_code": 58788,
+
+          "video_url":
+              "https://youtube.com/shorts/nPCPhqEJ3r4?si=MFQEnVj9dQDnhtTH",
+          "start_at": 6, // Mulai detik ke-6
+        },
+        {
+          "name": "Ball Slaps & Handling",
+          "target": "50 Reps",
+          "type": "reps",
+          "icon_code": 60230,
+
+          "video_url": "",
+        },
+
+        // 2. Main Drill (Intermediate Data: Mikan Drill + Shooting) - Scalable Duration
+        {
+          "name": "Mikan Drill + Form Shooting",
+          "target": "{duration} Menit",
+          "type": "time",
+          "icon_code": 60230,
+
+          "video_url": "",
+        },
+
+        // 3. Defense (Intermediate Data)
+        {
+          "name": "Zig-Zag Defensive Slides",
+          "target": "4 Full Court",
+          "type": "reps",
+          "icon_code": 59382,
+
+          "video_url": "",
+        },
+
+        // 4. Physical (Intermediate Data)
+        {
+          "name": "Physical: Push Ups",
+          "target": "3 Sets x 15",
+          "type": "reps",
+          "icon_code": 59405,
+
+          "video_url": "",
+        },
+      ],
+      "female_template": [
+        // 1. Warm Up (Beginner Data)
+        {
+          "name": "Dynamic Mobility",
+          "target": "10 Menit",
+          "type": "time",
+          "icon_code": 58788,
+
+          "video_url": "",
+        },
+        {
+          "name": "Finger Tip Taps",
+          "target": "2 Menit",
+          "type": "time",
+          "icon_code": 60230,
+
+          "video_url": "",
+        },
+
+        // 2. Skill (Beginner Data)
+        {
+          "name": "Pocket Dribble Focus",
+          "target": "2 Menit/Tangan",
+          "type": "time",
+          "icon_code": 60230,
+
+          "video_url": "",
+        },
+
+        // 3. Main Drill (Intermediate Data: Catch & Shoot) - Scalable Duration
+        {
+          "name": "Catch & Shoot Midrange",
+          "target": "{duration} Menit",
+          "type": "time",
+          "icon_code": 60230,
+
+          "video_url": "",
+        },
+
+        // 4. Pressure Shooting (Intermediate Data)
+        {
+          "name": "Free Throw Pressure",
+          "target": "10 Reps (Miss=Sprint)",
+          "type": "reps",
+          "icon_code": 60230,
+
+          "video_url": "",
+        },
+
+        // 5. Injury Prevention (Wajib untuk Wanita - ACL Support)
+        {
+          "name": "Injury Prevention",
+          "target": "Latihan Glute & Hamstring (3x12 Squat)",
+          "type": "info",
+          "icon_code": 61279,
+
+          "video_url": "",
+        },
+      ],
+    },
+
+    "football": {
+      "title": "PRO FOOTBALL TRAINING",
+      "levels": {
+        "NEVER": {"duration": 30}, // Beginner: Ball Mastery
+        "SOMETIMES": {"duration": 45}, // Intermediate: Tactical Power
+        "OFTEN": {"duration": 70}, // Advanced: High Intensity
+        "DAILY": {"duration": 90}, // Pro: Explosive Power
+      },
+      "male_template": [
+        // 1. Warm Up & Ball Mastery (Beginner)
+        {
+          "name": "Toe Taps (Ball Feel)",
+          "target": "100 Reps",
+          "type": "reps",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+        {
+          "name": "Inside-Outside Dribbling",
+          "target": "20 Meters x 5",
+          "type": "dist",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 2. Technique (Beginner/Intermediate)
+        {
+          "name": "Wall Pass (First Touch)",
+          "target": "50 Reps/Kaki",
+          "type": "reps",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 3. Main Drill (Intermediate/Pro: Rondo & High Press)
+        {
+          "name": "Rondo Simulation / High Press",
+          "target": "{duration} Menit",
+          "type": "time",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 4. Physical (Intermediate: Power)
+        {
+          "name": "Long Ball Accuracy",
+          "target": "20 Reps (30m)",
+          "type": "reps",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 5. Finishing (Pro: High Intensity)
+        {
+          "name": "Agility Ladder Runs",
+          "target": "5 Sets",
+          "type": "reps",
+          "icon_code": 59382,
+
+          "video_url": "",
+        },
+      ],
+      "female_template": [
+        // 1. Warm Up & Technique (Beginner)
+        {
+          "name": "Slalom Dribble",
+          "target": "10 Cones (1m gap)",
+          "type": "reps",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+        {
+          "name": "Passing Triangle",
+          "target": "10 Menit",
+          "type": "time",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 2. Main Drill (Intermediate: Possession)
+        {
+          "name": "Possession Control / 5v5 Sim",
+          "target": "{duration} Menit",
+          "type": "time",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 3. Power (Intermediate)
+        {
+          "name": "Shooting from Distance",
+          "target": "20 Shots",
+          "type": "reps",
+          "icon_code": 60231,
+
+          "video_url": "",
+        },
+
+        // 4. Pro Drill (Atltet Pro)
+        {
+          "name": "Counter Attack Sprint",
+          "target": "60m Sprint to Finish",
+          "type": "dist",
+          "icon_code": 59382,
+
+          "video_url": "",
+        },
+
+        // 5. Injury Prevention (FIFA 11+ for Female Athletes)
+        {
+          "name": "FIFA 11+ Prevention",
+          "target": "Ligament Strength (ACL Focus)",
+          "type": "info",
+          "icon_code": 61279,
+
+          "video_url": "",
+        },
+      ],
+    },
+
+    "home": {
+      "title": "HOME WORKOUT",
+      "weather_advice": {
+        "danger":
+            "Panas banget ({temp}°C)! Pastikan AC/kipas menyala & minum banyak air sebelum mulai.",
+        "warm":
+            "Agak panas ({temp}°C). Buka jendela, siapkan air minum & handuk.",
+        "ideal": "Suhu ideal ({temp}°C) untuk workout di rumah. Gas!",
+        "cold":
+            "Udara dingin ({temp}°C). Pemanasan lebih lama 10-15 menit sebelum mulai.",
+      },
+      "goals": {
+        "WEIGHT_LOSS": [
+          {
+            "name": "Jumping Jacks",
+            "target": "50 Reps",
+            "type": "reps",
+            "icon_code": 58788,
+
+            "video_url": "https://youtu.be/uLVt6u15L98?si=uC5vLHkj2D3_kJv0",
+            // "start_at": 10, // Opsional: Mulai dari detik ke-10
+          },
+          {
+            "name": "High Knees",
+            "target": "40 Reps",
+            "type": "reps",
+            "icon_code": 59382,
+
+            "video_url": "https://youtu.be/DfjpR6dzLVg?si=-v45UmeEg8XQEkR9",
+          },
+          {
+            "name": "Burpees",
+            "target": "15 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/TU8QYVW0gDU?si=ITmFLNROw4lppAUf",
+          },
+          {
+            "name": "Mountain Climber",
+            "target": "30 Reps",
+            "type": "reps",
+            "icon_code": 59375,
+
+            "video_url": "https://youtu.be/hq_0YlyfqGM?si=3mBtIbVOFduKekyb",
+          },
+          {
+            "name": "Squat Jump",
+            "target": "20 Reps",
+            "type": "reps",
+            "icon_code": 59132,
+
+            "video_url": "https://youtu.be/YGGq0AE5Uyc?si=1qJPDMWhFRkPYlNs",
+          },
+          {
+            "name": "Plank Jacks",
+            "target": "30 Detik",
+            "type": "time",
+            "icon_code": 61460,
+
+            "video_url": "https://youtu.be/VasEy9dNzZM?si=ivIuI1ST_3bvoJHv",
+          },
+          {
+            "name": "Skaters",
+            "target": "20 Reps",
+            "type": "reps",
+            "icon_code": 59387,
+
+            "video_url": "https://youtu.be/JkacHtlPYds?si=L_mf21x2A4aVReSR",
+          },
+          {
+            "name": "Tuck Jumps",
+            "target": "10 Reps",
+            "type": "reps",
+            "icon_code": 59375,
+
+            "video_url": "https://youtu.be/Yl7tEmpzknY?si=vM68iQu1FCysddO2",
+          },
+        ],
+        "MUSCLE_GAIN": [
+          {
+            "name": "Push Up",
+            "target": "20 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/WDIpL0pjun0?si=zDuCBirrmOOE_VbB",
+          },
+          {
+            "name": "Diamond Push Up",
+            "target": "12 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/XtU2VQVuLYs?si=6Nypxn60TdpwpeM1",
+          },
+          {
+            "name": "Pike Push Up",
+            "target": "10 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/XckEEwa1BPI?si=HeLqwG3Zrw03qoN_",
+          },
+          {
+            "name": "Squat",
+            "target": "25 Reps",
+            "type": "reps",
+            "icon_code": 58788,
+
+            "video_url": "https://youtu.be/l83R5PblSMA?si=QK87lhXiavi22BQO",
+          },
+          {
+            "name": "Bulgarian Split Squat",
+            "target": "12 Reps/Kaki",
+            "type": "reps",
+            "icon_code": 59387,
+
+            "video_url": "https://youtu.be/Fmjj7wFJWRE?si=KPE2vbZhj_Pxy-Jy",
+          },
+          {
+            "name": "Plank",
+            "target": "60 Detik",
+            "type": "time",
+            "icon_code": 61460,
+
+            "video_url": "https://youtu.be/pvIjsG5Svck?si=DzxiyLessznNw-Bw",
+          },
+          {
+            "name": "Lunges",
+            "target": "15 Reps/Kaki",
+            "type": "reps",
+            "icon_code": 59387,
+
+            "video_url": "https://youtu.be/tQNktxPkSeE?si=MAMAAu2MHfjHkP7Q",
+          },
+          {
+            "name": "Tricep Dips",
+            "target": "15 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/HCf97NPYeGY?si=X23VkYQuYKAoXt_r",
+          },
+          {
+            "name": "Handstand Push-Up (Wall)",
+            "target": "5 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/WxgJS48wf1M?si=Y_HZ_TeanzPWAODh",
+          },
+        ],
+        "KEEP_FIT": [
+          {
+            "name": "Pemanasan Dinamis",
+            "target": "5 Menit",
+            "type": "time",
+            "icon_code": 58788,
+
+            "video_url": "https://youtu.be/3qyWpJ34dWw?si=QSAYITuJMp3E5zYB",
+          },
+          {
+            "name": "Bird Dog",
+            "target": "12 Reps",
+            "type": "reps",
+            "icon_code": 58788,
+
+            "video_url": "https://youtu.be/k2azbhhuKuM?si=jKZCpYDMGyNaJ_pn",
+          },
+          {
+            "name": "Superman",
+            "target": "15 Reps",
+            "type": "reps",
+            "icon_code": 60235,
+
+            "video_url": "https://youtu.be/tYMHYWVvFjs?si=Ja47xW1te-hEigqA",
+          },
+          {
+            "name": "Cat-Cow Stretch",
+            "target": "2 Menit",
+            "type": "time",
+            "icon_code": 60235,
+
+            "video_url": "https://youtu.be/LIVJZZyZ2qM?si=T5CjHWfI5YRjBvQt",
+          },
+          {
+            "name": "Push Up",
+            "target": "10 Reps",
+            "type": "reps",
+            "icon_code": 59405,
+
+            "video_url": "https://youtu.be/WDIpL0pjun0?si=zDuCBirrmOOE_VbB",
+          },
+          {
+            "name": "Squat",
+            "target": "15 Reps",
+            "type": "reps",
+            "icon_code": 58788,
+
+            "video_url": "https://youtu.be/l83R5PblSMA?si=QK87lhXiavi22BQO",
+          },
+          {
+            "name": "Plank",
+            "target": "30 Detik",
+            "type": "time",
+            "icon_code": 61460,
+
+            "video_url": "https://youtu.be/pvIjsG5Svck?si=DzxiyLessznNw-Bw",
+          },
+          {
+            "name": "Cooling Down",
+            "target": "5 Menit",
+            "type": "time",
+            "icon_code": 60235,
+            "video_url": "https://youtu.be/ciqL41ffHTI?si=OEwGELIw1eja-ewJ",
+            "start_at": "41",
+          },
+        ],
+      },
+    },
+  };
+
+  // 🔥 UTAMA: Generate Routine berdasarkan Data (Online / Local)
   static Map<String, dynamic> generateRoutine({
     required String sportType,
     required String goal,
@@ -10,774 +603,262 @@ class WorkoutData {
     String weather = "",
     required int temp,
     bool isIndoor = false,
+    int frequency = 1, // New Parameter
     LanguageProvider? lang,
   }) {
-    List<Map<String, dynamic>> list = [];
-    String title = "";
-    String weatherAdvice = "";
-    String sport = sportType.toUpperCase();
+    // 1. Pilih Sumber Data
+    // 🔥 FIX: Paksa pakai data lokal karena user baru saja edit link YouTube di sini.
+    // Kalau pakai _onlineWorkoutData, dia bakal ambil data lama dari Firebase yang belum ada link-nya.
+    Map<String, dynamic> library = _defaultWorkoutLibrary;
+    // Map<String, dynamic> library = _onlineWorkoutData ?? _defaultWorkoutLibrary;
+
+    String sportKey = _mapSportKey(sportType);
     String userLevel = level.toUpperCase();
-    String userGoal = goal.toUpperCase();
+    if (userLevel == "TIDAK PERNAH BEROLAHRAGA") userLevel = "NEVER";
+    if (userLevel == "LUMAYAN SERING") userLevel = "SOMETIMES";
+    if (userLevel == "SERING" || userLevel == "EVERY_DAY") userLevel = "OFTEN";
+
     String userGender = _normalizeGender(gender);
-    String t(String key, [String fallback = '']) =>
-        lang?.translate(key) ?? fallback;
+    String userGoal = goal.toUpperCase();
 
-    // ---------------------------------------------------------
-    // 🏃 LOGIKA LARI (JARAK AMAN PER LEVEL)
-    // ---------------------------------------------------------
-    if (sport == "LARI") {
-      title = "RUNNING MISSION";
-      late Map<String, dynamic> data;
-      if (userGender == "FEMALE") {
-        data = FemaleSportEngine.getRunningData(
-          userLevel,
-          temp.toDouble(),
-          weather,
-        );
-        weatherAdvice =
-            "${_getRunningWeatherLogic(temp, lang)} ${data['hydration']}";
-      } else {
-        data = _getRunningData(userLevel, lang);
-        weatherAdvice = _getRunningWeatherLogic(temp, lang);
+    // Default return jika data tidak ditemukan
+    if (!library.containsKey(sportKey)) {
+      sportKey = "home"; // Fallback ke home workout
+    }
+
+    final sportData = library[sportKey];
+    String title = sportData['title'] ?? sportType;
+    String weatherAdvice = "";
+    List<Map<String, dynamic>> exercises = [];
+
+    // --- LOGIKA PER CABANG OLAHRAGA ---
+
+    // A. LARI & SEPEDA
+    if (sportKey == "running" || sportKey == "cycling") {
+      weatherAdvice = _getWeatherText(sportData['weather_advice'], temp);
+      if (userGender == "FEMALE" &&
+          sportData['weather_advice']['hydration_female'] != null) {
+        // Add hydration logic if needed, simplifikasi info weather
       }
 
-      list = [
-        {
-          "name": t('workout.warmup', "Pemanasan"),
-          "target": "10 ${t('workout.minutes', 'Menit')}",
-          "type": "time",
-          "icon": Icons.accessibility_new,
-          "image": "assets/gif/stretching.gif",
-        },
-        {
-          "name": data['focus'],
-          "target": userGender == "FEMALE"
-              ? "${data['target_km']} KM"
-              : data['target'],
-          "type": "dist",
-          "icon": Icons.directions_run,
-          "image": "assets/gif/marching.gif",
-        },
-        {
-          "name": t('workout.coolDown', "Cooling Down"),
-          "target": "5 ${t('workout.minutes', 'Menit')}",
-          "type": "time",
-          "icon": Icons.ac_unit,
-          "image": "assets/gif/stretching.gif",
-        },
-      ];
+      final levelData =
+          sportData['levels'][userLevel] ?? sportData['levels']['SOMETIMES'];
+
+      // Logika Gender & Weather Adjustment
+      String targetDisplay = levelData['male_target'] ?? "30 min";
+      String focus = levelData['focus'] ?? "General Workout";
 
       if (userGender == "FEMALE") {
-        list.add({
-          "name": "Injury Prevention",
-          "target": data['injury_prevention'] ??
-              "Tambahkan glute activation untuk stabilitas ACL.",
-          "type": "info",
-          "icon": Icons.health_and_safety,
-          "image": "assets/gif/stretching.gif",
-        });
+        double baseKm = (levelData['female_base_km'] as num).toDouble();
+        double adjustedKm = _applyFemaleWeatherAdjustment(
+          baseKm,
+          temp,
+          weather,
+        );
+        targetDisplay = "${adjustedKm.toStringAsFixed(1)} KM";
+      }
+
+      var template = List<Map<String, dynamic>>.from(
+        sportData['template'].map((x) => Map<String, dynamic>.from(x)),
+      );
+
+      // Isi Template
+      for (var ex in template) {
+        ex['name'] = ex['name'].replaceAll("{focus}", focus);
+        ex['target'] = ex['target'].replaceAll("{target}", targetDisplay);
+      }
+      exercises = template;
+
+      // Extra info buat cewek
+      if (userGender == "FEMALE" && sportData['female_extra'] != null) {
+        exercises.add(Map<String, dynamic>.from(sportData['female_extra']));
       }
     }
-    // ---------------------------------------------------------
-    // 🚴 LOGIKA SEPEDA (JARAK AMAN PER LEVEL)
-    // ---------------------------------------------------------
-    else if (sport == "SEPEDA") {
-      title = "CYCLING ENDURANCE";
-      late Map<String, dynamic> data;
-      if (userGender == "FEMALE") {
-        data = FemaleSportEngine.getCyclingData(
-          userLevel,
-          temp.toDouble(),
-          weather,
-        );
-        weatherAdvice =
-            "${_getSepedaWeatherLogic(temp, lang)} ${data['hydration']}";
+    // B. BASKET & BOLA (Team Sports)
+    else if (sportKey == "basketball" || sportKey == "football") {
+      final levelData = sportData['levels'][userLevel] ?? {"duration": 45};
+      double duration = (levelData['duration'] as num).toDouble();
+
+      if (userGender == "FEMALE" && !isIndoor) {
+        duration = _applyFemaleWeatherAdjustment(duration, temp, weather);
+        weatherAdvice = _getWeatherText(
+          library['home']['weather_advice'],
+          temp,
+        ); // Pinjam weather logic home
       } else {
-        data = _getSepedaData(userLevel, lang);
-        weatherAdvice = _getSepedaWeatherLogic(temp, lang);
+        // Male default logic
+        weatherAdvice = _getWeatherText(
+          library["running"]['weather_advice'],
+          temp,
+        );
       }
 
-      list = [
-        {
-          "name": t('workout.preparation', "Preparation"),
-          "target": "5 ${t('workout.minutes', 'Menit')}",
-          "type": "time",
-          "icon": Icons.settings_input_component,
-          "image": "assets/gif/stretching.gif",
-        },
-        {
-          "name": data['focus'],
-          "target": userGender == "FEMALE"
-              ? "${data['target_km']} KM"
-              : data['target'],
-          "type": "dist",
-          "icon": Icons.directions_bike,
-          "image": "assets/gif/marching.gif",
-        },
-      ];
+      String templateKey = userGender == "FEMALE"
+          ? "female_template"
+          : "male_template";
+      var template = List<Map<String, dynamic>>.from(
+        sportData[templateKey].map((x) => Map<String, dynamic>.from(x)),
+      );
 
-      if (userGender == "FEMALE") {
-        list.add({
-          "name": "Sport Note",
-          "target": data['note'] ??
-              "Perhatikan kekuatan core & pinggul untuk efisiensi kayuhan.",
-          "type": "info",
-          "icon": Icons.health_and_safety,
-          "image": "assets/gif/stretching.gif",
-        });
-      }
-    } else if (sport == "BASKET" || sport == "BASKETBALL") {
-      title = "BASKETBALL SESSION";
-      if (userGender == "FEMALE") {
-        final data = FemaleSportEngine.getBasketData(
-          userLevel,
-          isIndoor,
-          temp.toDouble(),
-          weather,
+      for (var ex in template) {
+        ex['target'] = ex['target'].replaceAll(
+          "{duration}",
+          duration.round().toString(),
         );
-        weatherAdvice = data['hydration'] ?? "";
-        list = [
-          {
-            "name": t('workout.preparation', "Preparation"),
-            "target": "8 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": data['focus'],
-            "target":
-                "${data['duration_minutes']} ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.sports_basketball,
-            "image": "assets/gif/marching.gif",
-          },
-          {
-            "name": "Injury Prevention",
-            "target": data['injury_prevention'],
-            "type": "info",
-            "icon": Icons.health_and_safety,
-            "image": "assets/gif/stretching.gif",
-          },
-        ];
-      } else {
-        weatherAdvice = _getHomeWeatherLogic(temp, lang);
-        list = [
-          {
-            "name": t('workout.preparation', "Preparation"),
-            "target": "8 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": "Shooting + Dribble Drill",
-            "target": "35 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.sports_basketball,
-            "image": "assets/gif/marching.gif",
-          },
-        ];
       }
-    } else if (sport == "BOLA" || sport == "FOOTBALL") {
-      title = "FOOTBALL SESSION";
-      if (userGender == "FEMALE") {
-        final data = FemaleSportEngine.getFootballData(
-          userLevel,
-          temp.toDouble(),
-          weather,
-        );
-        weatherAdvice = data['hydration'] ?? "";
-        list = [
-          {
-            "name": t('workout.warmup', "Pemanasan"),
-            "target": "10 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": data['focus'],
-            "target":
-                "${data['duration_minutes']} ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.sports_soccer,
-            "image": "assets/gif/marching.gif",
-          },
-          {
-            "name": "Injury Prevention",
-            "target": data['injury_prevention'],
-            "type": "info",
-            "icon": Icons.health_and_safety,
-            "image": "assets/gif/stretching.gif",
-          },
-        ];
-      } else {
-        weatherAdvice = _getRunningWeatherLogic(temp, lang);
-        list = [
-          {
-            "name": t('workout.warmup', "Pemanasan"),
-            "target": "10 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": "Passing + Sprint Drill",
-            "target": "40 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.sports_soccer,
-            "image": "assets/gif/marching.gif",
-          },
-        ];
-      }
+      exercises = template;
     }
-    // ---------------------------------------------------------
-    // 🏠 LOGIKA HOME WORKOUT (GOAL + LEVEL + CUACA)
-    // ---------------------------------------------------------
+    // C. HOME WORKOUT
     else {
-      title = "HOME WORKOUT";
-      weatherAdvice = _getHomeWeatherLogic(temp, lang);
+      weatherAdvice = _getWeatherText(sportData['weather_advice'], temp);
+      String goalKey = "KEEP_FIT";
+      if (userGoal.contains("WEIGHT") ||
+          userGoal.contains("KURUS") ||
+          userGoal.contains("LOSE"))
+        goalKey = "WEIGHT_LOSS";
+      if (userGoal.contains("MUSCLE") ||
+          userGoal.contains("OTOT") ||
+          userGoal.contains("GAIN"))
+        goalKey = "MUSCLE_GAIN";
 
-      if (userGoal == "LOSE_WEIGHT" ||
-          userGoal == "WEIGHT_LOSS" ||
-          userGoal == "MENURUNKAN BERAT BADAN") {
-        list = [
-          {
-            "name": "Jumping Jacks",
-            "target": "30 Reps",
-            "type": "reps",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/jumping_jacks.gif",
-          },
-          {
-            "name": "High Knees",
-            "target": "20 Reps",
-            "type": "reps",
-            "icon": Icons.directions_run,
-            "image": "assets/gif/high_knees.gif",
-          },
-          {
-            "name": "Burpees",
-            "target": "10 Reps",
-            "type": "reps",
-            "icon": Icons.fitness_center,
-            "image": "assets/gif/boxing.gif",
-          },
-          {
-            "name": "Mountain Climber",
-            "target": "20 Reps",
-            "type": "reps",
-            "icon": Icons.landscape,
-            "image": "assets/gif/high_knees.gif",
-          },
-          {
-            "name": "Squat Jump",
-            "target": "15 Reps",
-            "type": "reps",
-            "icon": Icons.arrow_upward,
-            "image": "assets/gif/marching.gif",
-          },
-        ];
-      } else if (userGoal == "BUILD_MUSCLE" ||
-          userGoal == "MUSCLE_GAIN" ||
-          userGoal == "MEMBENTUK OTOT") {
-        list = [
-          {
-            "name": "Push Up",
-            "target": "15 Reps",
-            "type": "reps",
-            "icon": Icons.fitness_center,
-            "image": "assets/gif/boxing.gif",
-          },
-          {
-            "name": "Squat",
-            "target": "20 Reps",
-            "type": "reps",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/marching.gif",
-          },
-          {
-            "name": "Plank",
-            "target": "30 ${t('workout.seconds', 'Detik')}",
-            "type": "time",
-            "icon": Icons.timer,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": "Lunges",
-            "target": "12 ${t('workout.repsPerLeg', 'Reps/Kaki')}",
-            "type": "reps",
-            "icon": Icons.directions_walk,
-            "image": "assets/gif/marching.gif",
-          },
-          {
-            "name": "Tricep Dips",
-            "target": "12 Reps",
-            "type": "reps",
-            "icon": Icons.fitness_center,
-            "image": "assets/gif/boxing.gif",
-          },
-        ];
-      } else {
-        // KEEP_FIT / default
-        list = [
-          {
-            "name": t('workout.dynamicWarmup', "Pemanasan Dinamis"),
-            "target": "5 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": "Push Up",
-            "target": "10 Reps",
-            "type": "reps",
-            "icon": Icons.fitness_center,
-            "image": "assets/gif/boxing.gif",
-          },
-          {
-            "name": "Squat",
-            "target": "15 Reps",
-            "type": "reps",
-            "icon": Icons.accessibility_new,
-            "image": "assets/gif/marching.gif",
-          },
-          {
-            "name": "Plank",
-            "target": "20 ${t('workout.seconds', 'Detik')}",
-            "type": "time",
-            "icon": Icons.timer,
-            "image": "assets/gif/stretching.gif",
-          },
-          {
-            "name": t('workout.coolDown', "Cooling Down"),
-            "target": "5 ${t('workout.minutes', 'Menit')}",
-            "type": "time",
-            "icon": Icons.ac_unit,
-            "image": "assets/gif/stretching.gif",
-          },
-        ];
-      }
+      var rawList =
+          sportData['goals'][goalKey] ?? sportData['goals']['KEEP_FIT'];
+      exercises = List<Map<String, dynamic>>.from(
+        rawList.map((x) => Map<String, dynamic>.from(x)),
+      );
 
-      // Adjust reps berdasarkan level
-      if (userLevel == "OFTEN" ||
-          userLevel == "SERING" ||
-          userLevel == "EVERY_DAY" ||
-          userLevel == "DAILY") {
-        for (var ex in list) {
+      // Female Adjustments for Reps
+      if (userGender == "FEMALE" && userGoal.contains("WEIGHT")) {
+        for (var ex in exercises) {
           if (ex['type'] == 'reps') {
-            String target = ex['target'].toString();
-            final match = RegExp(r'(\d+)').firstMatch(target);
+            String t = ex['target'];
+            final match = RegExp(r'(\d+)').firstMatch(t);
             if (match != null) {
               int val = int.parse(match.group(1)!);
-              ex['target'] = target.replaceFirst(
-                match.group(1)!,
-                '${(val * 1.5).toInt()}',
-              );
-            }
-          }
-        }
-      } else if (userLevel == "NEVER" ||
-          userLevel == "TIDAK PERNAH BEROLAHRAGA") {
-        for (var ex in list) {
-          if (ex['type'] == 'reps') {
-            String target = ex['target'].toString();
-            final match = RegExp(r'(\d+)').firstMatch(target);
-            if (match != null) {
-              int val = int.parse(match.group(1)!);
-              ex['target'] = target.replaceFirst(
-                match.group(1)!,
-                '${(val * 0.6).toInt()}',
-              );
+              int newVal = (val * 0.9).round();
+              ex['target'] = t.replaceFirst(match.group(1)!, newVal.toString());
             }
           }
         }
       }
     }
 
-    _applyGenderTuning(
-      list: list,
-      sport: sport,
-      goal: userGoal,
-      userGender: userGender,
-    );
+    // 🔥 FREQUENCY LOGIC (1x or 2x)
+    String sessionLabel = "";
+    if (frequency == 2) {
+      // 🕒 Cek Jam: < 15.00 = Pagi, > 15.00 = Sore
+      int hour = DateTime.now().hour;
+      sessionLabel = hour < 15 ? " (Sesi Pagi)" : " (Sesi Sore)";
+    }
 
-    // Saran Lora di awal semua olahraga
-    list.insert(0, {
-      "name": t('workout.loraAdvice', "Saran Lora"),
+    // Process Icons (Convert Code to IconData)
+    for (var ex in exercises) {
+      if (ex['icon_code'] != null) {
+        ex['icon'] = IconData(ex['icon_code'], fontFamily: 'MaterialIcons');
+      } else {
+        ex['icon'] = Icons.fitness_center;
+      }
+    }
+
+    // Add Lora Advice
+    exercises.insert(0, {
+      "name": "Saran Lora$sessionLabel",
       "target": weatherAdvice,
       "type": "info",
       "icon": Icons.lightbulb,
-      "image": "assets/gif/stretching.gif",
+
       "isSelected": true,
     });
 
     return {
-      "exercises": list,
+      "exercises": exercises,
       "title": "$title ($userLevel)",
       "weather_advice": weatherAdvice,
     };
   }
 
+  // --- HELPER FUNCTIONS ---
+
+  static String _mapSportKey(String raw) {
+    String s = raw.toUpperCase();
+    if (s.contains("LARI") || s.contains("RUN")) return "running";
+    if (s.contains("SEPEDA") || s.contains("CYCLE")) return "cycling";
+    if (s.contains("BASKET")) return "basketball";
+    if (s.contains("BOLA") || s.contains("SOCCER") || s.contains("FOOTBALL"))
+      return "football";
+    return "home";
+  }
+
   static String _normalizeGender(String raw) {
     final value = raw.trim().toUpperCase();
     if (value == "FEMALE" || value == "PEREMPUAN") return "FEMALE";
-    if (value == "MALE" || value == "LAKI-LAKI" || value == "LAKILAKI") {
-      return "MALE";
-    }
+    if (value == "MALE" || value == "LAKI-LAKI") return "MALE";
     return "UNKNOWN";
   }
 
-  static void _applyGenderTuning({
-    required List<Map<String, dynamic>> list,
-    required String sport,
-    required String goal,
-    required String userGender,
-  }) {
-    if (userGender != "FEMALE") return;
-
-    // Step awal supaya profil perempuan lebih nyaman dan sustainable.
-    final isHomeWorkout = sport == "HOME WORKOUT" || sport == "HOME_WORKOUT";
-    if (!isHomeWorkout) return;
-
-    final isWeightLossGoal =
-        goal == "LOSE_WEIGHT" || goal == "WEIGHT_LOSS" || goal == "MENURUNKAN BERAT BADAN";
-
-    for (final ex in list) {
-      if (ex['type'] != 'reps') continue;
-
-      final target = ex['target'].toString();
-      final match = RegExp(r'(\d+)').firstMatch(target);
-      if (match == null) continue;
-
-      final reps = int.parse(match.group(1)!);
-      final tuned = isWeightLossGoal ? (reps * 0.9).round() : reps;
-      ex['target'] = target.replaceFirst(match.group(1)!, '$tuned');
-    }
-  }
-
-  // --- HELPER DATA LARI (LOGIKA JARAK AMAN) ---
-  static Map<String, dynamic> _getRunningData(
-    String level,
-    LanguageProvider? lang,
-  ) {
-    String t(String key, String fallback) => lang?.translate(key) ?? fallback;
-
-    if (level == "NEVER" || level == "TIDAK PERNAH BEROLAHRAGA") {
-      return {
-        "target": "1.5 - 2.0 KM",
-        "focus": t(
-          'workout.focusLightJog',
-          "Jogging sangat santai + jalan cepat",
-        ),
-      };
-    } else if (level == "SOMETIMES" || level == "LUMAYAN SERING") {
-      return {
-        "target": "3.0 - 4.0 KM",
-        "focus": t(
-          'workout.focusSteadyJog',
-          "Jogging stabil dengan napas teratur",
-        ),
-      };
-    } else if (level == "OFTEN" || level == "SERING") {
-      return {
-        "target": "5.0 - 7.5 KM",
-        "focus": t('workout.focusTempoRun', "Tempo run (Lari ritme cepat)"),
-      };
-    } else {
-      return {
-        "target": "10.0 - 15.0 KM",
-        "focus": t(
-          'workout.focusIntervalLong',
-          "Long endurance run (Lari jarak jauh)",
-        ),
-      };
-    }
-  }
-
-  // --- HELPER DATA SEPEDA (LOGIKA JARAK AMAN) ---
-  static Map<String, dynamic> _getSepedaData(
-    String level,
-    LanguageProvider? lang,
-  ) {
-    String t(String key, String fallback) => lang?.translate(key) ?? fallback;
-
-    if (level == "NEVER") {
-      return {
-        "target": "3.0 - 5.0 KM",
-        "focus": t(
-          'workout.focusCasualPedal',
-          "Kayuhan santai keliling komplek",
-        ),
-      };
-    } else if (level == "SOMETIMES") {
-      return {
-        "target": "7.5 - 12.0 KM",
-        "focus": t('workout.focusLightEndurance', "Gowes durasi sedang"),
-      };
-    } else if (level == "OFTEN") {
-      return {
-        "target": "15.0 - 25.0 KM",
-        "focus": t(
-          'workout.focusSpeedClimb',
-          "Gowes intensitas tinggi & tanjakan",
-        ),
-      };
-    } else {
-      return {
-        "target": "30.0 - 50.0 KM",
-        "focus": t(
-          'workout.focusPeriodEndurance',
-          "Gowes jarak jauh (Endurance)",
-        ),
-      };
-    }
-  }
-
-  // --- WEATHER LOGIC (SANGAT KETAT) ---
-  static String _getRunningWeatherLogic(int temp, LanguageProvider? lang) {
-    String t(String key, String fallback) => lang?.translate(key) ?? fallback;
+  static String _getWeatherText(dynamic adviceData, int temp) {
+    if (adviceData == null) return "Cuaca OK.";
+    final advice = Map<String, dynamic>.from(adviceData as Map);
     String tp = '$temp';
-
+    String msg = "";
     if (temp >= 33)
-      return t(
-        'workout.runDanger',
-        "Bahaya! Suhu {temp}°C bisa bikin pingsan. Pindah ke treadmill indoor sekarang!",
-      ).replaceAll('{temp}', tp);
-    if (temp >= 28)
-      return t(
-        'workout.runHot',
-        "Cuaca panas ({temp}°C). Kurangi target jarak 20% dan minum air tiap 10 menit!",
-      ).replaceAll('{temp}', tp);
-    if (temp >= 18)
-      return t(
-        'workout.runIdeal',
-        "Cuaca mantap! Kondisi paling ideal buat kejar target jarak hari ini.",
-      );
-    return t(
-      'workout.runCold',
-      "Suhu sejuk ({temp}°C). Pemanasan wajib 15 menit agar otot tidak cedera kaku!",
-    ).replaceAll('{temp}', tp);
+      msg = advice['danger'] ?? "";
+    else if (temp >= 28)
+      msg = advice['hot'] ?? advice['warm'] ?? "";
+    else if (temp >= 18)
+      msg = advice['ideal'] ?? "";
+    else
+      msg = advice['cold'] ?? "";
+
+    return msg.replaceAll("{temp}", tp);
   }
 
-  static String _getSepedaWeatherLogic(int temp, LanguageProvider? lang) {
-    String t(String key, String fallback) => lang?.translate(key) ?? fallback;
-
+  static double _applyFemaleWeatherAdjustment(
+    double val,
+    int temp,
+    String weather,
+  ) {
+    double res = val;
     if (temp >= 33)
-      return t(
-        'workout.cycleDanger',
-        "Panas ekstrem! Gunakan sepeda statis di dalam ruangan saja.",
+      res *= 0.85;
+    else if (temp <= 18)
+      res *= 0.92;
+    if (weather.toLowerCase().contains("rain")) res *= 0.90;
+    return res;
+  }
+
+  // 🔥 FUNGSI ADMIN: Upload ke Firebase
+  static Future<void> seedToFirebase() async {
+    try {
+      // ✅ Gunakan URL spesifik (Asia-Southeast1) agar konsisten dengan SettingsPage
+      final db = FirebaseDatabase.instanceFor(
+        app: Firebase.app(),
+        databaseURL:
+            "https://lora-1-b0d0c-default-rtdb.asia-southeast1.firebasedatabase.app",
       );
-    if (temp < 15)
-      return t(
-        'workout.cycleCold',
-        "Terlalu dingin/berangin. Mending latihan di dalam ruangan demi keamanan.",
-      );
-    return t('workout.cycleIdeal', "Cuaca mendukung untuk gowes outdoor.");
-  }
-
-  // --- WEATHER LOGIC HOME WORKOUT (INDOOR) ---
-  static String _getHomeWeatherLogic(int temp, LanguageProvider? lang) {
-    String t(String key, String fallback) => lang?.translate(key) ?? fallback;
-    String tp = '$temp';
-
-    if (temp >= 33)
-      return t(
-        'workout.homeDanger',
-        "Panas banget ({temp}°C)! Pastikan AC/kipas menyala & minum banyak air sebelum mulai.",
-      ).replaceAll('{temp}', tp);
-    if (temp >= 28)
-      return t(
-        'workout.homeWarm',
-        "Agak panas ({temp}°C). Buka jendela, siapkan air minum & handuk.",
-      ).replaceAll('{temp}', tp);
-    if (temp >= 18)
-      return t(
-        'workout.homeIdeal',
-        "Suhu ideal ({temp}°C) untuk workout di rumah. Gas!",
-      ).replaceAll('{temp}', tp);
-    return t(
-      'workout.homeCold',
-      "Udara dingin ({temp}°C). Pemanasan lebih lama 10-15 menit sebelum mulai.",
-    ).replaceAll('{temp}', tp);
-  }
-}
-
-class FemaleSportEngine {
-  static double _weatherAdjustment(
-    double baseValue,
-    double temperature,
-    String weather,
-  ) {
-    var adjusted = baseValue;
-
-    if (temperature >= 33) {
-      adjusted *= 0.85;
-    } else if (temperature <= 18) {
-      adjusted *= 0.92;
-    }
-
-    if (weather.toLowerCase().contains("rain")) {
-      adjusted *= 0.90;
-    }
-
-    return adjusted;
-  }
-
-  static String _hydrationAdvice(double temperature) {
-    if (temperature >= 33) {
-      return "Minum 600-800 ml per jam aktivitas.";
-    } else if (temperature >= 28) {
-      return "Minum 500-700 ml per jam aktivitas.";
-    } else {
-      return "Minum 400-600 ml per jam aktivitas.";
+      final ref = db.ref("data/workout_data");
+      await ref.set(_defaultWorkoutLibrary);
+      print("✅ Workout Data Seeded Successfully!");
+    } catch (e) {
+      print("⚠️ Upload Failed: $e");
+      rethrow;
     }
   }
 
-  static Map<String, dynamic> getRunningData(
-    String level,
-    double temperature,
-    String weather,
-  ) {
-    const baseDistance = {
-      "NEVER": 1.5,
-      "SOMETIMES": 3.0,
-      "OFTEN": 5.5,
-      "ATHLETE": 10.0,
-      "DAILY": 10.0,
-    };
-
-    final base = baseDistance[level] ?? 3.0;
-    final finalDistance = _weatherAdjustment(base, temperature, weather);
-
-    return {
-      "sport": "LARI",
-      "target_km": finalDistance.toStringAsFixed(1),
-      "focus": _runningFocus(level),
-      "hydration": _hydrationAdvice(temperature),
-      "injury_prevention":
-          "Tambahkan glute activation untuk stabilitas ACL.",
-    };
-  }
-
-  static String _runningFocus(String level) {
-    switch (level) {
-      case "NEVER":
-        return "Jogging ringan + jalan cepat";
-      case "SOMETIMES":
-        return "Jogging stabil kontrol napas";
-      case "OFTEN":
-        return "Tempo run";
-      default:
-        return "Long endurance run";
+  // 🔥 FUNGSI CLIENT: Ambil dari Firebase
+  static Future<void> fetchFromFirebase() async {
+    try {
+      final ref = FirebaseDatabase.instance.ref("data/workout_data");
+      final snapshot = await ref.get();
+      if (snapshot.exists && snapshot.value is Map) {
+        _onlineWorkoutData = Map<String, dynamic>.from(snapshot.value as Map);
+        // Convert nested maps recursively if needed, but Dart handles dynamic decently
+        // We might need to handle List conversion manually from Firebase's Object format if indexes are used
+        // But for simple use case, this usually works.
+        print("✅ Online Workout Data Loaded!");
+      }
+    } catch (e) {
+      print("Gagal ambil workout data: $e");
     }
-  }
-
-  static Map<String, dynamic> getCyclingData(
-    String level,
-    double temperature,
-    String weather,
-  ) {
-    const baseDistance = {
-      "NEVER": 3.5,
-      "SOMETIMES": 8.0,
-      "OFTEN": 18.0,
-      "ATHLETE": 35.0,
-      "DAILY": 35.0,
-    };
-
-    final base = baseDistance[level] ?? 8.0;
-    final finalDistance = _weatherAdjustment(base, temperature, weather);
-
-    return {
-      "sport": "SEPEDA",
-      "target_km": finalDistance.toStringAsFixed(1),
-      "focus": _cyclingFocus(level),
-      "hydration": _hydrationAdvice(temperature),
-      "note": "Perhatikan kekuatan core & pinggul untuk efisiensi kayuhan.",
-    };
-  }
-
-  static String _cyclingFocus(String level) {
-    switch (level) {
-      case "NEVER":
-        return "Kayuhan santai tempo ringan";
-      case "SOMETIMES":
-        return "Endurance sedang";
-      case "OFTEN":
-        return "Interval + tanjakan";
-      default:
-        return "Endurance jarak jauh";
-    }
-  }
-
-  static Map<String, dynamic> getBasketData(
-    String level,
-    bool isIndoor,
-    double temperature,
-    String weather,
-  ) {
-    double baseDuration;
-
-    switch (level) {
-      case "NEVER":
-        baseDuration = 20;
-        break;
-      case "SOMETIMES":
-        baseDuration = 35;
-        break;
-      case "OFTEN":
-        baseDuration = 60;
-        break;
-      default:
-        baseDuration = 90;
-    }
-
-    if (!isIndoor) {
-      baseDuration = _weatherAdjustment(baseDuration, temperature, weather);
-    }
-
-    return {
-      "sport": isIndoor ? "BASKET INDOOR" : "BASKET OUTDOOR",
-      "duration_minutes": baseDuration.round(),
-      "focus": "Footwork + shooting drill + ACL prevention",
-      "hydration": _hydrationAdvice(temperature),
-      "injury_prevention":
-          "Wanita memiliki risiko ACL lebih tinggi, wajib latihan glute & hamstring.",
-    };
-  }
-
-  static Map<String, dynamic> getFootballData(
-    String level,
-    double temperature,
-    String weather,
-  ) {
-    double baseDuration;
-
-    switch (level) {
-      case "NEVER":
-        baseDuration = 30;
-        break;
-      case "SOMETIMES":
-        baseDuration = 50;
-        break;
-      case "OFTEN":
-        baseDuration = 75;
-        break;
-      default:
-        baseDuration = 100;
-    }
-
-    baseDuration = _weatherAdjustment(baseDuration, temperature, weather);
-
-    return {
-      "sport": "SEPAK BOLA",
-      "duration_minutes": baseDuration.round(),
-      "focus": "Dribbling + passing + sprint interval",
-      "hydration": _hydrationAdvice(temperature),
-      "injury_prevention":
-          "Latihan stabilitas lutut & core sangat dianjurkan.",
-    };
   }
 }

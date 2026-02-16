@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart'; // ✅ Added ThemeProvider
 import 'widgets/setting_widgets.dart';
 
 class LanguagePage extends StatefulWidget {
@@ -20,99 +21,128 @@ class _LanguagePageState extends State<LanguagePage> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context); // ✅ Theme
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.bgColor, // ✅ Adaptive
       body: SafeArea(
         child: Column(
           children: [
-            // ✅ Header sekarang pakai teks dinamis (opsional jika sudah ada di JSON)
-            const SettingHeader(title: "Language"),
+            SettingHeader(
+              title: lang.translate('settings.language'), // ✅ Translated
+              isDarkMode: theme.isDarkMode, // ✅ Pass Theme
+            ),
             Expanded(
-              child: Consumer<LanguageProvider>(
-                builder: (context, languageProvider, _) {
-                  return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                    itemCount: languages.length,
-                    itemBuilder: (context, index) {
-                      String languageCode = languages[index]['code']!;
-                      bool isSelected = languageProvider.currentLanguage == languageCode;
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
+                itemCount: languages.length,
+                itemBuilder: (context, index) {
+                  String languageCode = languages[index]['code']!;
+                  bool isSelected = lang.currentLanguage == languageCode;
 
-                      return GestureDetector(
-                        onTap: () async {
-                          // ✅ Proses ganti bahasa global lewat Provider
-                          await languageProvider.changeLanguage(languageCode);
+                  return GestureDetector(
+                    onTap: () async {
+                      // ✅ Proses ganti bahasa global lewat Provider
+                      await lang.changeLanguage(languageCode);
 
-                          if (mounted) {
-                            // ✅ Feedback SnackBar (Pesan diambil berdasarkan bahasa baru)
-                            String feedbackMsg = languageCode == 'id' 
-                                ? 'Bahasa berhasil diubah' 
-                                : 'Language changed successfully';
-                                
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(feedbackMsg, style: const TextStyle(color: Colors.white)),
-                                backgroundColor: const Color(0xFF008BFF),
-                                duration: const Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          }
-                        },
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? const Color(0xFF008BFF).withOpacity(0.15)
-                                : const Color(0xFF1C1C1E),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: isSelected
-                                  ? const Color(0xFF008BFF)
-                                  : Colors.white.withOpacity(0.08),
-                              width: isSelected ? 2 : 1,
+                      if (mounted) {
+                        // ✅ Feedback SnackBar (Pesan diambil berdasarkan bahasa baru)
+                        String feedbackMsg = languageCode == 'id'
+                            ? 'Bahasa berhasil diubah'
+                            : 'Language changed successfully';
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              feedbackMsg,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                            backgroundColor: const Color(0xFF008BFF),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF008BFF).withOpacity(0.15)
+                            : theme.boxColor, // ✅ Adaptive
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF008BFF)
+                              : theme.borderColor, // ✅ Adaptive
+                          width: isSelected ? 2 : 1,
+                        ),
+                        boxShadow: theme.isDarkMode || isSelected
+                            ? []
+                            : [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Text(
+                                  languages[index]['flag']!,
+                                  style: const TextStyle(fontSize: 24),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  languages[index]['name']!,
+                                  style: TextStyle(
+                                    color: theme.textColor, // ✅ Adaptive
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      languages[index]['flag']!,
-                                      style: const TextStyle(fontSize: 24),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      languages[index]['name']!,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                          // ✅ Indicator Checklist
+                          Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF008BFF)
+                                    : theme.subTextColor.withOpacity(
+                                        0.3,
+                                      ), // ✅ Adaptive
+                                width: 2,
                               ),
-                              // ✅ Indicator Checklist
-                              Container(
-                                width: 24, height: 24,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: isSelected ? const Color(0xFF008BFF) : Colors.white.withOpacity(0.3),
-                                    width: 2,
-                                  ),
-                                  color: isSelected ? const Color(0xFF008BFF) : Colors.transparent,
-                                ),
-                                child: isSelected ? const Icon(Icons.check, size: 14, color: Colors.white) : null,
-                              ),
-                            ],
+                              color: isSelected
+                                  ? const Color(0xFF008BFF)
+                                  : Colors.transparent,
+                            ),
+                            child: isSelected
+                                ? const Icon(
+                                    Icons.check,
+                                    size: 14,
+                                    color: Colors.white,
+                                  )
+                                : null,
                           ),
-                        ),
-                      );
-                    },
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),

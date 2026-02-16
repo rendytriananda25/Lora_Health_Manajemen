@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class HistoryBMIDetailPage extends StatelessWidget {
   final Map<dynamic, dynamic> data;
@@ -11,6 +12,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
 
     // Format tanggal
     DateTime dt = DateTime.parse(
@@ -36,7 +38,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
     String status = (data['status'] ?? 'Normal').toString().toUpperCase();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.bgColor,
       body: Stack(
         children: [
           Column(
@@ -49,6 +51,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
                   weightVal,
                   heightVal,
                   lang,
+                  theme,
                 ),
               ),
 
@@ -62,11 +65,18 @@ class HistoryBMIDetailPage extends StatelessWidget {
                     vertical: 40,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF000000).withOpacity(0.85),
+                    color: theme.boxColor.withOpacity(0.95),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(40),
                     ),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, -10),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,13 +93,16 @@ class HistoryBMIDetailPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         formattedDate,
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: theme.textColor,
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      const Divider(color: Colors.white10, height: 40),
+                      Divider(
+                        color: theme.textColor.withOpacity(0.1),
+                        height: 40,
+                      ),
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -98,11 +111,13 @@ class HistoryBMIDetailPage extends StatelessWidget {
                             lang.translate('history.bmiScore'),
                             bmiScore,
                             lang.translate('history.bmiIndex'),
+                            theme,
                           ),
                           _buildStatItem(
                             lang.translate('history.bmiStatus'),
                             status,
                             lang.translate('history.bmiLevel'),
+                            theme,
                           ),
                         ],
                       ),
@@ -118,10 +133,10 @@ class HistoryBMIDetailPage extends StatelessWidget {
             top: 50,
             left: 20,
             child: CircleAvatar(
-              backgroundColor: Colors.black.withOpacity(0.5),
+              backgroundColor: theme.boxColor.withOpacity(0.5),
               child: IconButton(
                 onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                icon: Icon(Icons.arrow_back, color: theme.textColor),
               ),
             ),
           ),
@@ -135,6 +150,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
     String weightVal,
     String heightVal,
     LanguageProvider lang,
+    ThemeProvider theme,
   ) {
     Color bodyColor;
     if (status.contains('UNDERWEIGHT') || status.contains('KURANG')) {
@@ -151,7 +167,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFF1C1C1E),
+      color: theme.bgColor, // Adaptive Background
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -164,6 +180,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
               weightVal,
               "kg",
               Icons.monitor_weight_outlined,
+              theme,
             ),
           ),
           Positioned(
@@ -175,20 +192,23 @@ class HistoryBMIDetailPage extends StatelessWidget {
               heightVal,
               "cm",
               Icons.height_rounded,
+              theme,
             ),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 60),
+              // Use ColorFiltered or Icon if image doesn't support theme,
+              // but image is likely PNG. Providing a placeholder logic
               Image.asset(
                 'assets/images/bmi_character.png',
                 height: 220,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
-                  return const Icon(
+                  return Icon(
                     Icons.person,
-                    color: Colors.white24,
+                    color: theme.textColor.withOpacity(0.24),
                     size: 200,
                   );
                 },
@@ -226,26 +246,33 @@ class HistoryBMIDetailPage extends StatelessWidget {
     String value,
     String unit,
     IconData icon,
+    ThemeProvider theme,
   ) {
     return Column(
       children: [
-        Icon(icon, color: Colors.white24, size: 22),
+        Icon(icon, color: theme.textColor.withOpacity(0.24), size: 22),
         const SizedBox(height: 10),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: theme.textColor,
             fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(unit, style: const TextStyle(color: Colors.white38, fontSize: 10)),
+        Text(
+          unit,
+          style: TextStyle(
+            color: theme.textColor.withOpacity(0.38),
+            fontSize: 10,
+          ),
+        ),
         const SizedBox(height: 15),
         Expanded(
           child: Container(
             width: 12,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.03),
+              color: theme.textColor.withOpacity(0.03),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Column(
@@ -255,7 +282,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
                 (index) => Container(
                   width: index % 4 == 0 ? 10 : 5,
                   height: 1.5,
-                  color: Colors.white12,
+                  color: theme.textColor.withOpacity(0.12),
                 ),
               ),
             ),
@@ -264,8 +291,8 @@ class HistoryBMIDetailPage extends StatelessWidget {
         const SizedBox(height: 15),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white24,
+          style: TextStyle(
+            color: theme.textColor.withOpacity(0.24),
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
@@ -274,13 +301,18 @@ class HistoryBMIDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem(String label, String value, String unit) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    String unit,
+    ThemeProvider theme,
+  ) {
     return Column(
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white38,
+          style: TextStyle(
+            color: theme.textColor.withOpacity(0.38),
             fontSize: 10,
             fontWeight: FontWeight.bold,
           ),
@@ -288,13 +320,19 @@ class HistoryBMIDetailPage extends StatelessWidget {
         const SizedBox(height: 10),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: theme.textColor,
             fontSize: 22,
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(unit, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+        Text(
+          unit,
+          style: TextStyle(
+            color: theme.textColor.withOpacity(0.54),
+            fontSize: 10,
+          ),
+        ),
       ],
     );
   }

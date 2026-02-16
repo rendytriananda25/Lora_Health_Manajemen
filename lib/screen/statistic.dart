@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -270,18 +271,23 @@ class _StatisticsPageState extends State<StatisticsPage> {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
+    // Dynamic Feedback Color base on Theme
+    Color adaptiveFeedbackColor = feedbackColor;
+    if (!theme.isDarkMode && feedbackIcon == Icons.auto_graph) {
+      adaptiveFeedbackColor = theme.boxColor;
+    }
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
           lang.translate('stats.title'),
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: theme.textColor, fontWeight: FontWeight.bold),
         ),
-        leading: const BackButton(color: Colors.white),
+        leading: BackButton(color: theme.textColor),
       ),
       body: isLoading
           ? const Center(
@@ -291,7 +297,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
           ? Center(
               child: Text(
                 lang.translate('stats.noData'),
-                style: const TextStyle(color: Colors.white54),
+                style: TextStyle(color: theme.textColor.withOpacity(0.54)),
               ),
             )
           : SingleChildScrollView(
@@ -317,12 +323,12 @@ class _StatisticsPageState extends State<StatisticsPage> {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? const Color(0xFF008BFF)
-                                  : const Color(0xFF1C1C1E),
+                                  : theme.boxColor,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: isSelected
                                     ? const Color(0xFF008BFF)
-                                    : Colors.white12,
+                                    : theme.textColor.withOpacity(0.1),
                               ),
                             ),
                             child: Text(
@@ -330,7 +336,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                               style: TextStyle(
                                 color: isSelected
                                     ? Colors.white
-                                    : Colors.white54,
+                                    : theme.textColor.withOpacity(0.54),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -343,7 +349,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   const SizedBox(height: 20),
 
                   // ✅ 2. WIDGET BARU: KARTU NOTIFIKASI / INSIGHT
-                  if (showFeedback) _buildPerformanceInsight(),
+                  if (showFeedback)
+                    _buildPerformanceInsight(theme, adaptiveFeedbackColor),
 
                   const SizedBox(height: 20),
 
@@ -356,6 +363,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           "$totalSessions",
                           Icons.fitness_center,
                           Colors.orange,
+                          theme,
                         ),
                       ),
                       const SizedBox(width: 15),
@@ -365,6 +373,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                           "$totalCalories",
                           Icons.local_fire_department,
                           Colors.redAccent,
+                          theme,
                         ),
                       ),
                     ],
@@ -382,6 +391,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                             "${totalDistance.toStringAsFixed(1)} km",
                             Icons.map,
                             Colors.greenAccent,
+                            theme,
                           ),
                         ),
                         const SizedBox(width: 15),
@@ -391,6 +401,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                             "$totalDurationMin ${lang.translate('stats.min')}",
                             Icons.timer,
                             Colors.blueAccent,
+                            theme,
                           ),
                         ),
                       ],
@@ -403,6 +414,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                         "$totalDurationMin ${lang.translate('stats.min')}",
                         Icons.timer,
                         Colors.blueAccent,
+                        theme,
                       ),
                     ),
 
@@ -412,14 +424,14 @@ class _StatisticsPageState extends State<StatisticsPage> {
                     lang
                         .translate('stats.calorieChart')
                         .replaceAll('{sport}', selectedSport),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.textColor,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 15),
-                  _buildSimpleChart(),
+                  _buildSimpleChart(theme),
 
                   const SizedBox(height: 30),
 
@@ -427,8 +439,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
                     lang
                         .translate('stats.bestRecord')
                         .replaceAll('{sport}', selectedSport),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.textColor,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -436,9 +448,9 @@ class _StatisticsPageState extends State<StatisticsPage> {
                   const SizedBox(height: 15),
 
                   if (selectedSport == "HOME WORKOUT")
-                    _buildHomeWorkoutRecords()
+                    _buildHomeWorkoutRecords(theme)
                   else
-                    _buildCardioRecords(),
+                    _buildCardioRecords(theme),
 
                   const SizedBox(height: 50),
                 ],
@@ -448,13 +460,13 @@ class _StatisticsPageState extends State<StatisticsPage> {
   }
 
   // ✅ WIDGET TAMPILAN NOTIFIKASI / INSIGHT
-  Widget _buildPerformanceInsight() {
+  Widget _buildPerformanceInsight(ThemeProvider theme, Color bgColor) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: feedbackColor, // Warna berubah sesuai performa
+        color: bgColor, // Warna berubah sesuai performa
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: theme.textColor.withOpacity(0.1)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -474,8 +486,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
               children: [
                 Text(
                   feedbackTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -483,8 +495,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
                 const SizedBox(height: 5),
                 Text(
                   feedbackMessage,
-                  style: const TextStyle(
-                    color: Colors.white70,
+                  style: TextStyle(
+                    color: theme.textColor.withOpacity(0.7),
                     fontSize: 13,
                     height: 1.4,
                   ),
@@ -497,13 +509,19 @@ class _StatisticsPageState extends State<StatisticsPage> {
     );
   }
 
-  Widget _buildStatCard(String title, String val, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String title,
+    String val,
+    IconData icon,
+    Color color,
+    ThemeProvider theme,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
+        color: theme.boxColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: theme.textColor.withOpacity(0.05)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,22 +530,25 @@ class _StatisticsPageState extends State<StatisticsPage> {
           const SizedBox(height: 15),
           Text(
             val,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: theme.textColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             title,
-            style: const TextStyle(color: Colors.white54, fontSize: 12),
+            style: TextStyle(
+              color: theme.textColor.withOpacity(0.54),
+              fontSize: 12,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSimpleChart() {
+  Widget _buildSimpleChart(ThemeProvider theme) {
     double maxValue = 100;
     if (chartData.isNotEmpty) {
       double maxFound = 0;
@@ -542,9 +563,9 @@ class _StatisticsPageState extends State<StatisticsPage> {
       height: 180,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
+        color: theme.boxColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: theme.textColor.withOpacity(0.05)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -553,15 +574,17 @@ class _StatisticsPageState extends State<StatisticsPage> {
           double val = (e['value'] as num).toDouble();
           double height = (val / maxValue) * 100;
 
-          Color barColor = val > 0 ? const Color(0xFF008BFF) : Colors.white10;
+          Color barColor = val > 0
+              ? const Color(0xFF008BFF)
+              : theme.textColor.withOpacity(0.1);
 
           return Column(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               Text(
                 val > 0 ? val.toInt().toString() : "-",
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: theme.textColor,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -580,7 +603,10 @@ class _StatisticsPageState extends State<StatisticsPage> {
               const SizedBox(height: 8),
               Text(
                 e['label'],
-                style: const TextStyle(color: Colors.white38, fontSize: 10),
+                style: TextStyle(
+                  color: theme.textColor.withOpacity(0.38),
+                  fontSize: 10,
+                ),
               ),
             ],
           );
@@ -589,23 +615,21 @@ class _StatisticsPageState extends State<StatisticsPage> {
     );
   }
 
-  Widget _buildHomeWorkoutRecords() {
+  Widget _buildHomeWorkoutRecords(ThemeProvider theme) {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     if (maxRepsRecord.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E),
+          color: theme.boxColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white10),
+          border: Border.all(color: theme.textColor.withOpacity(0.1)),
         ),
         child: Center(
           child: Text(
-            Provider.of<LanguageProvider>(
-              context,
-              listen: false,
-            ).translate('stats.noMovementRecord'),
-            style: const TextStyle(color: Colors.white54),
+            lang.translate('stats.noMovementRecord'),
+            style: TextStyle(color: theme.textColor.withOpacity(0.54)),
           ),
         ),
       );
@@ -617,9 +641,9 @@ class _StatisticsPageState extends State<StatisticsPage> {
           margin: const EdgeInsets.only(bottom: 10),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C1C1E),
+            color: theme.boxColor,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white10),
+            border: Border.all(color: theme.textColor.withOpacity(0.1)),
           ),
           child: Row(
             children: [
@@ -632,8 +656,8 @@ class _StatisticsPageState extends State<StatisticsPage> {
               Expanded(
                 child: Text(
                   e.key,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -654,19 +678,22 @@ class _StatisticsPageState extends State<StatisticsPage> {
     );
   }
 
-  Widget _buildCardioRecords() {
+  Widget _buildCardioRecords(ThemeProvider theme) {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1C1C1E),
+        color: theme.boxColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: theme.textColor.withOpacity(0.1)),
       ),
       child: Row(
         children: [
           Icon(
             Icons.emoji_events,
-            color: maxDistanceRecord > 0 ? Colors.amber : Colors.white24,
+            color: maxDistanceRecord > 0
+                ? Colors.amber
+                : theme.textColor.withOpacity(0.24),
             size: 40,
           ),
           const SizedBox(width: 20),
@@ -674,18 +701,18 @@ class _StatisticsPageState extends State<StatisticsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                Provider.of<LanguageProvider>(
-                  context,
-                  listen: false,
-                ).translate('stats.longestDistance'),
-                style: const TextStyle(color: Colors.white54, fontSize: 12),
+                lang.translate('stats.longestDistance'),
+                style: TextStyle(
+                  color: theme.textColor.withOpacity(0.54),
+                  fontSize: 12,
+                ),
               ),
               Text(
                 maxDistanceRecord > 0
                     ? "${maxDistanceRecord.toStringAsFixed(2)} KM"
                     : "-- KM",
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: theme.textColor,
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                 ),

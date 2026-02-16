@@ -1,5 +1,8 @@
+import 'dart:ui'; // For BackdropFilter
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // ✅ WAJIB: Buat Haptic Feedback (Getar)
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/map/map_pages.dart';
 import 'package:lora_1/features/history/history_page.dart';
 import 'package:lora_1/features/dashboard/dashborad.dart';
@@ -35,10 +38,11 @@ class _NavbarState extends State<Navbar> {
   @override
   Widget build(BuildContext context) {
     _pages[_selectedIndex] ??= _buildPage(_selectedIndex);
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      extendBody: true, // Biar background map nyatu sama navbar
+      backgroundColor: themeProvider.bgColor, // Adaptive Background
+      extendBody: true, // Allow body to extend behind navbar
       body: Stack(
         children: [
           Positioned.fill(
@@ -50,131 +54,166 @@ class _NavbarState extends State<Navbar> {
               ),
             ),
           ),
-          _buildBottomNavbar(),
+
+          // Custom Glassmorphism Navbar
+          Positioned(
+            bottom: 30,
+            left: 20,
+            right: 20,
+            child: _buildGlassNavbar(themeProvider),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomNavbar() {
-    return Positioned(
-      bottom: 30, left: 20, right: 20,
-      child: Container(
-        height: 70,
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E).withOpacity(0.95),
-          borderRadius: BorderRadius.circular(35),
-          border: Border.all(color: Colors.white.withOpacity(0.1), width: 1.5),
-          // Shadow hitam di bawah navbar tetap ada biar kelihatan melayang (depth), 
-          // tapi tidak "glow"
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 20, offset: const Offset(0, 5))
-          ],
-        ),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            double itemWidth = constraints.maxWidth / 4;
-            return Stack(
-              children: [
-                // 🔵 INDIKATOR BIRU (CLEAN VERSION - NO GLOW)
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.fastOutSlowIn, 
-                  left: _selectedIndex * itemWidth,
-                  top: 8, bottom: 8, width: itemWidth,
-                  child: Center(
+  Widget _buildGlassNavbar(ThemeProvider theme) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(35),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Blur Effect
+        child: Container(
+          height: 70,
+          decoration: BoxDecoration(
+            // Glass Color: Semi-transparent based on theme
+            color: (theme.isDarkMode ? const Color(0xFF1C1C1E) : Colors.white)
+                .withOpacity(0.75),
+            borderRadius: BorderRadius.circular(35),
+            border: Border.all(
+              color: (theme.isDarkMode ? Colors.white : Colors.black)
+                  .withOpacity(0.1),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              double itemWidth = constraints.maxWidth / 4;
+              return Stack(
+                children: [
+                  // 🔵 MOVING INDICATOR (Blue Circle)
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.fastOutSlowIn,
+                    left:
+                        _selectedIndex * itemWidth +
+                        (itemWidth / 2 -
+                            25), // Center it: (ItemWidth/2) - (CircleWidth/2)
+                    top: 10, // (70 - 50) / 2 = 10 vertical centering
+                    height: 50,
+                    width: 50,
                     child: Container(
-                      width: 50, height: 50,
-                      decoration: BoxDecoration(
-                        color: _selectedIndex == 1
-                            ? Colors.transparent
-                            : const Color(0xFF008BFF),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF008BFF),
                         shape: BoxShape.circle,
-                        // ✅ BOXSHADOW GLOW DIHAPUS TOTAL DI SINI
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color(0x66008BFF),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                
-                // 🔘 ICON-ICON NAVBAR
-                Row(
-                  children: [
-                    _buildNavItem(Icons.home_rounded, 0, itemWidth),
-                    _buildRecordNavItem(itemWidth),
-                    _buildNavItem(Icons.history_rounded, 2, itemWidth),
-                    _buildNavItem(Icons.monitor_weight_rounded, 3, itemWidth),
-                  ],
-                ),
-              ],
-            );
-          },
+
+                  // 🔘 ICONS ROW
+                  Row(
+                    children: [
+                      _buildNavItem(Icons.home_rounded, 0, itemWidth, theme),
+                      _buildNavItem(
+                        Icons.fiber_manual_record_rounded,
+                        1,
+                        itemWidth,
+                        theme,
+                        isRec: true,
+                      ), // Changed icon to verify it's not the REC text circle
+                      _buildNavItem(Icons.history_rounded, 2, itemWidth, theme),
+                      _buildNavItem(
+                        Icons.monitor_weight_rounded,
+                        3,
+                        itemWidth,
+                        theme,
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(IconData icon, int index, double width) {
+  Widget _buildNavItem(
+    IconData icon,
+    int index,
+    double width,
+    ThemeProvider theme, {
+    bool isRec = false,
+  }) {
     bool isActive = _selectedIndex == index;
+
+    // Logic for REC button special appearance?
+    // User's previous code had a specific _buildRecordNavItem with "REC" text.
+    // Let's preserve the Text "REC" if it's index 1, or use Icon.
+    // Screenshot shows "REC" text inside a circle.
+
     return SizedBox(
       width: width,
+      height: 70,
       child: GestureDetector(
         onTap: () {
-          // ✅ Tambah Getar Halus Biar Satisfying
           HapticFeedback.selectionClick();
           setState(() => _selectedIndex = index);
         },
         behavior: HitTestBehavior.translucent,
         child: Center(
-          // Animasi Icon scale sedikit pas aktif
-          child: AnimatedScale(
-            scale: isActive ? 1.1 : 1.0,
-            duration: const Duration(milliseconds: 200),
-            child: Icon(
-              icon, 
-              color: isActive ? Colors.white : Colors.white38, 
-              size: 26 
-            ),
-          ),
+          child: isRec
+              ? _buildRecContent(isActive)
+              : AnimatedScale(
+                  scale: isActive ? 1.0 : 0.9, // Slight zoom effect
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    icon,
+                    // Active: White (on blue circle). Inactive: Theme text color (faded)
+                    color: isActive
+                        ? Colors.white
+                        : theme.textColor.withOpacity(0.5),
+                    size: 28,
+                  ),
+                ),
         ),
       ),
     );
   }
 
-  Widget _buildRecordNavItem(double width) {
-    final isActive = _selectedIndex == 1;
-    return SizedBox(
-      width: width,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() => _selectedIndex = 1);
-        },
-        behavior: HitTestBehavior.translucent,
-        child: Center(
-          child: AnimatedScale(
-            scale: isActive ? 1.08 : 1.0,
-            duration: const Duration(milliseconds: 200),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isActive
-                    ? const Color(0xFF008BFF)
-                    : Colors.white38,
-              ),
-              alignment: Alignment.center,
-              child: const Text(
-                "REC",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                ),
-              ),
-            ),
-          ),
+  Widget _buildRecContent(bool isActive) {
+    // If active: White text on Blue circle (Background circle handled by AnimatedPositioned)
+    // If inactive: "REC" text without circle? Or grey circle?
+    // Previous implementation had a grey circle for inactive.
+    // But now we have a moving blue indicator.
+    // If we use the moving blue indicator for ALL items, then:
+    // When Index 1 is active, Blue Circle is behind it. Text should be white.
+    // When Index 1 is inactive, No Circle behind it. Text should be Grey.
+
+    return AnimatedScale(
+      scale: isActive ? 1.0 : 0.9,
+      duration: const Duration(milliseconds: 200),
+      child: Text(
+        "REC",
+        style: TextStyle(
+          color: isActive ? Colors.white : Colors.grey, // Theme color?
+          fontSize: 14,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 1.0,
         ),
       ),
     );

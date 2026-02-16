@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:audioplayers/audioplayers.dart'; 
+import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class BMIPage extends StatefulWidget {
   const BMIPage({super.key});
@@ -18,10 +19,10 @@ class BMIPage extends StatefulWidget {
 class _BMIPageState extends State<BMIPage> {
   final PageController _pageController = PageController();
   final AudioPlayer _audioPlayer = AudioPlayer();
-  
+
   // ✅ VARIABEL ANTI MACET
   DateTime _lastPlayTime = DateTime.now();
-  
+
   int _currentPage = 0;
   int _height = 170;
   int _weight = 60;
@@ -45,22 +46,22 @@ class _BMIPageState extends State<BMIPage> {
   // ✅ FUNGSI SUARA "TIK-TIK" (FIXED & TESTED)
   void _playPremiumTick() async {
     final now = DateTime.now();
-    
+
     // Rem dikit (50ms) biar gak "keselek" kalau scroll super ngebut
     if (now.difference(_lastPlayTime).inMilliseconds < 50) {
-      return; 
+      return;
     }
     _lastPlayTime = now;
 
     try {
       // 1. Stop paksa biar suara sebelumnya kepotong (reset ke 0)
-      await _audioPlayer.stop(); 
-      
+      await _audioPlayer.stop();
+
       // 2. Play ulang dari awal (Gunakan PLAY, bukan RESUME)
       await _audioPlayer.play(AssetSource('sounds/click.wav'));
-      
+
       // 3. Getaran halus biar kerasa fisik
-      HapticFeedback.selectionClick(); 
+      HapticFeedback.selectionClick();
     } catch (e) {
       debugPrint("Audio Error: $e");
     }
@@ -70,7 +71,9 @@ class _BMIPageState extends State<BMIPage> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       try {
-        final dbRef = FirebaseDatabase.instance.ref("users/${user.uid}/history");
+        final dbRef = FirebaseDatabase.instance.ref(
+          "users/${user.uid}/history",
+        );
         await dbRef.push().set({
           'activity': "Cek BMI: ${_bmiResult.toStringAsFixed(1)}",
           'time': DateTime.now().toIso8601String(),
@@ -105,13 +108,16 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   void _nextPage() {
-    HapticFeedback.mediumImpact(); 
+    HapticFeedback.mediumImpact();
     // Bunyi tombol Next (pasti bunyi)
     _audioPlayer.stop();
     _audioPlayer.play(AssetSource('sounds/click.wav'));
 
     if (_currentPage < 2) {
-      _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOutQuart);
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutQuart,
+      );
       if (_currentPage == 1) _calculateBMI();
       setState(() => _currentPage++);
     }
@@ -119,7 +125,10 @@ class _BMIPageState extends State<BMIPage> {
 
   void _prevPage() {
     if (_currentPage > 0) {
-      _pageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOutQuart);
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOutQuart,
+      );
       setState(() => _currentPage--);
     }
   }
@@ -128,8 +137,10 @@ class _BMIPageState extends State<BMIPage> {
   Widget build(BuildContext context) {
     // Agar halaman ikut rebuild saat bahasa berubah
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.bgColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -139,14 +150,23 @@ class _BMIPageState extends State<BMIPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   if (_currentPage > 0)
-                    IconButton(onPressed: _prevPage, icon: const Icon(Icons.arrow_back_ios, color: Colors.white))
+                    IconButton(
+                      onPressed: _prevPage,
+                      icon: Icon(Icons.arrow_back_ios, color: theme.textColor),
+                    )
                   else
                     const SizedBox(width: 40),
                   Text(
-                    _currentPage == 0 ? lang.translate('bmi.selectHeight') 
-                    : _currentPage == 1 ? lang.translate('bmi.selectWeight') 
-                    : lang.translate('bmi.result'),
-                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                    _currentPage == 0
+                        ? lang.translate('bmi.selectHeight')
+                        : _currentPage == 1
+                        ? lang.translate('bmi.selectWeight')
+                        : lang.translate('bmi.result'),
+                    style: TextStyle(
+                      color: theme.textColor,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(width: 40),
                 ],
@@ -157,9 +177,9 @@ class _BMIPageState extends State<BMIPage> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _buildHeightPage(lang),
-                  _buildWeightPage(lang),
-                  _buildResultPage(lang),
+                  _buildHeightPage(lang, theme),
+                  _buildWeightPage(lang, theme),
+                  _buildResultPage(lang, theme),
                 ],
               ),
             ),
@@ -171,7 +191,7 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   // --- HALAMAN 1: TINGGI BADAN ---
-  Widget _buildHeightPage(LanguageProvider lang) {
+  Widget _buildHeightPage(LanguageProvider lang, ThemeProvider theme) {
     double normalizedHeight = (_height - 100) / 150;
     if (normalizedHeight < 0) normalizedHeight = 0;
     if (normalizedHeight > 1) normalizedHeight = 1;
@@ -179,7 +199,10 @@ class _BMIPageState extends State<BMIPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        GlassCard(padding: const EdgeInsets.all(5), child: _buildToggleBtn("Centimeter", true)),
+        GlassCard(
+          padding: const EdgeInsets.all(5),
+          child: _buildToggleBtn("Centimeter", true),
+        ),
         const Spacer(),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -193,7 +216,9 @@ class _BMIPageState extends State<BMIPage> {
                 perspective: 0.005,
                 diameterRatio: 1.2,
                 physics: const FixedExtentScrollPhysics(),
-                controller: FixedExtentScrollController(initialItem: 250 - _height),
+                controller: FixedExtentScrollController(
+                  initialItem: 250 - _height,
+                ),
                 onSelectedItemChanged: (index) {
                   // ✅ PANGGIL FUNGSI FIX DISINI
                   _playPremiumTick();
@@ -210,16 +235,22 @@ class _BMIPageState extends State<BMIPage> {
                           Container(
                             height: 2,
                             width: isSelected ? 40 : 20,
-                            color: isSelected ? const Color(0xFF008BFF) : Colors.white24,
+                            color: isSelected
+                                ? const Color(0xFF008BFF)
+                                : theme.textColor.withOpacity(0.24),
                           ),
                           const SizedBox(width: 10),
                           if (isSelected || value % 10 == 0)
                             Text(
                               "$value",
                               style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.white24,
+                                color: isSelected
+                                    ? theme.textColor
+                                    : theme.textColor.withOpacity(0.24),
                                 fontSize: isSelected ? 24 : 14,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
                               ),
                             ),
                         ],
@@ -231,19 +262,32 @@ class _BMIPageState extends State<BMIPage> {
             ),
             const SizedBox(width: 20),
             SizedBox(
-              height: 400, width: 150,
+              height: 400,
+              width: 150,
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
-                  Opacity(opacity: 0.1, child: CustomPaint(size: const Size(120, 350), painter: HumanPainter(color: Colors.white))),
+                  Opacity(
+                    opacity: 0.1,
+                    child: CustomPaint(
+                      size: const Size(120, 350),
+                      painter: HumanPainter(color: theme.textColor),
+                    ),
+                  ),
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 100), 
+                    duration: const Duration(milliseconds: 100),
                     curve: Curves.easeOut,
-                    height: 150 + (normalizedHeight * 200), 
-                    width: 120, 
+                    height: 150 + (normalizedHeight * 200),
+                    width: 120,
                     child: FittedBox(
                       fit: BoxFit.contain,
-                      child: SizedBox(width: 100, height: 300, child: CustomPaint(painter: HumanPainter(color: const Color(0xFF008BFF)))),
+                      child: SizedBox(
+                        width: 100,
+                        height: 300,
+                        child: CustomPaint(
+                          painter: HumanPainter(color: const Color(0xFF008BFF)),
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -259,38 +303,57 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   // --- HALAMAN 2: BERAT BADAN ---
-  Widget _buildWeightPage(LanguageProvider lang) {
+  Widget _buildWeightPage(LanguageProvider lang, ThemeProvider theme) {
     return Column(
       children: [
         const SizedBox(height: 20),
-        GlassCard(padding: const EdgeInsets.all(5), child: _buildToggleBtn("Kilogram", true)),
+        GlassCard(
+          padding: const EdgeInsets.all(5),
+          child: _buildToggleBtn("Kilogram", true),
+        ),
         const Spacer(),
         SizedBox(
-          height: 250, width: 300,
+          height: 250,
+          width: 300,
           child: CustomPaint(
-            painter: GaugePainter(value: _weight.toDouble(), min: 30, max: 150),
+            painter: GaugePainter(
+              value: _weight.toDouble(),
+              min: 30,
+              max: 150,
+              emptyColor: theme.textColor.withOpacity(0.1),
+            ),
             child: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const SizedBox(height: 80),
-                  Text("$_weight KG", style: const TextStyle(color: Colors.white, fontSize: 42, fontWeight: FontWeight.bold)),
+                  Text(
+                    "$_weight KG",
+                    style: TextStyle(
+                      color: theme.textColor,
+                      fontSize: 42,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
         ),
-        
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: const Color(0xFF008BFF),
-              thumbColor: Colors.white,
+              inactiveTrackColor: theme.textColor.withOpacity(0.1),
+              thumbColor: theme.textColor,
               trackHeight: 10,
             ),
             child: Slider(
-              value: _weight.toDouble(), min: 30, max: 150,
+              value: _weight.toDouble(),
+              min: 30,
+              max: 150,
               onChanged: (val) {
                 if (val.toInt() != _weight) {
                   // ✅ PANGGIL FUNGSI FIX DISINI
@@ -309,7 +372,7 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   // --- HALAMAN 3: RESULT ---
-  Widget _buildResultPage(LanguageProvider lang) {
+  Widget _buildResultPage(LanguageProvider lang, ThemeProvider theme) {
     return Column(
       children: [
         const SizedBox(height: 20),
@@ -317,39 +380,72 @@ class _BMIPageState extends State<BMIPage> {
           alignment: Alignment.center,
           children: [
             SizedBox(
-              width: 250, height: 250,
+              width: 250,
+              height: 250,
               child: CircularProgressIndicator(
                 value: _bmiResult / 40,
                 strokeWidth: 20,
-                backgroundColor: Colors.white10,
+                backgroundColor: theme.textColor.withOpacity(0.1),
                 valueColor: AlwaysStoppedAnimation<Color>(_statusColor),
                 strokeCap: StrokeCap.round,
               ),
             ),
             Column(
               children: [
-                Text(_bmiResult.toStringAsFixed(1), style: const TextStyle(color: Colors.white, fontSize: 52, fontWeight: FontWeight.bold)),
-                Text(_bmiStatus.toUpperCase(), style: TextStyle(color: _statusColor, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5)),
+                Text(
+                  _bmiResult.toStringAsFixed(1),
+                  style: TextStyle(
+                    color: theme.textColor,
+                    fontSize: 52,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  _bmiStatus.toUpperCase(),
+                  style: TextStyle(
+                    color: _statusColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
+                ),
               ],
-            )
+            ),
           ],
         ),
         const SizedBox(height: 40),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            _buildStatBox(lang.translate('bmi.age'), "$_age"),
-            Container(width: 1, height: 40, color: Colors.white24),
-            _buildStatBox(lang.translate('bmi.height'), "$_height"),
-            Container(width: 1, height: 40, color: Colors.white24),
-            _buildStatBox(lang.translate('bmi.weight'), "$_weight"),
+            _buildStatBox(lang.translate('bmi.age'), "$_age", theme),
+            Container(
+              width: 1,
+              height: 40,
+              color: theme.textColor.withOpacity(0.24),
+            ),
+            _buildStatBox(lang.translate('bmi.height'), "$_height", theme),
+            Container(
+              width: 1,
+              height: 40,
+              color: theme.textColor.withOpacity(0.24),
+            ),
+            _buildStatBox(lang.translate('bmi.weight'), "$_weight", theme),
           ],
         ),
         const Spacer(),
-        _buildNextButton(lang.translate('bmi.recalculate'), onTap: () {
-          _pageController.animateToPage(0, duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
-          setState(() { _currentPage = 0; });
-        }),
+        _buildNextButton(
+          lang.translate('bmi.recalculate'),
+          onTap: () {
+            _pageController.animateToPage(
+              0,
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeInOut,
+            );
+            setState(() {
+              _currentPage = 0;
+            });
+          },
+        ),
         const SizedBox(height: 50),
       ],
     );
@@ -358,8 +454,17 @@ class _BMIPageState extends State<BMIPage> {
   Widget _buildToggleBtn(String text, bool isActive) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(color: isActive ? const Color(0xFF008BFF) : Colors.transparent, borderRadius: BorderRadius.circular(12)),
-      child: Text(text, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      decoration: BoxDecoration(
+        color: isActive ? const Color(0xFF008BFF) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        text,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 
@@ -368,21 +473,51 @@ class _BMIPageState extends State<BMIPage> {
       onTap: onTap ?? _nextPage,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 30),
-        width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 18),
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 18),
         decoration: BoxDecoration(
-          color: const Color(0xFF008BFF), borderRadius: BorderRadius.circular(20),
-          boxShadow: [BoxShadow(color: const Color(0xFF008BFF).withOpacity(0.4), blurRadius: 20, offset: const Offset(0, 10))]
+          color: const Color(0xFF008BFF),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF008BFF).withOpacity(0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        child: Center(child: Text(text, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))),
+        child: Center(
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildStatBox(String label, String value) {
+  Widget _buildStatBox(String label, String value, ThemeProvider theme) {
     return Column(
       children: [
-        Text(value, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 12)),
+        Text(
+          value,
+          style: TextStyle(
+            color: theme.textColor,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: theme.textColor.withOpacity(0.38),
+            fontSize: 12,
+          ),
+        ),
       ],
     );
   }
@@ -390,45 +525,110 @@ class _BMIPageState extends State<BMIPage> {
 
 // --- PAINTERS & GLASSCARD ---
 class HumanPainter extends CustomPainter {
-  final Color color; HumanPainter({required this.color});
+  final Color color;
+  HumanPainter({required this.color});
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = color..style = PaintingStyle.fill;
-    final w = size.width; final h = size.height;
-    final headRect = Rect.fromCenter(center: Offset(w / 2, h * 0.12), width: w * 0.25, height: w * 0.25);
-    final bodyPath = Path()..moveTo(w * 0.25, h * 0.25)..lineTo(w * 0.75, h * 0.25)..lineTo(w * 0.70, h * 0.60)..lineTo(w * 0.30, h * 0.60)..close();
-    final legsPath = Path()..moveTo(w * 0.32, h * 0.60)..lineTo(w * 0.48, h * 0.60)..lineTo(w * 0.48, h * 0.95)..lineTo(w * 0.32, h * 0.95)..close();
-    legsPath..moveTo(w * 0.52, h * 0.60)..lineTo(w * 0.68, h * 0.60)..lineTo(w * 0.68, h * 0.95)..lineTo(w * 0.52, h * 0.95)..close();
-    canvas.drawOval(headRect, paint); canvas.drawPath(bodyPath, paint); canvas.drawPath(legsPath, paint);
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    final w = size.width;
+    final h = size.height;
+    final headRect = Rect.fromCenter(
+      center: Offset(w / 2, h * 0.12),
+      width: w * 0.25,
+      height: w * 0.25,
+    );
+    final bodyPath = Path()
+      ..moveTo(w * 0.25, h * 0.25)
+      ..lineTo(w * 0.75, h * 0.25)
+      ..lineTo(w * 0.70, h * 0.60)
+      ..lineTo(w * 0.30, h * 0.60)
+      ..close();
+    final legsPath = Path()
+      ..moveTo(w * 0.32, h * 0.60)
+      ..lineTo(w * 0.48, h * 0.60)
+      ..lineTo(w * 0.48, h * 0.95)
+      ..lineTo(w * 0.32, h * 0.95)
+      ..close();
+    legsPath
+      ..moveTo(w * 0.52, h * 0.60)
+      ..lineTo(w * 0.68, h * 0.60)
+      ..lineTo(w * 0.68, h * 0.95)
+      ..lineTo(w * 0.52, h * 0.95)
+      ..close();
+    canvas.drawOval(headRect, paint);
+    canvas.drawPath(bodyPath, paint);
+    canvas.drawPath(legsPath, paint);
   }
-  @override bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class GaugePainter extends CustomPainter {
-  final double value; final double min; final double max;
-  GaugePainter({required this.value, required this.min, required this.max});
+  final double value;
+  final double min;
+  final double max;
+  final Color emptyColor;
+  GaugePainter({
+    required this.value,
+    required this.min,
+    required this.max,
+    required this.emptyColor,
+  });
   @override
   void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height * 0.7); final radius = size.width * 0.45;
-    final bgPaint = Paint()..color = Colors.white10..style = PaintingStyle.stroke..strokeWidth = 15..strokeCap = StrokeCap.round;
-    canvas.drawArc(Rect.fromCircle(center: center, radius: radius), pi, pi, false, bgPaint);
+    final center = Offset(size.width / 2, size.height * 0.7);
+    final radius = size.width * 0.45;
+    final bgPaint = Paint()
+      ..color = emptyColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 15
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      pi,
+      pi,
+      false,
+      bgPaint,
+    );
     final progress = (value - min) / (max - min);
     final needleAngle = pi + (progress * pi);
-    final needleEnd = Offset(center.dx + (radius - 10) * cos(needleAngle), center.dy + (radius - 10) * sin(needleAngle));
-    canvas.drawLine(center, needleEnd, Paint()..color = const Color(0xFF008BFF)..strokeWidth = 6..strokeCap = StrokeCap.round);
+    final needleEnd = Offset(
+      center.dx + (radius - 10) * cos(needleAngle),
+      center.dy + (radius - 10) * sin(needleAngle),
+    );
+    canvas.drawLine(
+      center,
+      needleEnd,
+      Paint()
+        ..color = const Color(0xFF008BFF)
+        ..strokeWidth = 6
+        ..strokeCap = StrokeCap.round,
+    );
   }
-  @override bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 class GlassCard extends StatelessWidget {
-  final Widget child; final EdgeInsetsGeometry? padding;
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
   const GlassCard({super.key, required this.child, this.padding});
   @override
   Widget build(BuildContext context) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Container(
-      padding: padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      decoration: BoxDecoration(color: const Color(0xFF1C1C1E), borderRadius: BorderRadius.circular(20), border: Border.all(color: Colors.white.withOpacity(0.1))), 
-      child: child
+      padding:
+          padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(
+        color: theme.boxColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.textColor.withOpacity(0.1)),
+      ),
+      child: child,
     );
   }
 }

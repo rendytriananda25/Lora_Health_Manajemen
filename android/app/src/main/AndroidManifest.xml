@@ -19,6 +19,7 @@
         android:label="Lora Health Management"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
+        android:usesCleartextTraffic="true"
         android:enableOnBackInvokedCallback="true">
 
         <meta-data 
@@ -83,5 +84,20 @@
             <data android:mimeType="text/plain"/>
         </intent>
         <package android:name="com.facebook.katana" />
+        <!-- 🔥 FIX: Allow URL Launcher (Http, Https, Youtube) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="youtube" />
+        </intent>
     </queries>
 </manifest>

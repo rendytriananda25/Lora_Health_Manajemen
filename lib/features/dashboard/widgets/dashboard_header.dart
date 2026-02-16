@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class DashboardHeader extends StatelessWidget {
   final String userName;
@@ -18,16 +19,18 @@ class DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           padding: const EdgeInsets.fromLTRB(20, 50, 20, 15),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.8),
+            color: theme.bgColor.withOpacity(0.9),
             border: Border(
               bottom: BorderSide(
-                color: Colors.white.withOpacity(0.08),
+                color: theme.textColor.withOpacity(0.08),
                 width: 1,
               ),
             ),
@@ -38,12 +41,15 @@ class DashboardHeader extends StatelessWidget {
                 onTap: onProfileTap,
                 child: CircleAvatar(
                   radius: 22,
-                  backgroundColor: const Color(0xFF1C1C1E),
+                  backgroundColor: theme.boxColor,
                   backgroundImage: user?.photoURL != null
                       ? NetworkImage(user!.photoURL!)
                       : null,
                   child: user?.photoURL == null
-                      ? const Icon(Icons.person, color: Colors.white38)
+                      ? Icon(
+                          Icons.person,
+                          color: theme.textColor.withOpacity(0.38),
+                        )
                       : null,
                 ),
               ),
@@ -52,11 +58,11 @@ class DashboardHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "LORA HEALTH MANAGEMENT",
                       style: TextStyle(
                         fontSize: 10,
-                        color: Colors.white54,
+                        color: theme.textColor.withOpacity(0.54),
                         letterSpacing: 2,
                         fontWeight: FontWeight.bold,
                       ),
@@ -64,10 +70,10 @@ class DashboardHeader extends StatelessWidget {
                     Text(
                       "${lang.translate('dashboard.hello')}, $userName",
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: theme.textColor,
                       ),
                     ),
                   ],

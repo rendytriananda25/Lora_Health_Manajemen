@@ -1,74 +1,100 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
-class SyncedSuccessDialog extends StatelessWidget {
-  final String message;
-  final VoidCallback onClose;
-  const SyncedSuccessDialog({
+class ConfirmStopDialog extends StatelessWidget {
+  final VoidCallback onCancel;
+  final VoidCallback onConfirm;
+
+  const ConfirmStopDialog({
     super.key,
-    required this.message,
-    required this.onClose,
+    required this.onCancel,
+    required this.onConfirm,
   });
 
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
-        padding: const EdgeInsets.all(30),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
+      backgroundColor: theme.boxColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(25),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(15),
-              decoration: const BoxDecoration(
-                color: Colors.green,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.redAccent.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.check_rounded,
-                color: Colors.white,
-                size: 40,
+                Icons.warning_amber_rounded,
+                color: Colors.redAccent,
+                size: 30,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Text(
-              lang.translate('map.sessionSaved'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
+              lang.translate('map.stopSession'),
+              style: TextStyle(
+                color: theme.textColor,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 10),
             Text(
-              message,
+              lang.translate('map.stopConfirm'),
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(
+                color: theme.textColor.withOpacity(0.54),
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 25),
-            ElevatedButton(
-              onPressed: onClose,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF008BFF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: onCancel,
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: Text(
+                      lang.translate('map.cancel'),
+                      style: TextStyle(
+                        color: theme.textColor.withOpacity(0.54),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              child: Text(
-                lang.translate('errors.ok'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: onConfirm,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.redAccent,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      lang.translate('map.stop'),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ],
         ),
@@ -77,72 +103,47 @@ class SyncedSuccessDialog extends StatelessWidget {
   }
 }
 
-class ConfirmStopDialog extends StatelessWidget {
-  final VoidCallback onConfirm;
-  final VoidCallback onCancel;
-  const ConfirmStopDialog({
+class SyncedSuccessDialog extends StatelessWidget {
+  final String message;
+  final VoidCallback onClose;
+
+  const SyncedSuccessDialog({
     super.key,
-    required this.onConfirm,
-    required this.onCancel,
+    required this.message,
+    required this.onClose,
   });
 
   @override
   Widget build(BuildContext context) {
-    final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
+    // Auto close after 2 seconds if user doesn't tap
+    Future.delayed(const Duration(seconds: 2), () {
+      if (context.mounted) onClose();
+    });
+
     return Dialog(
-      backgroundColor: Colors.transparent,
-      child: Container(
+      backgroundColor: theme.boxColor,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
         padding: const EdgeInsets.all(25),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1C1C1E),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
-        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(
-              Icons.help_outline_rounded,
-              color: Colors.orange,
-              size: 40,
+              Icons.check_circle_outline_rounded,
+              color: Colors.greenAccent,
+              size: 48,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 15),
             Text(
-              lang.translate('map.stopSession'),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: theme.textColor,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
-            ),
-            const SizedBox(height: 25),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                TextButton(
-                  onPressed: onCancel,
-                  child: Text(
-                    lang.translate('map.continue_'),
-                    style: const TextStyle(color: Colors.white54),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: onConfirm,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromARGB(255, 255, 0, 0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                  ),
-                  child: Text(
-                    lang.translate('map.stopButton'),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),

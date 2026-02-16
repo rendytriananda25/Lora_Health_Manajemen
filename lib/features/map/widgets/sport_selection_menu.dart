@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class SportSelectionMenu extends StatelessWidget {
   final List<String> mySports;
@@ -32,6 +33,8 @@ class SportSelectionMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Positioned(
       top: 110,
       left: 20,
@@ -39,15 +42,22 @@ class SportSelectionMenu extends StatelessWidget {
         width: 240,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.9),
+          color: theme.boxColor.withOpacity(0.95),
           borderRadius: BorderRadius.circular(25),
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: theme.textColor.withOpacity(0.1)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
         child: mySports.isEmpty
             ? Center(
                 child: Text(
                   lang.translate('map.loadingData'),
-                  style: const TextStyle(color: Colors.white54),
+                  style: TextStyle(color: theme.textColor.withOpacity(0.54)),
                 ),
               )
             : Column(
@@ -55,12 +65,12 @@ class SportSelectionMenu extends StatelessWidget {
                   return ListTile(
                     leading: Icon(
                       _getIconForSport(sportName),
-                      color: Colors.white,
+                      color: theme.textColor,
                     ),
                     title: Text(
                       sportName,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: theme.textColor,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),

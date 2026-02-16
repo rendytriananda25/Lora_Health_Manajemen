@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class HistoryBasketDetailPage extends StatelessWidget {
   final Map<dynamic, dynamic> data;
@@ -8,17 +11,29 @@ class HistoryBasketDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    DateTime dt = DateTime.parse(data['time'] ?? DateTime.now().toIso8601String());
+    final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
+    DateTime dt = DateTime.parse(
+      data['time'] ?? DateTime.now().toIso8601String(),
+    );
     String formattedDate = DateFormat('dd MMMM yyyy, HH:mm').format(dt);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Detail Basket", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          "Detail Basket",
+          style: TextStyle(fontWeight: FontWeight.bold, color: theme.textColor),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            size: 20,
+            color: theme.textColor,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -27,14 +42,35 @@ class HistoryBasketDetailPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(data['activity'] ?? 'Aktivitas Basket', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(
+              data['activity'] ?? 'Aktivitas Basket',
+              style: TextStyle(
+                color: theme.textColor,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(formattedDate, style: const TextStyle(color: Colors.white54, fontSize: 16)),
+            Text(
+              formattedDate,
+              style: TextStyle(
+                color: theme.textColor.withOpacity(0.54),
+                fontSize: 16,
+              ),
+            ),
             const SizedBox(height: 20),
-            const Divider(color: Colors.white24),
+            Divider(color: theme.textColor.withOpacity(0.24)),
             const SizedBox(height: 20),
-            _buildStat("Kalori Terbakar", "${data['calories'] ?? 0} kcal"),
-            _buildStat("Durasi", "${((data['duration_sec'] ?? 0) / 60).round()} menit"),
+            _buildStat(
+              "Kalori Terbakar",
+              "${data['calories'] ?? 0} kcal",
+              theme,
+            ),
+            _buildStat(
+              "Durasi",
+              "${((data['duration_sec'] ?? 0) / 60).round()} menit",
+              theme,
+            ),
             // Tambahkan statistik spesifik basket lainnya di sini
           ],
         ),
@@ -42,14 +78,27 @@ class HistoryBasketDetailPage extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(String label, String value) {
+  Widget _buildStat(String label, String value, ThemeProvider theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 16)),
-          Text(value, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: TextStyle(
+              color: theme.textColor.withOpacity(0.70),
+              fontSize: 16,
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: theme.textColor,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );

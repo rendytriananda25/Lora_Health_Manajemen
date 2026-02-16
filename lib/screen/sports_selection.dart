@@ -5,6 +5,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lora_1/screen/navbar.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:lora_1/features/notification/workout_reminder_service.dart';
 
 class SportsSelectionPage extends StatefulWidget {
   const SportsSelectionPage({super.key});
@@ -33,9 +34,21 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
 
   // DATA GOAL
   final List<Map<String, String>> _fitnessGoals = [
-    {"label": "Turun Berat Badan", "value": "WEIGHT_LOSS", "desc": "Fokus bakar kalori & kardio"},
-    {"label": "Bentuk Otot", "value": "MUSCLE_GAIN", "desc": "Fokus kekuatan & repetisi"},
-    {"label": "Jaga Kesehatan", "value": "KEEP_FIT", "desc": "Latihan seimbang & santai"},
+    {
+      "label": "Turun Berat Badan",
+      "value": "WEIGHT_LOSS",
+      "desc": "Fokus bakar kalori & kardio",
+    },
+    {
+      "label": "Bentuk Otot",
+      "value": "MUSCLE_GAIN",
+      "desc": "Fokus kekuatan & repetisi",
+    },
+    {
+      "label": "Jaga Kesehatan",
+      "value": "KEEP_FIT",
+      "desc": "Latihan seimbang & santai",
+    },
   ];
 
   // DATA GENDER
@@ -58,6 +71,7 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
   int _selectedWeightKg = 65;
   int _selectedAge = 25;
   int _selectedTargetWeightKg = 60;
+  int _selectedFrequency = 1; // 1x or 2x
 
   @override
   void dispose() {
@@ -93,14 +107,23 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
     int tempWeight = _selectedWeightKg;
     int tempAge = _selectedAge;
     int tempTargetWeight = _selectedTargetWeightKg;
+    int tempFrequency = _selectedFrequency;
 
     final modalPageController = PageController();
-    
+
     // Controller Picker (FixedExtent)
-    final heightController = FixedExtentScrollController(initialItem: tempHeight - 120);
-    final weightController = FixedExtentScrollController(initialItem: tempWeight - 35);
-    final ageController = FixedExtentScrollController(initialItem: tempAge - 13);
-    final targetWeightController = FixedExtentScrollController(initialItem: tempTargetWeight - 35);
+    final heightController = FixedExtentScrollController(
+      initialItem: tempHeight - 120,
+    );
+    final weightController = FixedExtentScrollController(
+      initialItem: tempWeight - 35,
+    );
+    final ageController = FixedExtentScrollController(
+      initialItem: tempAge - 13,
+    );
+    final targetWeightController = FixedExtentScrollController(
+      initialItem: tempTargetWeight - 35,
+    );
 
     showModalBottomSheet(
       context: context,
@@ -118,31 +141,38 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.black,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(30),
+                ),
                 border: Border.all(color: Colors.white24),
               ),
               child: PageView(
                 controller: modalPageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  
                   // --- STEP 1: LEVEL ---
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildModalHeader("Langkah 1/4", "Seberapa sering olahraga?"),
+                      _buildModalHeader(
+                        "Langkah 1/4",
+                        "Seberapa sering olahraga?",
+                      ),
                       const SizedBox(height: 20),
                       Expanded(
                         child: ListView.separated(
                           itemCount: _fitnessLevels.length,
-                          separatorBuilder: (ctx, i) => const SizedBox(height: 12),
+                          separatorBuilder: (ctx, i) =>
+                              const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final level = _fitnessLevels[index];
                             final isSelected = tempLevel == level['value'];
                             return _buildOptionItem(
                               label: level['label']!,
                               isSelected: isSelected,
-                              onTap: () => setModalState(() => tempLevel = level['value']!),
+                              onTap: () => setModalState(
+                                () => tempLevel = level['value']!,
+                              ),
                             );
                           },
                         ),
@@ -158,7 +188,13 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                             );
                           },
                           style: _btnStyle(),
-                          child: const Text("LANJUT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            "LANJUT",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -173,7 +209,8 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                       Expanded(
                         child: ListView.separated(
                           itemCount: _fitnessGoals.length,
-                          separatorBuilder: (ctx, i) => const SizedBox(height: 12),
+                          separatorBuilder: (ctx, i) =>
+                              const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final goal = _fitnessGoals[index];
                             final isSelected = tempGoal == goal['value'];
@@ -181,7 +218,9 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                               label: goal['label']!,
                               subLabel: goal['desc'],
                               isSelected: isSelected,
-                              onTap: () => setModalState(() => tempGoal = goal['value']!),
+                              onTap: () => setModalState(
+                                () => tempGoal = goal['value']!,
+                              ),
                             );
                           },
                         ),
@@ -197,7 +236,13 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                             );
                           },
                           style: _btnStyle(),
-                          child: const Text("LANJUT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            "LANJUT",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -210,7 +255,13 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                       _buildModalHeader("Langkah 3/4", "Isi data tubuh kamu"),
                       const SizedBox(height: 16),
                       // Gender
-                      const Text("Jenis Kelamin", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      const Text(
+                        "Jenis Kelamin",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 10),
                       ..._genderOptions.map((option) {
                         final isSelected = tempGender == option['value'];
@@ -219,15 +270,23 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                           child: _buildOptionItem(
                             label: option['label']!,
                             isSelected: isSelected,
-                            onTap: () => setModalState(() => tempGender = option['value']!),
+                            onTap: () => setModalState(
+                              () => tempGender = option['value']!,
+                            ),
                           ),
                         );
                       }),
-                      
+
                       const SizedBox(height: 10),
-                      const Text("Tinggi, Berat, dan Umur", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      const Text(
+                        "Tinggi, Berat, dan Umur",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       const SizedBox(height: 12),
-                      
+
                       // ROW PICKER
                       Row(
                         children: [
@@ -235,8 +294,10 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                             child: _buildWheelPickerCard(
                               title: "Tinggi (cm)",
                               controller: heightController,
-                              min: 120, max: 220,
-                              onChanged: (value) => setModalState(() => tempHeight = value),
+                              min: 120,
+                              max: 220,
+                              onChanged: (value) =>
+                                  setModalState(() => tempHeight = value),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -244,8 +305,10 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                             child: _buildWheelPickerCard(
                               title: "Berat (kg)",
                               controller: weightController,
-                              min: 35, max: 180,
-                              onChanged: (value) => setModalState(() => tempWeight = value),
+                              min: 35,
+                              max: 180,
+                              onChanged: (value) =>
+                                  setModalState(() => tempWeight = value),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -253,13 +316,15 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                             child: _buildWheelPickerCard(
                               title: "Umur",
                               controller: ageController,
-                              min: 13, max: 90,
-                              onChanged: (value) => setModalState(() => tempAge = value),
+                              min: 13,
+                              max: 90,
+                              onChanged: (value) =>
+                                  setModalState(() => tempAge = value),
                             ),
                           ),
                         ],
                       ),
-                      
+
                       const Spacer(),
                       SizedBox(
                         width: double.infinity,
@@ -271,26 +336,82 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                             );
                           },
                           style: _btnStyle(),
-                          child: const Text("LANJUT", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            "LANJUT",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
 
-                  // --- STEP 4: TARGET WEIGHT ---
+                  // --- STEP 4: FREQUENCY ---
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildModalHeader("Langkah 4/4", "Target berat badan kamu berapa kg?"),
+                      _buildModalHeader(
+                        "Langkah 4/5",
+                        "Sehari berapa kali latihan?",
+                      ),
                       const SizedBox(height: 20),
-                      
+                      _buildOptionItem(
+                        label: "1x (Pagi/Sore)",
+                        isSelected: tempFrequency == 1,
+                        onTap: () => setModalState(() => tempFrequency = 1),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildOptionItem(
+                        label: "2x (Pagi & Sore)",
+                        subLabel:
+                            "Untuk hasil maksimal (Pagi ringan, Sore berat)",
+                        isSelected: tempFrequency == 2,
+                        onTap: () => setModalState(() => tempFrequency = 2),
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            modalPageController.nextPage(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
+                            );
+                          },
+                          style: _btnStyle(),
+                          child: const Text(
+                            "LANJUT",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // --- STEP 5: TARGET WEIGHT ---
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildModalHeader(
+                        "Langkah 5/5",
+                        "Target berat badan kamu berapa kg?",
+                      ),
+                      const SizedBox(height: 20),
+
                       _buildSinglePickerBody(
                         "Target Berat (kg)",
                         targetWeightController,
-                        35, 180,
-                        (value) => setModalState(() => tempTargetWeight = value),
+                        35,
+                        180,
+                        (value) =>
+                            setModalState(() => tempTargetWeight = value),
                       ),
-                      
+
                       const Spacer(),
                       SizedBox(
                         width: double.infinity,
@@ -304,12 +425,19 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                               _selectedWeightKg = tempWeight;
                               _selectedAge = tempAge;
                               _selectedTargetWeightKg = tempTargetWeight;
+                              _selectedFrequency = tempFrequency;
                             });
                             Navigator.pop(context);
                             _handleStart();
                           },
                           style: _btnStyle(),
-                          child: const Text("MULAI DASHBOARD", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            "MULAI DASHBOARD",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -366,7 +494,10 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                   height: 34,
                   decoration: BoxDecoration(
                     border: Border.symmetric(
-                      horizontal: BorderSide(color: Colors.white.withOpacity(0.1), width: 1),
+                      horizontal: BorderSide(
+                        color: Colors.white.withOpacity(0.1),
+                        width: 1,
+                      ),
                     ),
                   ),
                 ),
@@ -375,7 +506,9 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                   itemExtent: 34,
                   perspective: 0.005,
                   diameterRatio: 1.2,
-                  physics: const FixedExtentScrollPhysics(parent: ClampingScrollPhysics()), // Anti-Bouncing
+                  physics: const FixedExtentScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ), // Anti-Bouncing
                   onSelectedItemChanged: (index) {
                     onChanged(min + index);
                     _playPickerScrollSound();
@@ -386,7 +519,11 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                       return Center(
                         child: Text(
                           '${min + index}',
-                          style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       );
                     },
@@ -434,7 +571,10 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                   height: 44,
                   decoration: BoxDecoration(
                     border: Border.symmetric(
-                      horizontal: BorderSide(color: const Color(0xFF008BFF).withOpacity(0.3), width: 1.5),
+                      horizontal: BorderSide(
+                        color: const Color(0xFF008BFF).withOpacity(0.3),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -443,7 +583,9 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                   itemExtent: 44,
                   perspective: 0.005,
                   diameterRatio: 1.2,
-                  physics: const FixedExtentScrollPhysics(parent: ClampingScrollPhysics()), // Anti-Bouncing
+                  physics: const FixedExtentScrollPhysics(
+                    parent: ClampingScrollPhysics(),
+                  ), // Anti-Bouncing
                   onSelectedItemChanged: (index) {
                     onChanged(min + index);
                     _playPickerScrollSound();
@@ -546,7 +688,9 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                   Text(
                     label,
                     style: TextStyle(
-                      color: isSelected ? const Color(0xFF008BFF) : Colors.white,
+                      color: isSelected
+                          ? const Color(0xFF008BFF)
+                          : Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -555,7 +699,10 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                     const SizedBox(height: 4),
                     Text(
                       subLabel,
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: const TextStyle(
+                        color: Colors.white54,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ],
@@ -588,10 +735,12 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
       await prefs.setInt('user_weight_kg', _selectedWeightKg);
       await prefs.setInt('user_age', _selectedAge);
       await prefs.setInt('user_target_weight_kg', _selectedTargetWeightKg);
+      await prefs.setInt('user_frequency', _selectedFrequency);
 
       if (user != null) {
-        final selectedNames =
-            _selectedIndices.map((i) => _sports[i]['name'] ?? "Unknown").toList();
+        final selectedNames = _selectedIndices
+            .map((i) => _sports[i]['name'] ?? "Unknown")
+            .toList();
         final Map<String, bool> sportsForMap = {};
         for (final name in selectedNames) {
           var key = name.toUpperCase();
@@ -602,7 +751,9 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
           sportsForMap[key] = true;
         }
 
-        final genderLabel = _selectedGender == "MALE" ? "Laki-laki" : "Perempuan";
+        final genderLabel = _selectedGender == "MALE"
+            ? "Laki-laki"
+            : "Perempuan";
 
         await FirebaseDatabase.instance.ref("users/${user.uid}").update({
           "sports": sportsForMap,
@@ -616,8 +767,14 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
             "gender": genderLabel,
             "age": _selectedAge,
             "target_weight": _selectedTargetWeightKg,
+            "frequency": _selectedFrequency,
           },
         });
+
+        await WorkoutReminderService.instance.scheduleDailyWellnessProgram(
+          goal: _selectedGoal,
+          prioritySports: selectedNames,
+        );
 
         if (mounted) {
           Navigator.pushReplacement(
@@ -680,8 +837,10 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                 child: ListView.builder(
                   itemCount: _sports.length,
                   physics: const ClampingScrollPhysics(),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 20,
+                  ),
                   itemBuilder: (context, index) {
                     final isSelected = _selectedIndices.contains(index);
                     return GestureDetector(
@@ -740,8 +899,9 @@ class _SportsSelectionPageState extends State<SportsSelectionPage> {
                                 ),
                               ),
                               Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                ),
                                 child: Row(
                                   children: [
                                     Expanded(

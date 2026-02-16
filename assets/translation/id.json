@@ -43,7 +43,12 @@
     "moderate": "Sedang",
     "unhealthy": "Tidak Sehat",
     "low": "Rendah",
-    "high": "Tinggi"
+    "high": "Tinggi",
+    "nutritionRecommendation": "Rekomendasi Nutrisi",
+    "highlyRecommended": "Sangat Direkomendasikan",
+    "avoidLimit": "Hindari / Batasi",
+    "environmentStatus": "Status Lingkungan",
+    "viewProgress": "Lihat Progress"
   },
   "weather": {
     "hotWeather": "Cuaca Panas: Latihan indoor / cardio sedang.",
@@ -77,12 +82,19 @@
   "settings": {
     "settings": "Pengaturan",
     "personalInfo": "Informasi Pribadi",
+    "editName": "Ubah Nama",
     "security": "Keamanan & Privasi",
     "notifications": "Pengaturan Notifikasi",
     "language": "Bahasa",
     "logout": "Keluar Akun",
     "version": "Lora Versi 1.0.0",
     "accountSettings": "Pengaturan Akun"
+  },
+  "personalInfo": {
+    "changeName": "Ganti Nama",
+    "enterNewName": "Masukkan nama baru",
+    "cancel": "Batal",
+    "save": "Simpan"
   },
   "navigation": {
     "home": "Beranda",
@@ -102,6 +114,44 @@
     "weightLoss": "Turun Berat Badan",
     "muscleGain": "Naik Berat Badan",
     "keepFit": "Jaga Kebugaran"
+  },
+  "map": {
+    "weatherNice": "Cuaca cerah! Waktunya {name} beraksi!",
+    "weatherHot": "Hati-hati {name}, cuaca cukup panas.",
+    "weatherCool": "{name}, udara sejuk untuk olahraga.",
+    "letsGo": "Ayo {sport}! Target hari ini: {target}",
+    "km": "KM",
+    "time": "WAKTU",
+    "stop": "STOP",
+    "start": "MULAI",
+    "targetToday": "TARGET HARI INI",
+    "loadingData": "Memuat data...",
+    "activeSession": "SESI AKTIF",
+    "noExerciseSelected": "Pilih olahraga dulu ya!",
+    "startSession": "MULAI SESI",
+    "chooseExercise": "Pilih Gerakan:",
+    "target": "Target",
+    "pause": "PAUSE",
+    "startTimer": "MULAI TIMER",
+    "countRep": "HITUNG REPS",
+    "next": "LANJUT",
+    "focusTimer": "FOKUS TIMER",
+    "reps": "REPS",
+    "stopSession": "Stop Sesi?",
+    "stopConfirm": "Yakin ingin mengakhiri sesi ini? Data akan disimpan.",
+    "cancel": "Batal",
+    "sessionSaved": "Sesi latihan berhasil disimpan!"
+  },
+  "history": {
+    "bmiResultTitle": "HASIL PENGECEKAN TERAKHIR",
+    "bmiScore": "SKOR BMI",
+    "bmiIndex": "INDEX",
+    "bmiStatus": "STATUS",
+    "bmiLevel": "TENTANG"
+  },
+  "bmi": {
+    "weight": "BERAT (KG)",
+    "height": "TINGGI (CM)"
   },
   "errors": {
     "loginFailed": "Login gagal",

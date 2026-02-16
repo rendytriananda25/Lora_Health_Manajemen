@@ -44,15 +44,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       body: Stack(
         children: [
           // 1. BACKGROUND IMAGE DENGAN GRADIENT DARK
-          // ✅ FIX: Bungkus dengan ScrollConfiguration untuk mematikan efek melar/glow
           ScrollConfiguration(
             behavior: const ScrollBehavior().copyWith(overscroll: false),
             child: PageView.builder(
               controller: _pageController,
-              
-              // ✅ FIX: Physics Kaku (Clamping) + ScrollConfiguration di atas = KAKU TOTAL
-              physics: const ClampingScrollPhysics(), 
-              
+              physics: const ClampingScrollPhysics(),
               itemCount: _onboardingData.length,
               onPageChanged: (index) {
                 setState(() => _currentPage = index);
@@ -70,7 +66,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             right: 30,
             child: Column(
               children: [
-                // Indikator Titik (Slide 1, 2, 3)
+                // Indikator Titik
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -96,6 +92,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
+                    // ✅ FIX: Matikan suara/getaran bawaan OS Android/iOS         
                     onPressed: () {
                       if (_currentPage == _onboardingData.length - 1) {
                         Navigator.pushReplacement(
@@ -146,7 +143,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           height: double.infinity,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: AssetImage(data['image']!), 
+              image: AssetImage(data['image']!),
               fit: BoxFit.cover,
               colorFilter: ColorFilter.mode(
                 Colors.black.withOpacity(0.4),
@@ -155,7 +152,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
         ),
-        // Gradient Hitam Bawah ke Atas (Agar text terbaca)
+        // Gradient Hitam Bawah ke Atas
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -186,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 data['desc']!,
                 style: const TextStyle(color: Colors.white70, fontSize: 16),
               ),
-              const SizedBox(height: 50), 
+              const SizedBox(height: 50),
             ],
           ),
         ),

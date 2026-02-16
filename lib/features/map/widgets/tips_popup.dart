@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class TipsPopup extends StatelessWidget {
   final bool showTips;
@@ -39,6 +40,8 @@ class TipsPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Stack(
       children: [
         Positioned(
@@ -52,13 +55,19 @@ class TipsPopup extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: theme.boxColor.withOpacity(0.95),
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.white24),
+                border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               child: Icon(
                 showTips ? Icons.close : Icons.info_outline_rounded,
-                color: Colors.white,
+                color: theme.textColor,
                 size: 24,
               ),
             ),
@@ -72,9 +81,16 @@ class TipsPopup extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.9),
+                color: theme.boxColor.withOpacity(0.95),
                 borderRadius: BorderRadius.circular(25),
-                border: Border.all(color: Colors.white12),
+                border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,8 +105,8 @@ class TipsPopup extends StatelessWidget {
                       const SizedBox(width: 8),
                       Text(
                         lang.translate('map.targetToday').toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white54,
+                        style: TextStyle(
+                          color: theme.textColor.withOpacity(0.54),
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 1.2,
@@ -102,13 +118,13 @@ class TipsPopup extends StatelessWidget {
                   // ✅ Tampilkan Target (Misal: 10 KM) secara menonjol
                   Text(
                     targetText,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: theme.textColor,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const Divider(color: Colors.white10, height: 20),
+                  Divider(color: theme.textColor.withOpacity(0.1), height: 20),
                   // ✅ Tampilkan Saran Cuaca dari JSON
                   Row(
                     children: [
@@ -121,8 +137,8 @@ class TipsPopup extends StatelessWidget {
                       Expanded(
                         child: Text(
                           weatherAdvice,
-                          style: const TextStyle(
-                            color: Colors.white70,
+                          style: TextStyle(
+                            color: theme.textColor.withOpacity(0.7),
                             fontSize: 12,
                             height: 1.4,
                           ),

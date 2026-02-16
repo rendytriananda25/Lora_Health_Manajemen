@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 class NutritionCarousel extends StatelessWidget {
   final String userGoal;
@@ -15,9 +16,11 @@ class NutritionCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
+    final theme = Provider.of<ThemeProvider>(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-    
+
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -27,8 +30,8 @@ class NutritionCarousel extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 5),
                 child: Text(
                   lang.translate('dashboard.nutritionRecommendation'),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: theme.textColor,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -41,13 +44,13 @@ class NutritionCarousel extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white10,
+                color: theme.textColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 userGoal.replaceAll("_", " "),
-                style: const TextStyle(
-                  color: Colors.white54,
+                style: TextStyle(
+                  color: theme.textColor.withOpacity(0.54),
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
@@ -72,9 +75,16 @@ class NutritionCarousel extends StatelessWidget {
                   margin: const EdgeInsets.only(right: 15),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1C1C1E),
+                    color: theme.boxColor,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,9 +102,7 @@ class NutritionCarousel extends StatelessWidget {
                             ),
                             child: Icon(
                               item['icon'],
-                              color: isGood
-                                  ? Colors.greenAccent
-                                  : Colors.redAccent,
+                              color: isGood ? Colors.green : Colors.redAccent,
                               size: 26,
                             ),
                           ),
@@ -107,8 +115,8 @@ class NutritionCarousel extends StatelessWidget {
                                   item['name'],
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: Colors.white,
+                                  style: TextStyle(
+                                    color: theme.textColor,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -121,7 +129,9 @@ class NutritionCarousel extends StatelessWidget {
                                       size: 14,
                                       color: starIndex < item['rating']
                                           ? Colors.orangeAccent
-                                          : Colors.grey[800],
+                                          : theme.textColor.withOpacity(
+                                              0.2,
+                                            ), // Grey for empty stars
                                     );
                                   }),
                                 ),
@@ -133,8 +143,8 @@ class NutritionCarousel extends StatelessWidget {
                       const SizedBox(height: 15),
                       Text(
                         item['desc'],
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: theme.textColor.withOpacity(0.7),
                           fontSize: 13,
                           height: 1.4,
                         ),
@@ -151,8 +161,8 @@ class NutritionCarousel extends StatelessWidget {
                           ),
                           decoration: BoxDecoration(
                             color: isGood
-                                ? Colors.green.withOpacity(0.2)
-                                : Colors.red.withOpacity(0.2),
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -160,9 +170,7 @@ class NutritionCarousel extends StatelessWidget {
                                 ? lang.translate('dashboard.highlyRecommended')
                                 : lang.translate('dashboard.avoidLimit'),
                             style: TextStyle(
-                              color: isGood
-                                  ? Colors.greenAccent
-                                  : Colors.redAccent,
+                              color: isGood ? Colors.green : Colors.redAccent,
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),

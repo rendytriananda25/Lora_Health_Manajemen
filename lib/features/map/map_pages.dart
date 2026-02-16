@@ -12,6 +12,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
+import 'package:lora_1/core/services/theme_provider.dart';
 
 // ✅ IMPORT PECAHAN
 import 'services/location_service.dart';
@@ -21,6 +22,7 @@ import 'widgets/sport_selection_menu.dart';
 import 'widgets/timer_background.dart';
 import 'widgets/tips_popup.dart';
 import 'widgets/map_dialogs.dart';
+import 'package:lora_1/features/notification/workout_reminder_service.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -122,10 +124,11 @@ class _MapPageState extends State<MapPage> {
         setState(() {
           _tempValue = (data['main']['temp'] as num).toInt();
           _currentTemp = _tempValue.toString();
-          _weatherCondition =
-              (data['weather']?[0]?['main']?.toString() ?? "").toLowerCase();
+          _weatherCondition = (data['weather']?[0]?['main']?.toString() ?? "")
+              .toLowerCase();
         });
         _generateRoutine();
+        _syncWeatherReminder();
       }
     } catch (e) {
       debugPrint("Weather Error: $e");
@@ -135,15 +138,20 @@ class _MapPageState extends State<MapPage> {
   Future<void> _loadUserPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     var loadedGender = prefs.getString('user_gender') ?? "UNKNOWN";
+    int loadedFrequency = prefs.getInt('user_frequency') ?? 1;
 
     if (loadedGender == "UNKNOWN" || loadedGender == "--") {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final snapshot = await FirebaseDatabase.instance
-            .ref("users/${user.uid}/health_data/gender")
+            .ref("users/${user.uid}/health_data")
             .get();
-        if (snapshot.exists && snapshot.value != null) {
-          loadedGender = snapshot.value.toString();
+        if (snapshot.exists && snapshot.value is Map) {
+          final data = snapshot.value as Map;
+          loadedGender = data['gender']?.toString() ?? "UNKNOWN";
+          if (data['frequency'] != null) {
+            loadedFrequency = int.tryParse(data['frequency'].toString()) ?? 1;
+          }
         }
       }
     }
@@ -153,9 +161,40 @@ class _MapPageState extends State<MapPage> {
         _userLevel = prefs.getString('user_fitness_level') ?? "NEVER";
         _userGoal = prefs.getString('user_fitness_goal') ?? "KEEP_FIT";
         _userGender = _normalizeGender(loadedGender);
+        _userFrequency = loadedFrequency;
       });
       _generateRoutine();
+      _syncWeatherReminder();
     }
+  }
+
+  void _syncWeatherReminder() {
+    if (_weatherCondition.isEmpty) return;
+
+    final reminderGoal = _userGoal == "WEIGHT_LOSS"
+        ? "FAT_LOSS"
+        : _userGoal == "MUSCLE_GAIN"
+        ? "PERFORMANCE"
+        : "CASUAL";
+    final isIndoorSport =
+        _selectedSport.toUpperCase() == "HOME WORKOUT" ||
+        _selectedSport.toUpperCase() == "HOME_WORKOUT";
+
+    WorkoutReminderService.instance.maybeNotifyWeatherImproved(
+      currentWeather: _weatherCondition,
+      currentTemp: _tempValue.toDouble(),
+      sport: _selectedSport,
+      level: _userLevel,
+      goal: reminderGoal,
+      isIndoor: isIndoorSport,
+    );
+
+    WorkoutReminderService.instance.scheduleDailyWellnessProgram(
+      goal: _userGoal,
+      prioritySports: _mySports,
+      currentTemp: _tempValue.toDouble(),
+      currentWeather: _weatherCondition,
+    );
   }
 
   String _normalizeGender(String raw) {
@@ -209,6 +248,8 @@ class _MapPageState extends State<MapPage> {
     return "20 Menit";
   }
 
+  int _userFrequency = 1;
+
   void _generateRoutine() {
     final lang = Provider.of<LanguageProvider>(context, listen: false);
     final result = WorkoutData.generateRoutine(
@@ -218,6 +259,7 @@ class _MapPageState extends State<MapPage> {
       gender: _userGender,
       weather: _weatherCondition,
       temp: _tempValue,
+      frequency: _userFrequency,
       lang: lang,
     );
     if (mounted) {
@@ -257,6 +299,12 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  // ✅ Helper untuk cek apakah olahraga butuh GPS (Map) atau List Latihan (Workout)
+  bool get _isGpsSport {
+    final s = _selectedSport.toUpperCase();
+    return s == "LARI" || s == "SEPEDA" || s == "RUNNING" || s == "CYCLING";
+  }
+
   void _startTrackingManual() async {
     HapticFeedback.mediumImpact();
     if (mounted) {
@@ -273,7 +321,8 @@ class _MapPageState extends State<MapPage> {
       if (mounted) _secondsNotifier.value++;
     });
 
-    if (_selectedSport != "Home Workout") {
+    // Hanya aktifkan GPS stream jika olahraga tipe Lari/Sepeda
+    if (_isGpsSport) {
       _positionStream = _locationService.getPositionStream().listen((pos) {
         if (!mounted) return;
         LatLng newPoint = LatLng(pos.latitude, pos.longitude);
@@ -301,64 +350,73 @@ class _MapPageState extends State<MapPage> {
 
   Future<void> _stopTrackingManual() async {
     final lang = Provider.of<LanguageProvider>(context, listen: false);
-    showDialog(
-      context: context,
-      builder: (context) => ConfirmStopDialog(
-        onCancel: () => Navigator.pop(context),
-        onConfirm: () async {
-          Navigator.pop(context);
-          if (mounted) setState(() => _isSaving = true);
-          _timer?.cancel();
-          _positionStream?.cancel();
 
-          try {
-            final user = FirebaseAuth.instance.currentUser;
-            if (user != null) {
-              final dbRef = FirebaseDatabase.instance.ref(
-                "users/${user.uid}/history",
-              );
-              await dbRef.push().set({
-                'activity': _selectedSport,
-                'duration_sec': _secondsNotifier.value,
-                'distance_km': _distanceNotifier.value,
-                'calories': (_secondsNotifier.value * 0.15).toInt(),
-                'time': DateTime.now().toIso8601String(),
-                'workout_details': _selectedSport == "Home Workout"
-                    ? _workoutSessionData
-                    : null,
-              });
+    // 🔥 FIX: Kalau bukan GPS Sport (Workout/Timer), LANGSUNG STOP tanpa dialog konfirmasi
+    if (!_isGpsSport) {
+      await _executeStop(lang);
+    } else {
+      showDialog(
+        context: context,
+        builder: (context) => ConfirmStopDialog(
+          onCancel: () => Navigator.pop(context),
+          onConfirm: () async {
+            Navigator.pop(context);
+            await _executeStop(lang);
+          },
+        ),
+      );
+    }
+  }
 
-              if (mounted) {
-                showDialog(
-                  context: context,
-                  builder: (context) => SyncedSuccessDialog(
-                    message: lang.translate('map.sessionSaved'),
-                    onClose: () => Navigator.pop(context),
-                  ),
-                );
-              }
-            }
-          } catch (e) {
-            debugPrint("Save Error: $e");
-          }
+  Future<void> _executeStop(LanguageProvider lang) async {
+    if (mounted) setState(() => _isSaving = true);
+    _timer?.cancel();
+    _positionStream?.cancel();
 
-          if (mounted) {
-            setState(() {
-              _isRecording = false;
-              _isSaving = false;
-              _showControlPanel = true;
-              _workoutSessionData.clear();
-            });
-          }
-        },
-      ),
-    );
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final dbRef = FirebaseDatabase.instance.ref(
+          "users/${user.uid}/history",
+        );
+        await dbRef.push().set({
+          'activity': _selectedSport,
+          'duration_sec': _secondsNotifier.value,
+          'distance_km': _distanceNotifier.value,
+          'calories': (_secondsNotifier.value * 0.15).toInt(),
+          'time': DateTime.now().toIso8601String(),
+          'workout_details': !_isGpsSport ? _workoutSessionData : null,
+        });
+
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => SyncedSuccessDialog(
+              message: lang.translate('map.sessionSaved'),
+              onClose: () => Navigator.pop(context),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Save Error: $e");
+    }
+
+    if (mounted) {
+      setState(() {
+        _isRecording = false;
+        _isSaving = false;
+        _showControlPanel = true;
+        _workoutSessionData.clear();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
-    bool isMapSport = _selectedSport != "Home Workout";
+    final theme = Provider.of<ThemeProvider>(context);
+    bool isMapSport = _isGpsSport;
 
     String firstName = _userName.split(' ')[0];
     String dailyTarget = _getTargetByLevel(_selectedSport, _userLevel);
@@ -382,7 +440,7 @@ class _MapPageState extends State<MapPage> {
         "$weatherGreeting ${lang.translate('map.letsGo').replaceAll('{sport}', _selectedSport).replaceAll('{target}', dailyTarget)}";
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.bgColor,
       body: Stack(
         children: [
           if (isMapSport)
@@ -394,10 +452,11 @@ class _MapPageState extends State<MapPage> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate:
-                      'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                  urlTemplate: theme.isDarkMode
+                      ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+                      : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
                   subdomains: const ['a', 'b'],
-                  retinaMode: false,
+                  retinaMode: true,
                 ),
                 PolylineLayer(
                   polylines: [
@@ -416,7 +475,7 @@ class _MapPageState extends State<MapPage> {
                       height: 40,
                       child: const Icon(
                         Icons.navigation,
-                        color: Colors.white,
+                        color: Colors.white, // Navigation arrow constant
                         size: 20,
                       ),
                     ),
@@ -449,11 +508,17 @@ class _MapPageState extends State<MapPage> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
+                    color: theme.boxColor.withOpacity(0.8),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white24),
+                    border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 10,
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.my_location, color: Colors.white),
+                  child: Icon(Icons.my_location, color: theme.textColor),
                 ),
               ),
             ),
@@ -476,13 +541,19 @@ class _MapPageState extends State<MapPage> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.7),
+                  color: theme.boxColor.withOpacity(0.8),
                   shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24),
+                  border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                    ),
+                  ],
                 ),
                 child: Icon(
                   _showSportMenu ? Icons.close : Icons.menu,
-                  color: Colors.white,
+                  color: theme.textColor,
                 ),
               ),
             ),
