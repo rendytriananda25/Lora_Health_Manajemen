@@ -48,7 +48,8 @@
     "highlyRecommended": "Sangat Direkomendasikan",
     "avoidLimit": "Hindari / Batasi",
     "environmentStatus": "Status Lingkungan",
-    "viewProgress": "Lihat Progress"
+    "viewProgress": "Lihat Progress",
+    "dailyPlan": "Menu Harian Kamu"
   },
   "weather": {
     "hotWeather": "Cuaca Panas: Latihan indoor / cardio sedang.",

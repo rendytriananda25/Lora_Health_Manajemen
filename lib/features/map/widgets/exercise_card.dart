@@ -196,7 +196,16 @@ class _ExerciseCardState extends State<ExerciseCard> {
         ? "Done ($_secondsLeft s left)"
         : "$_repsCount Reps";
 
-    widget.onComplete(widget.data['name'], result);
+    // ✅ FIX: Kasih delay 1.5 detik agar user sempat lihat "Centang Hijau" sebelum pindah/tutup
+    if (isTimer) {
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        if (mounted) {
+          widget.onComplete(widget.data['name'], result);
+        }
+      });
+    } else {
+      widget.onComplete(widget.data['name'], result);
+    }
   }
 
   @override

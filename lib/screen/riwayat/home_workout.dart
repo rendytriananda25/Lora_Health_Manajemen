@@ -29,11 +29,39 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
     int calories = (data['calories'] as num? ?? 0).toInt();
 
     // 3. Parsing Details
-    String detailsRaw = data['details'] ?? "";
     List<String> exerciseList = [];
-    if (detailsRaw.isNotEmpty &&
-        detailsRaw != "Tidak ada gerakan diselesaikan") {
-      exerciseList = detailsRaw.split(", ");
+
+    // ✅ SUPPORT FORMAT BARU (List of Maps)
+    if (data['workout_details'] != null && data['workout_details'] is List) {
+      final list = data['workout_details'] as List;
+      for (var item in list) {
+        // Handle Map
+        if (item is Map) {
+          final name = item['name'] ?? 'Unknown';
+          final result = item['result'] ?? '-';
+          exerciseList.add("$name: $result");
+        }
+        // Handle "Object" from Firebase converted to Map equivalent
+        else if (item != null) {
+          try {
+            // Sometimes Firebase returns List<Object?> which are effectively Maps
+            final map = Map<String, dynamic>.from(item as dynamic);
+            final name = map['name'] ?? 'Unknown';
+            final result = map['result'] ?? '-';
+            exerciseList.add("$name: $result");
+          } catch (e) {
+            exerciseList.add(item.toString());
+          }
+        }
+      }
+    }
+    // ✅ SUPPORT FORMAT LAMA (String)
+    else if (data['details'] != null) {
+      String detailsRaw = data['details'].toString();
+      if (detailsRaw.isNotEmpty &&
+          detailsRaw != "Tidak ada gerakan diselesaikan") {
+        exerciseList = detailsRaw.split(", ");
+      }
     }
 
     // 4. Hitung Total Sets

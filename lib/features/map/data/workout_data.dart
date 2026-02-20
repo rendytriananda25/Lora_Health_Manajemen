@@ -743,12 +743,24 @@ class WorkoutData {
       }
     }
 
-    // 🔥 FREQUENCY LOGIC (1x or 2x)
+    // 🔥 UPDATE LOGIC JAM 12 & 18 (REQUEST WAK)
     String sessionLabel = "";
+    bool isRestTime = false;
+
     if (frequency == 2) {
-      // 🕒 Cek Jam: < 15.00 = Pagi, > 15.00 = Sore
+      // Logic Khusus 2x Sehari
       int hour = DateTime.now().hour;
-      sessionLabel = hour < 15 ? " (Sesi Pagi)" : " (Sesi Sore)";
+
+      if (hour >= 18) {
+        // JAM 18.00 - 23.59 -> MODE ISTIRAHAT
+        isRestTime = true;
+      } else if (hour >= 12) {
+        // JAM 12.00 - 17.59 -> SESI SORE
+        sessionLabel = " (Sesi Sore ☀️)";
+      } else {
+        // JAM 00.00 - 11.59 -> SESI PAGI
+        sessionLabel = " (Sesi Pagi 🌅)";
+      }
     }
 
     // Process Icons (Convert Code to IconData)
@@ -760,15 +772,29 @@ class WorkoutData {
       }
     }
 
-    // Add Lora Advice
-    exercises.insert(0, {
-      "name": "Saran Lora$sessionLabel",
-      "target": weatherAdvice,
-      "type": "info",
-      "icon": Icons.lightbulb,
-
-      "isSelected": true,
-    });
+    // Add Lora Advice / Rest Card
+    if (isRestTime) {
+      // HAPUS SEMUA LATIHAN -> GANTI SARAN ISTIRAHAT
+      exercises.clear();
+      exercises.add({
+        "name": "Waktunya Istirahat 🌙",
+        "target": "Tubuh butuh recovery untuk performa maksimal besok.",
+        "type": "info",
+        "icon": Icons.nights_stay,
+        "isSelected": true,
+      });
+      weatherAdvice = "Selamat beristirahat.";
+      title = "REST MODE";
+    } else {
+      // Masukkan Kartu Saran Normal
+      exercises.insert(0, {
+        "name": "Saran Lora$sessionLabel",
+        "target": weatherAdvice,
+        "type": "info",
+        "icon": Icons.lightbulb,
+        "isSelected": true,
+      });
+    }
 
     return {
       "exercises": exercises,

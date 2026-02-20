@@ -43,7 +43,13 @@
     "moderate": "Moderate",
     "unhealthy": "Unhealthy",
     "low": "Low",
-    "high": "High"
+    "high": "High",
+    "nutritionRecommendation": "Nutrition Recommendation",
+    "highlyRecommended": "Highly Recommended",
+    "avoidLimit": "Avoid / Limit",
+    "environmentStatus": "Environmental Status",
+    "viewProgress": "View Progress",
+    "dailyPlan": "Your Daily Menu"
   },
   "weather": {
     "hotWeather": "Hot Weather: Indoor training / moderate cardio.",

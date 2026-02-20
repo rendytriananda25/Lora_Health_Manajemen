@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math'; // ✅ Add Random
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -19,6 +21,8 @@ import 'data/nutrition_data.dart'; // ✅ Import Data Baru
 // ✅ IMPORT HALAMAN LAIN
 import 'package:lora_1/features/settings/setting_page.dart';
 import 'package:lora_1/screen/statistic.dart';
+import 'package:lora_1/features/gamification/rank_system.dart';
+import 'package:lora_1/features/gamification/badge_service.dart'; // Added
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -37,6 +41,7 @@ class _DashboardPageState extends State<DashboardPage> {
   String userLevel = "NEVER";
   String userGoal = "KEEP_FIT";
   List<String> recommendationList = ["Menganalisis minatmu..."];
+  List<Map<String, dynamic>> dailyPlan = []; // ✅ Daily Plan Storage
   int currentRecIndex = 0;
   Timer? _rotationTimer;
   StreamSubscription<DatabaseEvent>? _profileSubscription;
@@ -45,6 +50,11 @@ class _DashboardPageState extends State<DashboardPage> {
   String environmentalTips = "Menyiapkan tips untukmu...";
   Map<String, dynamic>?
   _onlineNutritionData; // ✅ Variabel untuk data dari Firebase
+
+  RankData currentRank = RankSystem.ranks[0]; // Default No Rank
+  int currentExp = 0; // State for Exp
+  final GlobalKey rankIconKey = GlobalKey(); // Key for animation
+  StreamSubscription<DatabaseEvent>? _rankSubscription;
 
   final String apiKey = "d0fa6ab4f8080a9265e6a1bdf035fad0";
 
@@ -57,7 +67,9 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void dispose() {
     _rotationTimer?.cancel();
+    _rotationTimer?.cancel();
     _profileSubscription?.cancel();
+    _rankSubscription?.cancel();
     super.dispose();
   }
 
@@ -116,10 +128,80 @@ class _DashboardPageState extends State<DashboardPage> {
             .get();
         if (snapshot.exists)
           userFavorites = List<String>.from(snapshot.value as List);
+
+        // Listen to Rank/EXP
+        _rankSubscription?.cancel();
+        _rankSubscription = FirebaseDatabase.instance
+            .ref("users/${user.uid}/gamification/exp")
+            .onValue
+            .listen((event) {
+              if (mounted) {
+                int exp = 0;
+                if (event.snapshot.exists) {
+                  exp = int.tryParse(event.snapshot.value.toString()) ?? 0;
+                }
+                setState(() {
+                  currentExp = exp; // Update Exp
+                  currentRank = RankSystem.getRank(exp);
+                });
+              }
+            });
+
+        // Check Daily Login
+        _checkDailyLogin(user.uid);
       }
     } catch (e) {
       debugPrint("Firebase Error: $e");
     }
+  }
+
+  // 🔥 DAILY LOGIN CHECK
+  Future<void> _checkDailyLogin(String uid) async {
+    // Delay slightly to ensure dashboard is ready
+    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+
+    // Real Logic: Check Last Login Date
+    int gained = await BadgeService.checkDailyLogin(uid);
+    if (gained > 0 && mounted) {
+      _showFlyingExp(gained);
+    }
+  }
+
+  // 🔥 FLYING EXP ANIMATION
+  void _showFlyingExp(int amount) {
+    // Find Target Position (Rank Icon)
+    Offset targetPos = Offset(
+      MediaQuery.of(context).size.width - 50,
+      60,
+    ); // Default fallback
+
+    final RenderBox? targetBox =
+        rankIconKey.currentContext?.findRenderObject() as RenderBox?;
+    if (targetBox != null) {
+      targetPos = targetBox.localToGlobal(Offset.zero);
+    }
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) {
+        return Positioned(
+          left: 0,
+          top: 0,
+          right: 0,
+          bottom: 0,
+          child: _DailyLoginOverlay(
+            endPos: targetPos,
+            amount: amount,
+            onFinished: () {
+              if (entry.mounted) entry.remove();
+            },
+          ),
+        );
+      },
+    );
+
+    Overlay.of(context).insert(entry);
   }
 
   Future<void> _fetchEnvironmentData() async {
@@ -178,8 +260,37 @@ class _DashboardPageState extends State<DashboardPage> {
     if (mounted) {
       setState(() {
         _onlineNutritionData = data;
+        _generateDailyPlan(); // ✅ Buat Menu Harian
       });
     }
+  }
+
+  // 🔥 LOGIC: PILIH 3 MAKANAN ACAK UNTUK MENU HARIAN
+  void _generateDailyPlan() {
+    final allFoods = _getFoodList();
+
+    // 1. Filter hanya makanan "Good"
+    final goodFoods = allFoods.where((f) => f['type'] == 'good').toList();
+
+    if (goodFoods.length < 3) {
+      dailyPlan = goodFoods; // Kalau kurang dari 3, ambil semua
+      return;
+    }
+
+    // 2. Acak urutan
+    final random = Random();
+    goodFoods.shuffle(random);
+
+    // 3. Ambil 3 pertama & kasih label waktu makan (heuristic simple)
+    List<Map<String, dynamic>> selected = goodFoods.take(3).toList();
+
+    // Labeling Manual biar terlihat seperti menu (Pagi/Siang/Malam)
+    // Note: Ini random, belum tentu benar secara nutrisi (misal Nasi di Pagi), tapi cukup buat MVP
+    selected[0]['mealTime'] = "SARAPAN";
+    selected[1]['mealTime'] = "MAKAN SIANG";
+    selected[2]['mealTime'] = "MAKAN MALAM";
+
+    dailyPlan = selected;
   }
 
   Map<String, dynamic> _getAQIDetail(int aqi) => aqi <= 50
@@ -275,7 +386,7 @@ class _DashboardPageState extends State<DashboardPage> {
         "rating": isGood ? 5 : 2,
         // 🔥 OTOMATIS TAMPILKAN KALORI DI DESKRIPSI
         "desc":
-            "${f['cal']} kkal • ${f['reason'] ?? (isGood ? goalData['reason_good'] : goalData['reason_bad'])}",
+            "${f['cal']} kkal • ${isGood ? goalData['reason_good'] : goalData['reason_bad']}",
         "icon": _getFoodIcon(f['name']),
         "type": f['type'],
       };
@@ -305,13 +416,12 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget build(BuildContext context) {
     // Agar dashboard rebuild saat bahasa berubah
     final lang = Provider.of<LanguageProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context); // ✅ Theme Provider
-
+    final theme = Provider.of<ThemeProvider>(context);
     var aqiInfo = _getAQIDetail(currentAQI);
     var uvInfo = _getUVDetail(currentUV);
 
     return Scaffold(
-      backgroundColor: theme.bgColor, // ✅ Adaptive Background
+      backgroundColor: theme.bgColor,
       body: Stack(
         children: [
           // KONTEN UTAMA - Paling Bawah di Stack
@@ -324,12 +434,12 @@ class _DashboardPageState extends State<DashboardPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildWeatherCard(theme), // Pass theme
+                    _buildWeatherCard(theme),
                     const SizedBox(height: 30),
                     Text(
                       lang.translate('dashboard.environmentStatus'),
                       style: TextStyle(
-                        color: theme.textColor, // ✅ Adaptive Text
+                        color: theme.textColor,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
@@ -357,6 +467,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     const SizedBox(height: 25),
                     _buildTipsCard(environmentalTips, lang, theme),
                     const SizedBox(height: 30),
+                    // 🔥 SHOW DAILY MENU
+                    _buildDailyMealPlan(theme, lang),
+                    const SizedBox(height: 30),
                     NutritionCarousel(
                       userGoal: userGoal,
                       allFoods: _getFoodList(),
@@ -374,11 +487,95 @@ class _DashboardPageState extends State<DashboardPage> {
             right: 0,
             child: DashboardHeader(
               userName: userName,
+              userRank: currentRank,
+              currentExp: currentExp,
+              rankIconKey: rankIconKey,
               onProfileTap: () => Navigator.of(context).push(_createRoute()),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // 🔥 WIDGET BARU: DAILY MEAL PLAN
+  Widget _buildDailyMealPlan(ThemeProvider theme, LanguageProvider lang) {
+    if (dailyPlan.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          lang.translate('dashboard.dailyPlan'),
+          style: TextStyle(
+            color: theme.textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 15),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: dailyPlan.map((food) {
+              return Container(
+                width: 160,
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: theme.boxColor,
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: theme.textColor.withOpacity(0.1)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(food['icon'], color: Colors.green, size: 20),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      food['mealTime'] ?? "Menu",
+                      style: TextStyle(
+                        color: theme.textColor.withOpacity(0.5),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      food['name'],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: theme.textColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      food['desc'].split('•')[0].trim(), // Ambil Kalori aja
+                      style: const TextStyle(
+                        color: Color(0xFF008BFF),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 
@@ -440,7 +637,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
               ],
             ),
-            Divider(color: theme.textColor.withOpacity(0.1), height: 40),
+            const Divider(color: Colors.white10, height: 40),
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),
               child: Text(
@@ -470,7 +667,7 @@ class _DashboardPageState extends State<DashboardPage> {
                       shape: BoxShape.circle,
                       color: currentRecIndex == i
                           ? const Color(0xFF008BFF)
-                          : theme.textColor.withOpacity(0.2),
+                          : theme.textColor.withOpacity(0.24),
                     ),
                   ),
                 ),
@@ -528,8 +725,8 @@ class _DashboardPageState extends State<DashboardPage> {
       child: Column(
         children: [
           ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Color(0xFF008BFF),
+            leading: CircleAvatar(
+              backgroundColor: const Color(0xFF008BFF),
               child: Icon(Icons.lightbulb_outline, color: Colors.white),
             ),
             title: Text(
@@ -543,12 +740,12 @@ class _DashboardPageState extends State<DashboardPage> {
             subtitle: Text(
               tips,
               style: TextStyle(
-                color: theme.textColor.withOpacity(0.54),
+                color: theme.textColor.withOpacity(0.7),
                 fontSize: 12,
               ),
             ),
           ),
-          Divider(color: theme.textColor.withOpacity(0.1), height: 1),
+          const Divider(color: Colors.white12, height: 1),
           InkWell(
             onTap: () {
               Navigator.push(
@@ -599,6 +796,208 @@ class _DashboardPageState extends State<DashboardPage> {
           child: child,
         );
       },
+    );
+  }
+}
+
+class _DailyLoginOverlay extends StatefulWidget {
+  final Offset endPos;
+  final int amount;
+  final VoidCallback onFinished;
+
+  const _DailyLoginOverlay({
+    required this.endPos,
+    required this.amount,
+    required this.onFinished,
+  });
+
+  @override
+  State<_DailyLoginOverlay> createState() => _DailyLoginOverlayState();
+}
+
+class _DailyLoginOverlayState extends State<_DailyLoginOverlay>
+    with TickerProviderStateMixin {
+  late AnimationController _mainController;
+  late Animation<double> _scaleAnim;
+  late Animation<double> _fadeAnim;
+
+  late AnimationController _flyController;
+  late Animation<Offset> _flyAnim;
+  late Animation<double> _flyScaleAnim;
+
+  bool _isFlying = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 1. Controller untuk Pop Up Muncul (Scale Up + Fade In)
+    _mainController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _scaleAnim = CurvedAnimation(
+      parent: _mainController,
+      curve: Curves.elasticOut,
+    );
+    _fadeAnim = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _mainController, curve: Curves.easeOut));
+
+    // 2. Controller untuk Terbang (Fly to Target)
+    _flyController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    // Sequence: Muncul -> Tunggu -> Terbang
+    _runSequence();
+  }
+
+  void _runSequence() async {
+    await _mainController.forward(); // Muncul
+    await Future.delayed(const Duration(seconds: 2)); // Tunggu baca
+
+    if (!mounted) return;
+
+    setState(() {
+      _isFlying = true;
+    });
+
+    // Setup Fly Animation dynamically based on screen center
+    final Size size = MediaQuery.of(context).size;
+    final Offset start = Offset(size.width / 2, size.height / 2);
+
+    _flyAnim = Tween<Offset>(begin: start, end: widget.endPos).animate(
+      CurvedAnimation(parent: _flyController, curve: Curves.easeInOutBack),
+    );
+
+    _flyScaleAnim = Tween<double>(
+      begin: 1.5,
+      end: 0.5,
+    ).animate(_flyController); // Kecilin pas terbang
+
+    await _flyController.forward();
+    widget.onFinished();
+  }
+
+  @override
+  void dispose() {
+    _mainController.dispose();
+    _flyController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          // 1. Background Blur & Dim (Hilang saat terbang)
+          if (!_isFlying)
+            AnimatedBuilder(
+              animation: _fadeAnim,
+              builder: (ctx, child) => BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: 5 * _fadeAnim.value,
+                  sigmaY: 5 * _fadeAnim.value,
+                ),
+                child: Container(
+                  color: Colors.black.withOpacity(0.6 * _fadeAnim.value),
+                ),
+              ),
+            ),
+
+          // 2. Content
+          if (!_isFlying)
+            // TAMPILAN POP UP TENGAH
+            Center(
+              child: ScaleTransition(
+                scale: _scaleAnim,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "DAILY LOGIN",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 4,
+                        fontSize: 16,
+                        shadows: [
+                          Shadow(color: Colors.black26, blurRadius: 10),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.amber.withOpacity(0.6),
+                            blurRadius: 40,
+                            spreadRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: Icon(Icons.bolt, color: Colors.amber, size: 80),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "+${widget.amount} EXP",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 48,
+                        color: Colors.white,
+                        shadows: [Shadow(color: Colors.amber, blurRadius: 20)],
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "Terus konsisten ya! 🔥",
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            // TAMPILAN SAAT TERBANG (Simpel Icon + Teks)
+            AnimatedBuilder(
+              animation: _flyController,
+              builder: (ctx, child) {
+                return Positioned(
+                  left: _flyAnim.value.dx - 25, // Center anchor
+                  top: _flyAnim.value.dy - 25,
+                  child: Transform.scale(
+                    scale: _flyScaleAnim.value,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bolt, color: Colors.amber, size: 50),
+                        Text(
+                          "+${widget.amount}",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                            shadows: [
+                              Shadow(blurRadius: 5, color: Colors.black45),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
   }
 }

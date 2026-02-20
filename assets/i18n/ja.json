@@ -48,6 +48,7 @@
     "loadingLocation": "場所を読み込み中...",
     "loadingWeather": "読み込み中...",
     "connectionFailed": "接続に失敗しました",
+    "dailyPlan": "あなたの毎日のメニュー",
     "preparingTips": "ヒントを準備中...",
     "analyzingInterests": "興味を分析中...",
     "selectSportFirst": "まず設定でスポーツを選択してください！",

@@ -43,7 +43,13 @@
     "moderate": "Moderado",
     "unhealthy": "Poco Saludable",
     "low": "Bajo",
-    "high": "Alto"
+    "high": "Alto",
+    "nutritionRecommendation": "Recomendación Nutricional",
+    "highlyRecommended": "Muy Recomendado",
+    "avoidLimit": "Evitar / Limitar",
+    "environmentStatus": "Estado Ambiental",
+    "viewProgress": "Ver Progreso",
+    "dailyPlan": "Tu Menú Diario"
   },
   "weather": {
     "hotWeather": "Clima Cálido: Entrenamiento en interiores/cardio moderado.",

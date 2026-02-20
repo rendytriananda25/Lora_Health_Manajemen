@@ -6,10 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:lora_1/core/services/language_provider.dart';
-import 'package:lora_1/screen/login.dart';
-import 'package:lora_1/screen/onboarding_screen.dart';
+import 'package:lora_1/auth/login_page.dart';
+
 import 'package:lora_1/screen/navbar.dart';
-import 'package:lora_1/screen/sports_selection.dart';
+import 'package:lora_1/setup/setup_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,9 +35,7 @@ void main() async {
     MultiProvider(
       providers: [
         // ✅ Language Provider - Makes translations available everywhere
-        ChangeNotifierProvider<LanguageProvider>.value(
-          value: languageProvider,
-        ),
+        ChangeNotifierProvider<LanguageProvider>.value(value: languageProvider),
         // Add other providers here as needed
         // ChangeNotifierProvider(create: (_) => YourOtherProvider()),
       ],
@@ -97,7 +95,7 @@ class _AuthWrapper extends StatelessWidget {
 
         // Not authenticated - show login
         if (authSnapshot.data == null) {
-          return const LoginScreen();
+          return const LoginPage();
         }
 
         // Authenticated - check if user completed onboarding
@@ -118,8 +116,8 @@ class _AuthWrapper extends StatelessWidget {
               return const Navbar();
             }
 
-            // No favorite sports - show sport selection
-            return const SportsSelectionPage();
+            // No favorite sports - show setup
+            return const SetupPage();
           },
         );
       },

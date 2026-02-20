@@ -12,9 +12,10 @@ import 'security_page.dart';
 import 'notification_page.dart';
 import 'language_page.dart';
 import 'widgets/setting_widgets.dart';
-import '../../screen/login.dart';
+import 'package:lora_1/auth/login_page.dart';
 import 'package:lora_1/features/dashboard/data/nutrition_data.dart';
 import 'package:lora_1/features/map/data/workout_data.dart';
+import 'package:lora_1/features/gamification/badges_page.dart'; // ✅ Import Badges Page
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -113,7 +114,7 @@ class _SettingsPageState extends State<SettingsPage> {
         Navigator.of(context).pop();
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(builder: (context) => const LoginPage()),
           (route) => false,
         );
       }
@@ -281,6 +282,13 @@ class _SettingsPageState extends State<SettingsPage> {
                               await _pushPopup(const PersonalInfoPage());
                               if (mounted) _fetchProfileData();
                             },
+                          ),
+                          SettingItem(
+                            icon: Icons.emoji_events_outlined,
+                            title:
+                                "Pencapaian & Badges", // TODO: Add translation key
+                            isDarkMode: isDarkMode,
+                            onTap: () => _pushPopup(const BadgesPage()),
                           ),
                           SettingItem(
                             icon: Icons.lock_outline,

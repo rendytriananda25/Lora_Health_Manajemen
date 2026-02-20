@@ -1,18 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 
-class HistoryBMIDetailPage extends StatelessWidget {
+class HistoryBMIDetailPage extends StatefulWidget {
   final Map<dynamic, dynamic> data;
 
   const HistoryBMIDetailPage({super.key, required this.data});
 
   @override
+  State<HistoryBMIDetailPage> createState() => _HistoryBMIDetailPageState();
+}
+
+class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
+  String _gender = 'MALE'; // Default
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserGender();
+  }
+
+  // Ambil Data Gender dari Firebase
+  Future<void> _fetchUserGender() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        final ref = FirebaseDatabase.instance.ref(
+          "users/${user.uid}/health_data/gender",
+        );
+        final snapshot = await ref.get();
+        if (snapshot.exists) {
+          String val = snapshot.value.toString().toUpperCase();
+          setState(() {
+            if (val.contains("PEREMPUAN") ||
+                val.contains("FEMALE") ||
+                val.contains("WANITA")) {
+              _gender = 'FEMALE';
+            } else {
+              _gender = 'MALE';
+            }
+          });
+        }
+      } catch (e) {
+        debugPrint("Gagal ambil gender: $e");
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
+    final data = widget.data;
 
     // Format tanggal
     DateTime dt = DateTime.parse(
@@ -20,19 +63,17 @@ class HistoryBMIDetailPage extends StatelessWidget {
     );
     String formattedDate = DateFormat('dd MMMM yyyy, HH:mm').format(dt);
 
-    // ✅ Parse BMI score dari field baru ATAU extract dari activity string (backward compat)
+    // Parse Data
     String bmiScore;
     if (data['bmi_score'] != null) {
       bmiScore = data['bmi_score'].toString();
     } else {
-      // Fallback: parse dari "Cek BMI: 22.5"
       String activity = data['activity']?.toString() ?? '';
       bmiScore = activity.replaceAll(RegExp(r'[^0-9.]'), '').isNotEmpty
           ? activity.replaceAll(RegExp(r'[^0-9.]'), '')
           : '0';
     }
 
-    // ✅ Parse height & weight dari data (baru disimpan setelah fix)
     String weightVal = data['weight']?.toString() ?? '--';
     String heightVal = data['height']?.toString() ?? '--';
     String status = (data['status'] ?? 'Normal').toString().toUpperCase();
@@ -41,46 +82,63 @@ class HistoryBMIDetailPage extends StatelessWidget {
       backgroundColor: theme.bgColor,
       body: Stack(
         children: [
-          Column(
-            children: [
-              // 1. VISUALISASI KARAKTER & ANGKA TINGGI/BERAT
-              Expanded(
-                flex: 4,
-                child: _buildBMIVisualization(
-                  status,
-                  weightVal,
-                  heightVal,
-                  lang,
-                  theme,
-                ),
-              ),
+          // LAYER 1: FIXED VISUALIZATION (BACKGROUND)
+          Positioned.fill(
+            bottom:
+                MediaQuery.of(context).size.height * 0.4, // Sisakan ruang bawah
+            child: _buildBMIVisualization(
+              status,
+              weightVal,
+              heightVal,
+              lang,
+              theme,
+            ),
+          ),
 
-              // 2. PANEL STATISTIK BAWAH
-              Expanded(
-                flex: 2,
-                child: Container(
-                  width: double.infinity,
+          // LAYER 2: SCROLLABLE SHEET (FOREGROUND)
+          DraggableScrollableSheet(
+            initialChildSize: 0.50,
+            minChildSize: 0.50,
+            maxChildSize: 0.85,
+            builder: (context, scrollController) {
+              return Container(
+                decoration: BoxDecoration(
+                  color: theme.boxColor,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(40),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 30,
+                      offset: const Offset(0, -10),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  physics: const BouncingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 30,
-                    vertical: 40,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.boxColor.withOpacity(0.95),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(40),
-                    ),
-                    border: Border.all(color: theme.textColor.withOpacity(0.1)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: const Offset(0, -10),
-                      ),
-                    ],
+                    vertical: 30,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Handle Bar
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 20),
+                          decoration: BoxDecoration(
+                            color: theme.textColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                      ),
+
+                      // --- HEADER HASIL ---
                       Text(
                         lang.translate('history.bmiResultTitle'),
                         style: const TextStyle(
@@ -100,10 +158,11 @@ class HistoryBMIDetailPage extends StatelessWidget {
                         ),
                       ),
                       Divider(
-                        color: theme.textColor.withOpacity(0.1),
+                        color: theme.textColor.withOpacity(0.2),
                         height: 40,
                       ),
 
+                      // --- STATISTIK BMI ---
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -113,6 +172,11 @@ class HistoryBMIDetailPage extends StatelessWidget {
                             lang.translate('history.bmiIndex'),
                             theme,
                           ),
+                          Container(
+                            width: 1,
+                            height: 40,
+                            color: theme.textColor.withOpacity(0.1),
+                          ),
                           _buildStatItem(
                             lang.translate('history.bmiStatus'),
                             status,
@@ -121,11 +185,31 @@ class HistoryBMIDetailPage extends StatelessWidget {
                           ),
                         ],
                       ),
+
+                      const SizedBox(height: 30),
+
+                      // --- REKOMENDASI NUTRISI ---
+                      _buildNutritionAdvice(status, theme),
+
+                      const SizedBox(height: 20),
+
+                      // Info Gender
+                      Center(
+                        child: Text(
+                          "Kalkulasi disesuaikan untuk ${_gender == 'MALE' ? 'Pria' : 'Wanita'}",
+                          style: TextStyle(
+                            color: theme.textColor.withOpacity(0.3),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 50),
                     ],
                   ),
                 ),
-              ),
-            ],
+              );
+            },
           ),
 
           // Tombol Kembali
@@ -153,27 +237,32 @@ class HistoryBMIDetailPage extends StatelessWidget {
     ThemeProvider theme,
   ) {
     Color bodyColor;
+    // 🔥 UPDATE WARNA SESUAI REQUEST USER 🔥
     if (status.contains('UNDERWEIGHT') || status.contains('KURANG')) {
-      bodyColor = Colors.lightBlueAccent;
-    } else if (status.contains('NORMAL')) {
-      bodyColor = const Color(0xFF5EEAD4);
-    } else if (status.contains('OVERWEIGHT') || status.contains('OVER')) {
-      bodyColor = Colors.orangeAccent;
+      bodyColor = Colors.blue;
+    } else if (status.contains('NORMAL') || status.contains('IDEAL')) {
+      bodyColor = Colors.green;
+    } else if (status.contains('OVERWEIGHT') || status.contains('GEMUK')) {
+      bodyColor = Colors.orange;
     } else if (status.contains('OBESITY') || status.contains('OBES')) {
-      bodyColor = Colors.redAccent;
+      bodyColor = Colors.red;
     } else {
-      bodyColor = const Color(0xFF5EEAD4);
+      bodyColor = Colors.green;
+    }
+
+    String imageAsset = 'assets/images/bmi_character.png';
+    if (_gender == 'FEMALE') {
+      imageAsset = 'assets/images/bmi_character_female.png';
     }
 
     return Container(
       width: double.infinity,
-      color: theme.bgColor, // Adaptive Background
+      color: theme.bgColor,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Positioned(
-            left: 50,
-            bottom: 60,
+            left: 30,
             top: 100,
             child: _buildRulerColumn(
               lang.translate('bmi.weight'),
@@ -181,11 +270,12 @@ class HistoryBMIDetailPage extends StatelessWidget {
               "kg",
               Icons.monitor_weight_outlined,
               theme,
+              min: 30,
+              max: 150,
             ),
           ),
           Positioned(
-            right: 50,
-            bottom: 60,
+            right: 30,
             top: 100,
             child: _buildRulerColumn(
               lang.translate('bmi.height'),
@@ -193,27 +283,27 @@ class HistoryBMIDetailPage extends StatelessWidget {
               "cm",
               Icons.height_rounded,
               theme,
+              min: 100,
+              max: 250,
             ),
           ),
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
-              // Use ColorFiltered or Icon if image doesn't support theme,
-              // but image is likely PNG. Providing a placeholder logic
+              const SizedBox(height: 40),
               Image.asset(
-                'assets/images/bmi_character.png',
-                height: 220,
+                imageAsset,
+                height: 240,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) {
                   return Icon(
-                    Icons.person,
-                    color: theme.textColor.withOpacity(0.24),
+                    _gender == 'FEMALE' ? Icons.woman : Icons.man,
+                    color: theme.textColor.withOpacity(0.2),
                     size: 200,
                   );
                 },
               ),
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
@@ -228,9 +318,9 @@ class HistoryBMIDetailPage extends StatelessWidget {
                   status,
                   style: TextStyle(
                     color: bodyColor,
-                    fontSize: 16,
+                    fontSize: 14, // 🔥 DIKECILKAN 🔥
                     fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
+                    letterSpacing: 1.5,
                   ),
                 ),
               ),
@@ -246,11 +336,18 @@ class HistoryBMIDetailPage extends StatelessWidget {
     String value,
     String unit,
     IconData icon,
-    ThemeProvider theme,
-  ) {
+    ThemeProvider theme, {
+    double min = 0,
+    double max = 100,
+  }) {
+    double val = double.tryParse(value) ?? min;
+    double percentage = (val - min) / (max - min);
+    if (percentage < 0) percentage = 0;
+    if (percentage > 1) percentage = 1;
+
     return Column(
       children: [
-        Icon(icon, color: theme.textColor.withOpacity(0.24), size: 22),
+        Icon(icon, color: theme.textColor.withOpacity(0.5), size: 22),
         const SizedBox(height: 10),
         Text(
           value,
@@ -263,29 +360,35 @@ class HistoryBMIDetailPage extends StatelessWidget {
         Text(
           unit,
           style: TextStyle(
-            color: theme.textColor.withOpacity(0.38),
+            color: theme.textColor.withOpacity(0.7),
             fontSize: 10,
           ),
         ),
         const SizedBox(height: 15),
-        Expanded(
-          child: Container(
-            width: 12,
-            decoration: BoxDecoration(
-              color: theme.textColor.withOpacity(0.03),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(
-                12,
-                (index) => Container(
-                  width: index % 4 == 0 ? 10 : 5,
-                  height: 1.5,
-                  color: theme.textColor.withOpacity(0.12),
+        SizedBox(
+          height: 150,
+          width: 12,
+          child: Stack(
+            alignment: Alignment.bottomCenter,
+            children: [
+              Container(
+                width: 12,
+                decoration: BoxDecoration(
+                  color: theme.textColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-            ),
+              FractionallySizedBox(
+                heightFactor: percentage,
+                child: Container(
+                  width: 12,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF008BFF).withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 15),
@@ -322,7 +425,7 @@ class HistoryBMIDetailPage extends StatelessWidget {
           value,
           style: TextStyle(
             color: theme.textColor,
-            fontSize: 22,
+            fontSize: 32,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -330,10 +433,164 @@ class HistoryBMIDetailPage extends StatelessWidget {
           unit,
           style: TextStyle(
             color: theme.textColor.withOpacity(0.54),
-            fontSize: 10,
+            fontSize: 12,
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildNutritionAdvice(String status, ThemeProvider theme) {
+    Map<String, dynamic> advice = _getNutritionAdvice(status);
+    Color color = advice['color'];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B), // Dark Blue Card Base
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: color.withOpacity(0.3)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.restaurant_menu_rounded,
+                  color: color,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                "Rekomendasi Nutrisi",
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            advice['title'],
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            advice['desc'],
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.7),
+              fontSize: 13,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: (advice['foods'] as List<String>).map((food) {
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Text(
+                  food,
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, dynamic> _getNutritionAdvice(String status) {
+    status = status.toUpperCase();
+    bool isFemale = _gender == 'FEMALE';
+
+    if (status.contains('UNDER') || status.contains('KURANG')) {
+      return {
+        "title": isFemale
+            ? "Booster Berat Badan Alami"
+            : "Surplus Kalori & Massa Otot",
+        "desc": isFemale
+            ? "Fokus menaikkan lemak sehat dan protein untuk keseimbangan hormon."
+            : "Tingkatkan kalori harian dengan protein tinggi untuk massa otot.",
+        "foods": isFemale
+            ? [
+                "Alpukat 🥑",
+                "Kacang Almond 🥜",
+                "Smoothie Susu 🥤",
+                "Ikan Salmon 🐟",
+              ]
+            : [
+                "Daging Merah 🥩",
+                "Nasi/Kentang 🍚",
+                "Telur Utuh 🥚",
+                "Susu Full Cream 🥛",
+              ],
+        // 🔥 WARNA SESUAI REQUEST: BIRU 🔥
+        "color": Colors.blue,
+      };
+    } else if (status.contains('OVER') || status.contains('OBES')) {
+      // Logic khusus: Obesitas = Merah, Overweight = Orens
+      bool isObes = status.contains('OBES');
+      return {
+        "title": isFemale ? "Detox & Fat Loss" : "Cutting & Pembakaran Lemak",
+        "desc": isFemale
+            ? "Kurangi gula tersembunyi. Fokus serat sayuran untuk pencernaan lancar."
+            : "Kurangi karbohidrat simpel. Perbanyak protein lean untuk menjaga otot saat diet.",
+        "foods": [
+          "Sayuran Hijau 🥦",
+          "Putih Telur 🥚",
+          "Teh Hijau 🍵",
+          "Buah Berry 🫐",
+        ],
+        // 🔥 WARNA SESUAI REQUEST: MERAH (OBES) / ORANGE (OVER) 🔥
+        "color": isObes ? Colors.red : Colors.orange,
+      };
+    } else {
+      // NORMAL
+      return {
+        "title": "Maintain Vitalitas Tubuh",
+        "desc":
+            "Pertahankan pola makan seimbang. Jangan lupa hidrasi yang cukup.",
+        "foods": [
+          "Biji-bijian Utuh 🌾",
+          "Ayam Tanpa Lemak 🍗",
+          "Salad Buah 🥗",
+        ],
+        // 🔥 WARNA SESUAI REQUEST: HIJAU 🔥
+        "color": Colors.green,
+      };
+    }
   }
 }

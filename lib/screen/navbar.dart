@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/map/map_pages.dart';
 import 'package:lora_1/features/history/history_page.dart';
-import 'package:lora_1/features/dashboard/dashborad.dart';
-import 'bmi.dart';
+import 'package:lora_1/features/dashboard/dashboard.dart';
+import 'package:lora_1/features/bmi/bmi_page.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({super.key});
@@ -177,7 +177,7 @@ class _NavbarState extends State<Navbar> {
         behavior: HitTestBehavior.translucent,
         child: Center(
           child: isRec
-              ? _buildRecContent(isActive)
+              ? _buildRecContent(isActive, theme)
               : AnimatedScale(
                   scale: isActive ? 1.0 : 0.9, // Slight zoom effect
                   duration: const Duration(milliseconds: 200),
@@ -195,7 +195,7 @@ class _NavbarState extends State<Navbar> {
     );
   }
 
-  Widget _buildRecContent(bool isActive) {
+  Widget _buildRecContent(bool isActive, ThemeProvider theme) {
     // If active: White text on Blue circle (Background circle handled by AnimatedPositioned)
     // If inactive: "REC" text without circle? Or grey circle?
     // Previous implementation had a grey circle for inactive.
@@ -210,7 +210,7 @@ class _NavbarState extends State<Navbar> {
       child: Text(
         "REC",
         style: TextStyle(
-          color: isActive ? Colors.white : Colors.grey, // Theme color?
+          color: isActive ? Colors.white : theme.textColor.withOpacity(0.5),
           fontSize: 14,
           fontWeight: FontWeight.w900,
           letterSpacing: 1.0,

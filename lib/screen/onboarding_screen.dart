@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:lora_1/screen/login.dart';
+import 'package:lora_1/auth/login_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -17,17 +17,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, String>> _onboardingData = [
     {
       "title": "Discover Real-time Weather",
-      "desc": "Pantau kondisi cuaca dan kualitas udara di sekitarmu secara akurat.",
+      "desc":
+          "Pantau kondisi cuaca dan kualitas udara di sekitarmu secara akurat.",
       "image": "assets/images/lari1.jpg",
     },
     {
       "title": "Smart Sports Suggestion",
-      "desc": "Dapatkan rekomendasi olahraga terbaik yang sesuai dengan kondisi alam.",
+      "desc":
+          "Dapatkan rekomendasi olahraga terbaik yang sesuai dengan kondisi alam.",
       "image": "assets/images/sepeda.jpg",
     },
     {
       "title": "Track Your Progress",
-      "desc": "Catat setiap aktivitas olahragamu dan lihat perkembangan kesehatanmu.",
+      "desc":
+          "Catat setiap aktivitas olahragamu dan lihat perkembangan kesehatanmu.",
       "image": "assets/images/basket.jpg",
     },
     {
@@ -92,13 +95,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    // ✅ FIX: Matikan suara/getaran bawaan OS Android/iOS         
+                    // ✅ FIX: Matikan suara/getaran bawaan OS Android/iOS
                     onPressed: () {
                       if (_currentPage == _onboardingData.length - 1) {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
+                            builder: (context) => const LoginPage(),
                           ),
                         );
                       } else {

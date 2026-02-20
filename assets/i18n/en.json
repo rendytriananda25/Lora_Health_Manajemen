@@ -48,6 +48,7 @@
     "loadingLocation": "Loading Location...",
     "loadingWeather": "Loading...",
     "connectionFailed": "Connection Failed",
+    "dailyPlan": "Your Daily Menu",
     "preparingTips": "Preparing tips for you...",
     "analyzingInterests": "Analyzing your interests...",
     "selectSportFirst": "Select a sport first in Settings!",
@@ -276,7 +277,8 @@
     "security": "Security",
     "changePassword": "Change Password",
     "twoFactorAuth": "Two-Factor Authentication",
-    "editName": "Edit Name"
+    "editName": "Edit Name",
+    "databaseUpdated": "Nutrition & Workout Database Updated Successfully!"
   },
   "personalInfo": {
     "title": "Personal Information",
@@ -289,7 +291,8 @@
     "changeName": "Change Name",
     "enterNewName": "Enter new name...",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "photoUpdated": "Profile Photo Updated (Local)"
   },
   "notification": {
     "title": "Notification Settings",

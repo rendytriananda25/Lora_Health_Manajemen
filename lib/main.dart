@@ -12,7 +12,7 @@ import 'features/notification/notification_service.dart';
 import 'features/notification/workout_reminder_service.dart';
 import 'screen/navbar.dart';
 import 'screen/onboarding_screen.dart';
-import 'screen/sports_selection.dart';
+import 'setup/setup_page.dart';
 import 'features/dashboard/data/nutrition_data.dart';
 import 'features/map/data/workout_data.dart';
 
@@ -25,6 +25,7 @@ void main() async {
 
   final themeProvider = ThemeProvider(); // ✅ Init Theme
   await themeProvider.initialize();
+  debugPrint("🚀 Main: Theme Initialized");
 
   // 📱 2. Atur UI Overlay (Status Bar & Orientasi)
   SystemChrome.setSystemUIOverlayStyle(
@@ -142,7 +143,7 @@ class MyApp extends StatelessWidget {
                     }
 
                     // Jika data olahraga TIDAK ADA -> Pilih Olahraga (Onboarding step 2)
-                    return const SportsSelectionPage();
+                    return const SetupPage();
                   },
                 );
               }

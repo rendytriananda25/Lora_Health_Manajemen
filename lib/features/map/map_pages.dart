@@ -23,6 +23,10 @@ import 'widgets/timer_background.dart';
 import 'widgets/tips_popup.dart';
 import 'widgets/map_dialogs.dart';
 import 'package:lora_1/features/notification/workout_reminder_service.dart';
+import 'package:lora_1/features/gamification/badges.dart';
+import 'package:lora_1/features/gamification/badges_page.dart';
+import 'package:lora_1/features/gamification/badge_service.dart';
+import 'package:lora_1/features/gamification/rank_system.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -47,6 +51,7 @@ class _MapPageState extends State<MapPage> {
   String _userGoal = "KEEP_FIT";
   String _userGender = "UNKNOWN";
   String _userName = "User"; // ✅ Untuk sapaan fleksibel
+  double _userWeight = 60.0; // Default weight
 
   // ✅ Weather Logic
   String _currentTemp = "--";
@@ -135,23 +140,47 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  // ✅ Helper: Tentukan nilai MET (Metabolic Equivalent) untuk kalori lebih akurat
+  double _getMETValue(String sport) {
+    String s = sport.toUpperCase();
+
+    // Referensi: Compendium of Physical Activities
+    if (s.contains("LARI") || s.contains("RUN"))
+      return 9.0; // Running ~9-10 MET
+    if (s.contains("SEPEDA") || s.contains("CYCL"))
+      return 7.5; // Cycling ~7-8 MET
+    if (s.contains("BASKET")) return 6.5; // Basketball ~6-7 MET
+    if (s.contains("BOLA") || s.contains("SOCCER") || s.contains("FOOTBALL"))
+      return 7.0; // Soccer
+    if (s.contains("JALAN") || s.contains("WALK")) return 3.8; // Walking
+    if (s.contains("HOME") || s.contains("WORKOUT"))
+      return 5.0; // Moderate Calisthenics
+
+    return 4.5; // Default moderate activity
+  }
+
   Future<void> _loadUserPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     var loadedGender = prefs.getString('user_gender') ?? "UNKNOWN";
     int loadedFrequency = prefs.getInt('user_frequency') ?? 1;
+    double loadedWeight = 60.0;
 
-    if (loadedGender == "UNKNOWN" || loadedGender == "--") {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final snapshot = await FirebaseDatabase.instance
-            .ref("users/${user.uid}/health_data")
-            .get();
-        if (snapshot.exists && snapshot.value is Map) {
-          final data = snapshot.value as Map;
-          loadedGender = data['gender']?.toString() ?? "UNKNOWN";
-          if (data['frequency'] != null) {
-            loadedFrequency = int.tryParse(data['frequency'].toString()) ?? 1;
-          }
+    // Cek local storage dulu kalau ada (opsional), tapi prioritas database
+
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final snapshot = await FirebaseDatabase.instance
+          .ref("users/${user.uid}/health_data")
+          .get();
+      if (snapshot.exists && snapshot.value is Map) {
+        final data = snapshot.value as Map;
+        loadedGender = data['gender']?.toString() ?? "UNKNOWN";
+        if (data['frequency'] != null) {
+          loadedFrequency = int.tryParse(data['frequency'].toString()) ?? 1;
+        }
+        // ✅ Ambil Berat Badan (Weight)
+        if (data['weight'] != null) {
+          loadedWeight = double.tryParse(data['weight'].toString()) ?? 60.0;
         }
       }
     }
@@ -162,6 +191,7 @@ class _MapPageState extends State<MapPage> {
         _userGoal = prefs.getString('user_fitness_goal') ?? "KEEP_FIT";
         _userGender = _normalizeGender(loadedGender);
         _userFrequency = loadedFrequency;
+        _userWeight = loadedWeight > 0 ? loadedWeight : 60.0;
       });
       _generateRoutine();
       _syncWeatherReminder();
@@ -379,20 +409,114 @@ class _MapPageState extends State<MapPage> {
         final dbRef = FirebaseDatabase.instance.ref(
           "users/${user.uid}/history",
         );
+
+        // ✅ HITUNG KALORI PAKAI MET (Lebih Akurat)
+        // Rumus: Calories = MET * Weight(kg) * Time(hours)
+        double met = _getMETValue(_selectedSport);
+        double durationHours = _secondsNotifier.value / 3600.0;
+        int caloriesBurned = (met * _userWeight * durationHours).toInt();
+
+        // Fallback minimal 1 kalori jika durasi > 10 detik
+        if (caloriesBurned == 0 && _secondsNotifier.value > 10)
+          caloriesBurned = 1;
+
         await dbRef.push().set({
           'activity': _selectedSport,
           'duration_sec': _secondsNotifier.value,
           'distance_km': _distanceNotifier.value,
-          'calories': (_secondsNotifier.value * 0.15).toInt(),
+          'calories': caloriesBurned, // ✅ Pakai hasil hitungan baru
           'time': DateTime.now().toIso8601String(),
+          // ✅ FIX: Simpan format string juga biar History terbaca
+          'details': !_isGpsSport && _workoutSessionData.isNotEmpty
+              ? _workoutSessionData
+                    .map((e) => "${e['name']}: ${e['result']}")
+                    .join(", ")
+              : null,
           'workout_details': !_isGpsSport ? _workoutSessionData : null,
         });
 
+        // 🔥 DATA SESI UNTUK EXP
+        final sessionData = {
+          'workout_details': !_isGpsSport ? _workoutSessionData : null,
+          'calories': caloriesBurned,
+          'distance_km': _distanceNotifier.value,
+        };
+
+        // 🔥 GAMIFICATION & STATS
+        GamificationResult? gameResult;
+        if (user != null) {
+          gameResult = await BadgeService.processSession(user.uid, sessionData);
+        }
+
         if (mounted) {
+          final theme = Provider.of<ThemeProvider>(context, listen: false);
+          // 1. Show Badge Unlock
+          if (gameResult != null && gameResult.newBadges.isNotEmpty) {
+            await showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) =>
+                  BadgeUnlockDialog(badges: gameResult!.newBadges),
+            );
+          }
+
+          // 2. Show Rank Up / Exp Summary
+          if (gameResult != null && gameResult.isRankUp) {
+            await showDialog(
+              context: context,
+              builder: (_) => AlertDialog(
+                backgroundColor: theme.boxColor,
+                title: Text(
+                  "NAIK PANGKAT! 🌟",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: theme.textColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(gameResult!.newRank.assetPath, height: 100),
+                    SizedBox(height: 10),
+                    Text(
+                      "Selamat! Kamu sekarang rank:",
+                      style: TextStyle(color: theme.textColor),
+                    ),
+                    Text(
+                      gameResult.newRank.name,
+                      style: TextStyle(
+                        color: Colors.amber,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      "+${gameResult.gainedExp} EXP",
+                      style: TextStyle(
+                        color: Colors.greenAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("KEREN!"),
+                  ),
+                ],
+              ),
+            );
+          }
+
           showDialog(
             context: context,
             builder: (context) => SyncedSuccessDialog(
-              message: lang.translate('map.sessionSaved'),
+              message: lang.translate(
+                'map.sessionSaved',
+              ), // Or show Exp gained here?
               onClose: () => Navigator.pop(context),
             ),
           );

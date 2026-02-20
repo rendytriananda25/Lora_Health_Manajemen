@@ -1,5 +1,3 @@
-import 'dart:math';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +6,11 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
+
+// Clean Code: Import Widgets Terpisah
+import 'widgets/glass_card.dart';
+import 'widgets/human_painter.dart';
+import 'widgets/gauge_painter.dart';
 
 class BMIPage extends StatefulWidget {
   const BMIPage({super.key});
@@ -78,6 +81,9 @@ class _BMIPageState extends State<BMIPage> {
           'activity': "Cek BMI: ${_bmiResult.toStringAsFixed(1)}",
           'time': DateTime.now().toIso8601String(),
           'status': _bmiStatus,
+          'weight': _weight,
+          'height': _height,
+          'bmi_score': _bmiResult.toStringAsFixed(1),
         });
       } catch (e) {
         debugPrint("Gagal simpan history: $e");
@@ -138,7 +144,6 @@ class _BMIPageState extends State<BMIPage> {
     // Agar halaman ikut rebuild saat bahasa berubah
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
-
     return Scaffold(
       backgroundColor: theme.bgColor,
       body: SafeArea(
@@ -320,7 +325,7 @@ class _BMIPageState extends State<BMIPage> {
               value: _weight.toDouble(),
               min: 30,
               max: 150,
-              emptyColor: theme.textColor.withOpacity(0.1),
+              bgColor: theme.textColor.withOpacity(0.1),
             ),
             child: Center(
               child: Column(
@@ -346,8 +351,7 @@ class _BMIPageState extends State<BMIPage> {
           child: SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: const Color(0xFF008BFF),
-              inactiveTrackColor: theme.textColor.withOpacity(0.1),
-              thumbColor: theme.textColor,
+              thumbColor: Colors.white,
               trackHeight: 10,
             ),
             child: Slider(
@@ -452,6 +456,7 @@ class _BMIPageState extends State<BMIPage> {
   }
 
   Widget _buildToggleBtn(String text, bool isActive) {
+    final theme = Provider.of<ThemeProvider>(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       decoration: BoxDecoration(
@@ -460,8 +465,8 @@ class _BMIPageState extends State<BMIPage> {
       ),
       child: Text(
         text,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: isActive ? Colors.white : theme.textColor,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -519,116 +524,6 @@ class _BMIPageState extends State<BMIPage> {
           ),
         ),
       ],
-    );
-  }
-}
-
-// --- PAINTERS & GLASSCARD ---
-class HumanPainter extends CustomPainter {
-  final Color color;
-  HumanPainter({required this.color});
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill;
-    final w = size.width;
-    final h = size.height;
-    final headRect = Rect.fromCenter(
-      center: Offset(w / 2, h * 0.12),
-      width: w * 0.25,
-      height: w * 0.25,
-    );
-    final bodyPath = Path()
-      ..moveTo(w * 0.25, h * 0.25)
-      ..lineTo(w * 0.75, h * 0.25)
-      ..lineTo(w * 0.70, h * 0.60)
-      ..lineTo(w * 0.30, h * 0.60)
-      ..close();
-    final legsPath = Path()
-      ..moveTo(w * 0.32, h * 0.60)
-      ..lineTo(w * 0.48, h * 0.60)
-      ..lineTo(w * 0.48, h * 0.95)
-      ..lineTo(w * 0.32, h * 0.95)
-      ..close();
-    legsPath
-      ..moveTo(w * 0.52, h * 0.60)
-      ..lineTo(w * 0.68, h * 0.60)
-      ..lineTo(w * 0.68, h * 0.95)
-      ..lineTo(w * 0.52, h * 0.95)
-      ..close();
-    canvas.drawOval(headRect, paint);
-    canvas.drawPath(bodyPath, paint);
-    canvas.drawPath(legsPath, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class GaugePainter extends CustomPainter {
-  final double value;
-  final double min;
-  final double max;
-  final Color emptyColor;
-  GaugePainter({
-    required this.value,
-    required this.min,
-    required this.max,
-    required this.emptyColor,
-  });
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height * 0.7);
-    final radius = size.width * 0.45;
-    final bgPaint = Paint()
-      ..color = emptyColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 15
-      ..strokeCap = StrokeCap.round;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      pi,
-      pi,
-      false,
-      bgPaint,
-    );
-    final progress = (value - min) / (max - min);
-    final needleAngle = pi + (progress * pi);
-    final needleEnd = Offset(
-      center.dx + (radius - 10) * cos(needleAngle),
-      center.dy + (radius - 10) * sin(needleAngle),
-    );
-    canvas.drawLine(
-      center,
-      needleEnd,
-      Paint()
-        ..color = const Color(0xFF008BFF)
-        ..strokeWidth = 6
-        ..strokeCap = StrokeCap.round,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
-
-class GlassCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  const GlassCard({super.key, required this.child, this.padding});
-  @override
-  Widget build(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context);
-    return Container(
-      padding:
-          padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      decoration: BoxDecoration(
-        color: theme.boxColor,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.textColor.withOpacity(0.1)),
-      ),
-      child: child,
     );
   }
 }

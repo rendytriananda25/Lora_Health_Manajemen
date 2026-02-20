@@ -43,7 +43,13 @@
     "moderate": "中程度",
     "unhealthy": "不健康",
     "low": "低い",
-    "high": "高い"
+    "high": "高い",
+    "nutritionRecommendation": "栄養の推奨",
+    "highlyRecommended": "強く推奨",
+    "avoidLimit": "避ける / 制限",
+    "environmentStatus": "環境ステータス",
+    "viewProgress": "進捗を見る",
+    "dailyPlan": "あなたの毎日のメニュー"
   },
   "weather": {
     "hotWeather": "暑い天気：室内トレーニング/中程度のカーディオ。",
