@@ -1,7 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/firebase_database.dart'; 
 
 // ✅ FILE INI STANDALONE - TANPA KONEKSI KE PAGE MANAPUN
 // Hanya untuk referensi atau testing isolasi

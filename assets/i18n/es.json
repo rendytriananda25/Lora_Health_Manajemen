@@ -343,7 +343,8 @@
     "updateDbQuestion": "¿Actualizar base de datos de alimentos a Firebase ahora?",
     "cancel": "Cancelar",
     "update": "ACTUALIZAR",
-    "dbUpdated": "¡Base de datos de Nutrición y Entrenamiento actualizada con éxito!"
+    "dbUpdated": "¡Base de datos de Nutrición y Entrenamiento actualizada con éxito!",
+    "confirmLogoutBody": "¿Estás seguro de que quieres cerrar sesión?"
   },
   "personalInfo": {
     "title": "Información Personal",

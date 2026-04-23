@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'badges.dart';
 import 'badge_service.dart';
+import '../../core/services/language_provider.dart';
+import 'badge_translator.dart';
 
 class BadgesPage extends StatefulWidget {
   const BadgesPage({super.key});
@@ -39,7 +41,7 @@ class _BadgesPageState extends State<BadgesPage> {
       backgroundColor: theme.bgColor,
       appBar: AppBar(
         title: Text(
-          "Pencapaian & Badges",
+          BadgeTranslator.translateTitle("Pencapaian & Badges", Provider.of<LanguageProvider>(context, listen: false)),
           style: TextStyle(color: theme.textColor, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -63,7 +65,7 @@ class _BadgesPageState extends State<BadgesPage> {
               itemBuilder: (context, index) {
                 final badge = BadgeList.allBadges[index];
                 final isUnlocked = unlockedIds.contains(badge.id);
-                return _buildBadgeCard(badge, isUnlocked, theme);
+                return _buildBadgeCard(badge, isUnlocked, theme, Provider.of<LanguageProvider>(context, listen: false));
               },
             ),
     );
@@ -73,6 +75,7 @@ class _BadgesPageState extends State<BadgesPage> {
     BadgeItem badge,
     bool isUnlocked,
     ThemeProvider theme,
+    LanguageProvider lang,
   ) {
     return GestureDetector(
       onTap: () {
@@ -88,7 +91,7 @@ class _BadgesPageState extends State<BadgesPage> {
               ),
             ),
             title: Text(
-              badge.title,
+              BadgeTranslator.translateTitle(badge.title, lang),
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: theme.textColor,
@@ -116,7 +119,7 @@ class _BadgesPageState extends State<BadgesPage> {
                 ),
                 const SizedBox(height: 15),
                 Text(
-                  isUnlocked ? "TERBUKA! 🎉" : "TERKUNCI 🔒",
+                  BadgeTranslator.translateUi(isUnlocked ? "TERBUKA! 🎉" : "TERKUNCI 🔒", lang),
                   style: TextStyle(
                     color: isUnlocked ? Colors.greenAccent : Colors.redAccent,
                     fontSize: 12,
@@ -126,7 +129,7 @@ class _BadgesPageState extends State<BadgesPage> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  badge.description,
+                  BadgeTranslator.translateDescription(badge.description, lang),
                   textAlign: TextAlign.center,
                   style: TextStyle(color: theme.textColor.withOpacity(0.8)),
                 ),
@@ -135,7 +138,7 @@ class _BadgesPageState extends State<BadgesPage> {
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: Text("Tutup", style: TextStyle(color: theme.textColor)),
+                child: Text(BadgeTranslator.translateUi("Tutup", lang), style: TextStyle(color: theme.textColor)),
               ),
             ],
           ),
@@ -200,7 +203,7 @@ class _BadgesPageState extends State<BadgesPage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                badge.title,
+                BadgeTranslator.translateTitle(badge.title, lang),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -227,6 +230,7 @@ class BadgeUnlockDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -247,7 +251,7 @@ class BadgeUnlockDialog extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  "BADGE UNLOCKED! 🏆",
+                  BadgeTranslator.translateUi("BADGE UNLOCKED! 🏆", lang),
                   style: TextStyle(
                     color: theme.textColor, // Adaptive
                     fontSize: 20,
@@ -267,7 +271,7 @@ class BadgeUnlockDialog extends StatelessWidget {
                           Icon(b.icon, size: 80, color: b.color),
                           const SizedBox(height: 10),
                           Text(
-                            b.title,
+                            BadgeTranslator.translateTitle(b.title, lang),
                             style: TextStyle(
                               color: theme.textColor, // Adaptive
                               fontSize: 18,
@@ -275,7 +279,7 @@ class BadgeUnlockDialog extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            b.description,
+                            BadgeTranslator.translateDescription(b.description, lang),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: theme.textColor.withOpacity(
@@ -295,9 +299,9 @@ class BadgeUnlockDialog extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.amber,
                   ),
-                  child: const Text(
-                    "KEREN!",
-                    style: TextStyle(
+                  child: Text(
+                    BadgeTranslator.translateUi("KEREN!", lang),
+                    style: const TextStyle(
                       color:
                           Colors.black, // Tetap hitam agar kontras dengan Amber
                       fontWeight: FontWeight.bold,

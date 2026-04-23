@@ -17,6 +17,9 @@ import 'widgets/glass_card.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/nutrition_carousel.dart';
 import 'data/nutrition_data.dart'; // ✅ Import Data Baru
+import 'data/food_translator.dart'; // ✅ Import Translator
+import 'package:lora_1/core/utils/app_size.dart'; // ✅ Responsive
+
 
 // ✅ IMPORT HALAMAN LAIN
 import 'package:lora_1/features/settings/setting_page.dart';
@@ -34,6 +37,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   // --- STATE VARIABLES ---
   String userName = "User";
+  String? localPhotoPath; // ✅ Foto lokal user
   String apiTemp = "--";
   String currentCity = "Memuat Lokasi...";
   String weatherCondition = "Memuat...";
@@ -64,6 +68,21 @@ class _DashboardPageState extends State<DashboardPage> {
     _initDashboard();
   }
 
+  String _lastLangCode = "";
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final langService = Provider.of<LanguageProvider>(context);
+    if (_lastLangCode != langService.currentLanguage) {
+      if (_lastLangCode.isNotEmpty) {
+        // Re-fetch cuaca agar status awan dll ter-update ke bahasa target.
+        _fetchEnvironmentData();
+      }
+      _lastLangCode = langService.currentLanguage;
+    }
+  }
+
   @override
   void dispose() {
     _rotationTimer?.cancel();
@@ -87,6 +106,7 @@ class _DashboardPageState extends State<DashboardPage> {
         final prefs = await SharedPreferences.getInstance();
         final level = prefs.getString('user_fitness_level') ?? "NEVER";
         final goal = prefs.getString('user_fitness_goal') ?? "KEEP_FIT";
+        final savedPhoto = prefs.getString('user_local_photo');
         final profileSnap = await FirebaseDatabase.instance
             .ref("users/${user.uid}")
             .get();
@@ -103,6 +123,7 @@ class _DashboardPageState extends State<DashboardPage> {
           userName = resolvedName;
           userLevel = level;
           userGoal = goal;
+          localPhotoPath = savedPhoto;
         });
 
         _profileSubscription?.cancel();
@@ -214,8 +235,11 @@ class _DashboardPageState extends State<DashboardPage> {
     if (!mounted) return;
     double lat = pos?.latitude ?? -7.9666;
     double lon = pos?.longitude ?? 112.6326;
+    final langService = Provider.of<LanguageProvider>(context, listen: false);
+    String langCode = langService.currentLanguage == 'ja' ? 'ja' : langService.currentLanguage == 'es' ? 'es' : langService.currentLanguage == 'id' ? 'id' : 'en';
+
     final weatherUrl =
-        "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric&lang=id";
+        "https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=$apiKey&units=metric&lang=$langCode";
     final aqiUrl =
         "https://api.openweathermap.org/data/2.5/air_pollution?lat=$lat&lon=$lon&appid=$apiKey";
     try {
@@ -233,12 +257,11 @@ class _DashboardPageState extends State<DashboardPage> {
           currentCity = wData['name'];
           weatherCondition = wData['weather'][0]['description'];
           currentAQI = aData['list'][0]['main']['aqi'] * 25;
+          final lang = Provider.of<LanguageProvider>(context, listen: false);
           currentUV = (100 - wData['clouds']['all'].toDouble()) / 10;
           environmentalTips =
-              "${_getAQIDetail(currentAQI)['tips']} ${_getUVDetail(currentUV)['tips']}";
-          recommendationList = _generateSmartRecommendations(
-            wData['main']['temp'].toDouble(),
-          );
+              "${_getAQIDetail(currentAQI, lang)['tips']} ${_getUVDetail(currentUV, lang)['tips']}";
+          // Rekomendasi tidak perlu disave ke state statis, ini dihandle build()
           _startRecommendationRotation();
         });
       }
@@ -272,8 +295,8 @@ class _DashboardPageState extends State<DashboardPage> {
     // 1. Filter hanya makanan "Good"
     final goodFoods = allFoods.where((f) => f['type'] == 'good').toList();
 
-    if (goodFoods.length < 3) {
-      dailyPlan = goodFoods; // Kalau kurang dari 3, ambil semua
+    if (goodFoods.isEmpty) {
+      dailyPlan = [];
       return;
     }
 
@@ -286,70 +309,76 @@ class _DashboardPageState extends State<DashboardPage> {
 
     // Labeling Manual biar terlihat seperti menu (Pagi/Siang/Malam)
     // Note: Ini random, belum tentu benar secara nutrisi (misal Nasi di Pagi), tapi cukup buat MVP
-    selected[0]['mealTime'] = "SARAPAN";
-    selected[1]['mealTime'] = "MAKAN SIANG";
-    selected[2]['mealTime'] = "MAKAN MALAM";
+    final hour = DateTime.now().hour;
+    String mealTime = "MAKAN MALAM";
+    if (hour >= 4 && hour < 11) mealTime = "SARAPAN";
+    else if (hour >= 11 && hour < 16) mealTime = "MAKAN SIANG";
+    for (var item in selected) {
+      item['mealTimeRaw'] = mealTime;
+    }
+
+
 
     dailyPlan = selected;
   }
 
-  Map<String, dynamic> _getAQIDetail(int aqi) => aqi <= 50
+  Map<String, dynamic> _getAQIDetail(int aqi, LanguageProvider lang) => aqi <= 50
       ? {
-          "status": "Baik",
+          "status": lang.translate('dashboard.aqiGood'),
           "color": Colors.greenAccent,
-          "tips": "Aman tanpa masker.",
+          "tips": lang.translate('dashboard.aqiTipGood'),
         }
       : aqi <= 100
       ? {
-          "status": "Sedang",
+          "status": lang.translate('dashboard.aqiModerate'),
           "color": Colors.yellowAccent,
-          "tips": "Asma harap waspada.",
+          "tips": lang.translate('dashboard.aqiTipModerate'),
         }
       : {
-          "status": "Tidak Sehat",
+          "status": lang.translate('dashboard.aqiUnhealthy'),
           "color": Colors.redAccent,
-          "tips": "Gunakan masker!",
+          "tips": lang.translate('dashboard.aqiTipUnhealthy'),
         };
-  Map<String, dynamic> _getUVDetail(double uv) => uv <= 2
+  Map<String, dynamic> _getUVDetail(double uv, LanguageProvider lang) => uv <= 2
       ? {
-          "status": "Rendah",
+          "status": lang.translate('dashboard.uvLow'),
           "color": Colors.greenAccent,
-          "tips": "Aman luar ruangan.",
+          "tips": lang.translate('dashboard.uvTipLow'),
         }
       : uv <= 5
       ? {
-          "status": "Sedang",
+          "status": lang.translate('dashboard.uvModerate'),
           "color": Colors.yellowAccent,
-          "tips": "Gunakan sunscreen.",
+          "tips": lang.translate('dashboard.uvTipModerate'),
         }
       : {
-          "status": "Tinggi",
+          "status": lang.translate('dashboard.uvHigh'),
           "color": Colors.orangeAccent,
-          "tips": "Kurangi paparan siang.",
+          "tips": lang.translate('dashboard.uvTipHigh'),
         };
 
-  List<String> _generateSmartRecommendations(double temp) {
-    if (userFavorites.isEmpty) return ["Yuk pilih olahraga dulu di Settings!"];
+  List<String> _generateSmartRecommendations(double temp, LanguageProvider lang) {
+    if (userFavorites.isEmpty) return [lang.translate('dashboard.selectSportFirst')];
     List<String> tips = [];
     if (userGoal == "WEIGHT_LOSS") {
-      tips.add("Fokus: Bakar kalori & kardio.");
+      tips.add(lang.translate('dashboard.focusBurnCalorie'));
       tips.add(
         temp >= 28
-            ? "Cuaca Panas: Latihan indoor."
+            ? lang.translate('dashboard.hotWeatherIndoor')
             : temp < 18
-            ? "Cuaca Dingin: Pemanasan lama."
-            : "Prioritas: Cardio & HIIT.",
+            ? lang.translate('dashboard.coldWeatherWarmup')
+            : lang.translate('dashboard.priorityCardio'),
       );
     } else if (userGoal == "MUSCLE_GAIN") {
-      tips.add("Fokus: Kekuatan & repetisi.");
+      tips.add(lang.translate('dashboard.focusStrength'));
       tips.add(
         temp >= 28
-            ? "Cuaca Panas: Istirahat sering."
-            : "Prioritas: Strength Training.",
+            ? lang.translate('dashboard.hotWeatherRest')
+            : lang.translate('dashboard.priorityStrength'),
       );
     } else {
-      tips.add("Fokus: Latihan seimbang.");
-      tips.add("Prioritas: Mobility.");
+      tips.add(lang.translate('dashboard.focusBalanced'));
+      tips.add(lang.translate('dashboard.priorityMobility'));
     }
     return tips;
   }
@@ -379,14 +408,20 @@ class _DashboardPageState extends State<DashboardPage> {
         .map((e) => Map<String, dynamic>.from(e as Map))
         .toList();
 
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+
     return foods.map((f) {
       bool isGood = f['type'] == 'good';
+      
+      String targetGoalReason = isGood ? goalData['reason_good'] : goalData['reason_bad'];
+
       return {
-        "name": f['name'],
+        "raw_name": f['name'], // 🔥 RAW NAME FOR DYNAMIC TRANS
+        "name": FoodTranslator.translateName(f['name'], lang),
         "rating": isGood ? 5 : 2,
         // 🔥 OTOMATIS TAMPILKAN KALORI DI DESKRIPSI
         "desc":
-            "${f['cal']} kkal • ${isGood ? goalData['reason_good'] : goalData['reason_bad']}",
+            "${f['cal']} kcal • ${f['reason'] ?? FoodTranslator.translateGoalReason(targetGoalReason, lang)}",
         "icon": _getFoodIcon(f['name']),
         "type": f['type'],
       };
@@ -414,11 +449,12 @@ class _DashboardPageState extends State<DashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    AppSize.init(context);
     // Agar dashboard rebuild saat bahasa berubah
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
-    var aqiInfo = _getAQIDetail(currentAQI);
-    var uvInfo = _getUVDetail(currentUV);
+    var aqiInfo = _getAQIDetail(currentAQI, lang);
+    var uvInfo = _getUVDetail(currentUV, lang);
 
     return Scaffold(
       backgroundColor: theme.bgColor,
@@ -429,22 +465,27 @@ class _DashboardPageState extends State<DashboardPage> {
             child: ScrollConfiguration(
               behavior: const ScrollBehavior().copyWith(overscroll: false),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 140, 20, 150),
+                padding: EdgeInsets.fromLTRB(
+                AppSize.w(20),
+                AppSize.h(140),
+                AppSize.w(20),
+                AppSize.h(150),
+              ),
                 physics: const ClampingScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildWeatherCard(theme),
-                    const SizedBox(height: 30),
+                    SizedBox(height: AppSize.h(30)),
                     Text(
                       lang.translate('dashboard.environmentStatus'),
                       style: TextStyle(
                         color: theme.textColor,
-                        fontSize: 18,
+                        fontSize: AppSize.sp(17),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 15),
+                    SizedBox(height: AppSize.h(15)),
                     Row(
                       children: [
                         _buildStatCard(
@@ -454,7 +495,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           aqiInfo['color'],
                           theme,
                         ),
-                        const SizedBox(width: 15),
+                        SizedBox(width: AppSize.w(15)),
                         _buildStatCard(
                           lang.translate('dashboard.uvIndex'),
                           uvInfo['status'],
@@ -464,12 +505,18 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 25),
-                    _buildTipsCard(environmentalTips, lang, theme),
-                    const SizedBox(height: 30),
+                    SizedBox(height: AppSize.h(25)),
+                    _buildTipsCard(
+                      currentCity == "Memuat Lokasi..." || currentCity == "Koneksi Gagal"
+                          ? lang.translate('dashboard.preparingTips')
+                          : "${aqiInfo['tips']} ${uvInfo['tips']}",
+                      lang,
+                      theme,
+                    ),
+                    SizedBox(height: AppSize.h(30)),
                     // 🔥 SHOW DAILY MENU
                     _buildDailyMealPlan(theme, lang),
-                    const SizedBox(height: 30),
+                    SizedBox(height: AppSize.h(30)),
                     NutritionCarousel(
                       userGoal: userGoal,
                       allFoods: _getFoodList(),
@@ -487,10 +534,19 @@ class _DashboardPageState extends State<DashboardPage> {
             right: 0,
             child: DashboardHeader(
               userName: userName,
+              localPhotoPath: localPhotoPath,
               userRank: currentRank,
               currentExp: currentExp,
               rankIconKey: rankIconKey,
-              onProfileTap: () => Navigator.of(context).push(_createRoute()),
+              onProfileTap: () async {
+                await Navigator.of(context).push(_createRoute());
+                if (mounted) {
+                  final prefs = await SharedPreferences.getInstance();
+                  setState(() {
+                    localPhotoPath = prefs.getString('user_local_photo');
+                  });
+                }
+              },
             ),
           ),
         ],
@@ -541,7 +597,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      food['mealTime'] ?? "Menu",
+                      FoodTranslator.translateMealTime(food['mealTimeRaw'] ?? "SARAPAN", lang),
                       style: TextStyle(
                         color: theme.textColor.withOpacity(0.5),
                         fontSize: 10,
@@ -551,7 +607,7 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      food['name'],
+                      FoodTranslator.translateName(food['raw_name'] ?? food['name'], lang),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -562,7 +618,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      food['desc'].split('•')[0].trim(), // Ambil Kalori aja
+                      food['desc'], // Tampilkan alasan juga
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Color(0xFF008BFF),
                         fontSize: 12,
@@ -641,8 +699,8 @@ class _DashboardPageState extends State<DashboardPage> {
             AnimatedSwitcher(
               duration: const Duration(milliseconds: 500),
               child: Text(
-                recommendationList.isNotEmpty
-                    ? recommendationList[currentRecIndex]
+                _dynamicRecommendations.isNotEmpty
+                    ? _dynamicRecommendations[currentRecIndex % _dynamicRecommendations.length]
                     : "Memuat...",
                 key: ValueKey<int>(currentRecIndex),
                 textAlign: TextAlign.center,
@@ -658,7 +716,7 @@ class _DashboardPageState extends State<DashboardPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(
-                  recommendationList.length,
+                  _dynamicRecommendations.length,
                   (i) => Container(
                     margin: const EdgeInsets.symmetric(horizontal: 3),
                     width: 6,
@@ -796,6 +854,13 @@ class _DashboardPageState extends State<DashboardPage> {
           child: child,
         );
       },
+    );
+  }
+  List<String> get _dynamicRecommendations {
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+    return _generateSmartRecommendations(
+      double.tryParse(apiTemp) ?? 25.0,
+      lang,
     );
   }
 }

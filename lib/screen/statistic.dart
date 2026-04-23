@@ -4,6 +4,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
+import 'package:intl/intl.dart';
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -30,6 +31,9 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   // Data Grafik
   List<Map<String, dynamic>> chartData = [];
+
+  // Data khusus CEK BMI
+  List<Map<String, dynamic>> bmiWeightData = [];
 
   // 🔥 VARIABEL BARU: STATUS PERFORMA (NOTIFIKASI)
   String feedbackMessage = "";
@@ -66,12 +70,22 @@ class _StatisticsPageState extends State<StatisticsPage> {
         if (sportsSnapshot.value is Map) {
           Map<dynamic, dynamic> data = sportsSnapshot.value as Map;
           data.forEach((key, value) {
-            if (value == true) userSelectedSports.add(key.toString());
+            if (value == true) {
+              String s = key.toString().toUpperCase();
+              if (s.contains('BMI')) s = 'CEK BMI';
+              if (s.contains('HOME')) s = 'HOME WORKOUT';
+              userSelectedSports.add(s);
+            }
           });
         } else if (sportsSnapshot.value is List) {
           List<dynamic> data = sportsSnapshot.value as List;
           for (var item in data) {
-            if (item != null) userSelectedSports.add(item.toString());
+            if (item != null) {
+              String s = item.toString().toUpperCase();
+              if (s.contains('BMI')) s = 'CEK BMI';
+              if (s.contains('HOME')) s = 'HOME WORKOUT';
+              userSelectedSports.add(s);
+            }
           }
         }
       }
@@ -92,9 +106,23 @@ class _StatisticsPageState extends State<StatisticsPage> {
             final entry = Map<String, dynamic>.from(value as Map);
             if (entry['time'] != null) {
               entry['date_obj'] = DateTime.parse(entry['time']);
+
+              if (entry['activity'] != null) {
+                // Standarisasi nama activity menjadi uppercase
+                String actString = entry['activity'].toString().toUpperCase();
+                // Jika mengandung HOME, standardise ke HOME WORKOUT
+                if (actString.contains('HOME')) {
+                  actString = 'HOME WORKOUT';
+                }
+                // Jika mengandung BMI (misal 'CEK BMI: 28.1'), normalkan ke 'CEK BMI'
+                if (actString.contains('BMI')) {
+                  actString = 'CEK BMI';
+                }
+                entry['activity'] = actString;
+                historySports.add(actString);
+              }
+
               loadedHistory.add(entry);
-              if (entry['activity'] != null)
-                historySports.add(entry['activity']);
             }
           } catch (e) {
             debugPrint("Skip data rusak: $e");
@@ -139,7 +167,12 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   void _filterDataBySport(String sport) {
     List<Map<String, dynamic>> filtered = allHistory
-        .where((e) => e['activity'] == sport)
+        .where((e) {
+          String act = e['activity']?.toString().toUpperCase() ?? '';
+          String searchSport = sport.toUpperCase();
+          if (searchSport.contains('BMI') && act.contains('BMI')) return true;
+          return act == searchSport;
+        })
         .toList();
 
     int tSessions = 0;
@@ -204,6 +237,23 @@ class _StatisticsPageState extends State<StatisticsPage> {
       maxRepsRecord = tempMaxReps;
       chartData = tempChart;
 
+      // Populate bmiWeightData untuk tampilan CEK BMI
+      if (sport.contains('BMI')) {
+        bmiWeightData = filtered
+            .where((e) => (e['weight'] as num?) != null)
+            .map((e) => {
+                  'date_obj': e['date_obj'],
+                  'weight_val': (e['weight'] as num).toDouble(),
+                  'bmi_score': e['bmi_score']?.toString() ?? '--',
+                  'status': e['status']?.toString() ?? 'Normal',
+                })
+            .toList();
+        bmiWeightData.sort((a, b) =>
+            (a['date_obj'] as DateTime).compareTo(b['date_obj'] as DateTime));
+      } else {
+        bmiWeightData = [];
+      }
+
       isLoading = false;
     });
   }
@@ -246,6 +296,23 @@ class _StatisticsPageState extends State<StatisticsPage> {
       feedbackIcon = Icons.remove;
     }
     showFeedback = true;
+  }
+
+  // Helper fungsi terjemah olahraga
+  String _translateSportName(String sport, LanguageProvider lang) {
+    String s = sport.toUpperCase();
+    if (s.contains("LARI") || s.contains("RUN")) return lang.translate('sports.running');
+    if (s.contains("SEPEDA") || s.contains("CYCL")) return lang.translate('sports.cycling');
+    if (s.contains("BASKET")) return lang.translate('sports.basketball');
+    if (s.contains("BOLA") || s.contains("FOOT") || s.contains("SOCCER")) return lang.translate('sports.football');
+    if (s.contains("JALAN") || s.contains("WALK")) return lang.translate('sports.walking');
+    if (s.contains("RENANG") || s.contains("SWIM")) return lang.translate('sports.swimming');
+    if (s.contains("BMI")) return "CEK BMI";
+    if (s.contains("HOME")) {
+      String trans = lang.translate('notification.reminder.sport.homeWorkout');
+      return trans.contains('.sport.homeWorkout') ? "Home Workout" : trans;
+    }
+    return sport;
   }
 
   void _parseMaxReps(String details, Map<String, int> records) {
@@ -332,7 +399,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
                               ),
                             ),
                             child: Text(
-                              sport,
+                              _translateSportName(sport, Provider.of<LanguageProvider>(context, listen: false)),
                               style: TextStyle(
                                 color: isSelected
                                     ? Colors.white
@@ -348,54 +415,72 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
                   const SizedBox(height: 20),
 
-                  // ✅ 2. WIDGET BARU: KARTU NOTIFIKASI / INSIGHT
-                  if (showFeedback)
-                    _buildPerformanceInsight(theme, adaptiveFeedbackColor),
+                  // ── CONDITIONAL: CEK BMI vs Olahraga biasa ──────────
+                  if (selectedSport.contains('BMI'))
+                    _buildBmiSection(theme)
+                  else ...
+                    [
+                      // ✅ 2. KARTU NOTIFIKASI / INSIGHT
+                      if (showFeedback)
+                        _buildPerformanceInsight(theme, adaptiveFeedbackColor),
 
-                  const SizedBox(height: 20),
+                      const SizedBox(height: 20),
 
-                  // 3. GRID RINGKASAN
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildStatCard(
-                          lang.translate('stats.totalSessions'),
-                          "$totalSessions",
-                          Icons.fitness_center,
-                          Colors.orange,
-                          theme,
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      Expanded(
-                        child: _buildStatCard(
-                          lang.translate('stats.totalCalories'),
-                          "$totalCalories",
-                          Icons.local_fire_department,
-                          Colors.redAccent,
-                          theme,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 15),
-
-                  if (selectedSport == "LARI" ||
-                      selectedSport == "SEPEDA" ||
-                      selectedSport == "JALAN")
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            lang.translate('stats.totalDistance'),
-                            "${totalDistance.toStringAsFixed(1)} km",
-                            Icons.map,
-                            Colors.greenAccent,
-                            theme,
+                      // 3. GRID RINGKASAN
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              lang.translate('stats.totalSessions'),
+                              "$totalSessions",
+                              Icons.fitness_center,
+                              Colors.orange,
+                              theme,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 15),
-                        Expanded(
+                          const SizedBox(width: 15),
+                          Expanded(
+                            child: _buildStatCard(
+                              lang.translate('stats.totalCalories'),
+                              "$totalCalories",
+                              Icons.local_fire_department,
+                              Colors.redAccent,
+                              theme,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 15),
+
+                      if (selectedSport == "LARI" ||
+                          selectedSport == "SEPEDA" ||
+                          selectedSport == "JALAN")
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard(
+                                lang.translate('stats.totalDistance'),
+                                "${totalDistance.toStringAsFixed(1)} km",
+                                Icons.map,
+                                Colors.greenAccent,
+                                theme,
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: _buildStatCard(
+                                lang.translate('stats.totalTime'),
+                                "$totalDurationMin ${lang.translate('stats.min')}",
+                                Icons.timer,
+                                Colors.blueAccent,
+                                theme,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        SizedBox(
+                          width: double.infinity,
                           child: _buildStatCard(
                             lang.translate('stats.totalTime'),
                             "$totalDurationMin ${lang.translate('stats.min')}",
@@ -404,56 +489,44 @@ class _StatisticsPageState extends State<StatisticsPage> {
                             theme,
                           ),
                         ),
-                      ],
-                    )
-                  else
-                    SizedBox(
-                      width: double.infinity,
-                      child: _buildStatCard(
-                        lang.translate('stats.totalTime'),
-                        "$totalDurationMin ${lang.translate('stats.min')}",
-                        Icons.timer,
-                        Colors.blueAccent,
-                        theme,
+
+                      const SizedBox(height: 30),
+
+                      Text(
+                        lang
+                            .translate('stats.calorieChart')
+                            .replaceAll('{sport}', _translateSportName(selectedSport, Provider.of<LanguageProvider>(context, listen: false))),
+                        style: TextStyle(
+                          color: theme.textColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 15),
+                      _buildSimpleChart(theme),
 
-                  const SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
-                  Text(
-                    lang
-                        .translate('stats.calorieChart')
-                        .replaceAll('{sport}', selectedSport),
-                    style: TextStyle(
-                      color: theme.textColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-                  _buildSimpleChart(theme),
+                      Text(
+                        lang
+                            .translate('stats.bestRecord')
+                            .replaceAll('{sport}', _translateSportName(selectedSport, Provider.of<LanguageProvider>(context, listen: false))),
+                        style: TextStyle(
+                          color: theme.textColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 15),
 
-                  const SizedBox(height: 30),
+                      if (selectedSport == "HOME WORKOUT")
+                        _buildHomeWorkoutRecords(theme)
+                      else
+                        _buildCardioRecords(theme),
 
-                  Text(
-                    lang
-                        .translate('stats.bestRecord')
-                        .replaceAll('{sport}', selectedSport),
-                    style: TextStyle(
-                      color: theme.textColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 15),
-
-                  if (selectedSport == "HOME WORKOUT")
-                    _buildHomeWorkoutRecords(theme)
-                  else
-                    _buildCardioRecords(theme),
-
-                  const SizedBox(height: 50),
-                ],
+                      const SizedBox(height: 50),
+                    ], // Closes the else ... [
+                ], // Closes the children: [
               ),
             ),
     );
@@ -560,7 +633,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
     }
 
     return Container(
-      height: 180,
+      height: 200,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.boxColor,
@@ -572,7 +645,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: chartData.map((e) {
           double val = (e['value'] as num).toDouble();
-          double height = (val / maxValue) * 100;
+          double height = (val / maxValue) * 90;
 
           Color barColor = val > 0
               ? const Color(0xFF008BFF)
@@ -722,5 +795,266 @@ class _StatisticsPageState extends State<StatisticsPage> {
         ],
       ),
     );
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // WIDGET KHUSUS CEK BMI
+  // ─────────────────────────────────────────────────────────────
+  Widget _buildBmiSection(ThemeProvider theme) {
+    if (bmiWeightData.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(height: 50),
+            Icon(
+              Icons.monitor_weight_outlined,
+              size: 64,
+              color: theme.textColor.withOpacity(0.2),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Belum ada riwayat CEK BMI',
+              style: TextStyle(
+                color: theme.textColor.withOpacity(0.38),
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Cek BMI kamu dulu di menu BMI',
+              style: TextStyle(
+                color: theme.textColor.withOpacity(0.24),
+                fontSize: 13,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildWeightChart(theme),
+        const SizedBox(height: 28),
+        Text(
+          'Riwayat Pengecekan',
+          style: TextStyle(
+            color: theme.textColor,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildDateList(theme),
+      ],
+    );
+  }
+
+  Widget _buildWeightChart(ThemeProvider theme) {
+    // 1. Buat data chart 7 slot (seperti _buildSimpleChart)
+    List<Map<String, dynamic>> finalChart = [];
+    DateTime now = DateTime.now();
+
+    for (int i = 6; i >= 0; i--) {
+      DateTime d = now.subtract(Duration(days: i));
+      // Cari apakah ada data BMI di tanggal ini
+      var existing = bmiWeightData.cast<Map<String, dynamic>?>().lastWhere(
+        (e) {
+          if (e == null) return false;
+          DateTime eDate = e['date_obj'] as DateTime;
+          return eDate.day == d.day && eDate.month == d.month && eDate.year == d.year;
+        },
+        orElse: () => null,
+      );
+
+      if (existing != null) {
+        finalChart.add({
+          "label": "${d.day}/${d.month}",
+          "weight_val": (existing['weight_val'] as num).toDouble(),
+        });
+      } else {
+        finalChart.add({
+          "label": "${d.day}/${d.month}",
+          "weight_val": 0.0,
+        });
+      }
+    }
+
+    double maxValue = 150; // default maximum
+    double maxFound = 0;
+    for (var item in finalChart) {
+      double v = (item['weight_val'] as num).toDouble();
+      if (v > maxFound) maxFound = v;
+    }
+    if (maxFound > 0) maxValue = maxFound + 10;
+
+    return Container(
+      height: 200,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: theme.boxColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.textColor.withOpacity(0.05)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: finalChart.map((e) {
+          double val = (e['weight_val'] as num).toDouble();
+          double height = (val / maxValue) * 90;
+          String label = e['label'];
+
+          Color barColor = val > 0
+              ? const Color(0xFF008BFF)
+              : theme.textColor.withOpacity(0.1);
+
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Text(
+                val > 0 ? val.toStringAsFixed(1) : "-",
+                style: TextStyle(
+                  color: theme.textColor,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 5),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeOut,
+                width: 20,
+                height: val > 0 ? height : 2,
+                decoration: BoxDecoration(
+                  color: barColor,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  color: theme.textColor.withOpacity(0.38),
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildDateList(ThemeProvider theme) {
+    final reversed = bmiWeightData.reversed.toList();
+
+    return Column(
+      children: List.generate(reversed.length, (i) {
+        final entry = reversed[i];
+        final date = entry['date_obj'] as DateTime;
+        final weight = (entry['weight_val'] as double).toStringAsFixed(1);
+        final status = (entry['status'] ?? 'Normal').toString();
+        final bmi = entry['bmi_score']?.toString() ?? '--';
+
+        final dateStr = DateFormat('EEEE, dd MMM yyyy').format(date);
+        final timeStr = DateFormat('HH:mm').format(date);
+        final statusColor = _statusColor(status);
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            color: theme.boxColor,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: theme.textColor.withOpacity(0.06)),
+          ),
+          child: Row(
+            children: [
+              // Dot status
+              Container(
+                width: 10,
+                height: 10,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  color: statusColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+
+              // Tanggal & jam
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      dateStr,
+                      style: TextStyle(
+                        color: theme.textColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 11,
+                          color: theme.textColor.withOpacity(0.38),
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          timeStr,
+                          style: TextStyle(
+                            color: theme.textColor.withOpacity(0.38),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Berat & status
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '$weight kg',
+                    style: TextStyle(
+                      color: theme.textColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    'BMI $bmi',
+                    style: TextStyle(
+                      color: statusColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Color _statusColor(String status) {
+    final s = status.toUpperCase();
+    if (s.contains('UNDER') || s.contains('KURANG')) return Colors.blue;
+    if (s.contains('NORMAL') || s.contains('IDEAL')) return Colors.green;
+    if (s.contains('OBES')) return Colors.red;
+    if (s.contains('OVER')) return Colors.orange;
+    return Colors.green;
   }
 }

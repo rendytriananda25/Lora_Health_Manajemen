@@ -278,7 +278,8 @@
     "changePassword": "Change Password",
     "twoFactorAuth": "Two-Factor Authentication",
     "editName": "Edit Name",
-    "databaseUpdated": "Nutrition & Workout Database Updated Successfully!"
+    "databaseUpdated": "Nutrition & Workout Database Updated Successfully!",
+    "confirmLogoutBody": "Are you sure you want to log out?"
   },
   "personalInfo": {
     "title": "Personal Information",

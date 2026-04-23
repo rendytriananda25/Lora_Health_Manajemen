@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
+import 'package:lora_1/core/utils/app_size.dart';
 
 class NutritionCarousel extends StatelessWidget {
   final String userGoal;
@@ -15,24 +16,24 @@ class NutritionCarousel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppSize.init(context);
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 5),
+                padding: EdgeInsets.symmetric(horizontal: AppSize.w(5)),
                 child: Text(
                   lang.translate('dashboard.nutritionRecommendation'),
                   style: TextStyle(
                     color: theme.textColor,
-                    fontSize: 18,
+                    fontSize: AppSize.sp(17),
                     fontWeight: FontWeight.bold,
                   ),
                   maxLines: 1,
@@ -40,27 +41,30 @@ class NutritionCarousel extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: AppSize.w(8)),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppSize.w(8),
+                vertical: AppSize.h(4),
+              ),
               decoration: BoxDecoration(
                 color: theme.textColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppSize.r(8)),
               ),
               child: Text(
                 userGoal.replaceAll("_", " "),
                 style: TextStyle(
                   color: theme.textColor.withOpacity(0.54),
-                  fontSize: 10,
+                  fontSize: AppSize.sp(10),
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 15),
+        SizedBox(height: AppSize.h(15)),
         SizedBox(
-          height: 185,
+          height: AppSize.h(190),
           child: ScrollConfiguration(
             behavior: const ScrollBehavior().copyWith(overscroll: false),
             child: ListView.builder(
@@ -71,12 +75,12 @@ class NutritionCarousel extends StatelessWidget {
                 final item = allFoods[index];
                 bool isGood = item['type'] == "good";
                 return Container(
-                  width: 280,
-                  margin: const EdgeInsets.only(right: 15),
-                  padding: const EdgeInsets.all(16),
+                  width: AppSize.w(270),
+                  margin: EdgeInsets.only(right: AppSize.w(15)),
+                  padding: EdgeInsets.all(AppSize.w(15)),
                   decoration: BoxDecoration(
                     color: theme.boxColor,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(AppSize.r(20)),
                     border: Border.all(color: theme.textColor.withOpacity(0.1)),
                     boxShadow: [
                       BoxShadow(
@@ -92,8 +96,8 @@ class NutritionCarousel extends StatelessWidget {
                       Row(
                         children: [
                           Container(
-                            width: 50,
-                            height: 50,
+                            width: AppSize.w(46),
+                            height: AppSize.w(46),
                             decoration: BoxDecoration(
                               color: isGood
                                   ? Colors.green.withOpacity(0.1)
@@ -103,10 +107,10 @@ class NutritionCarousel extends StatelessWidget {
                             child: Icon(
                               item['icon'],
                               color: isGood ? Colors.green : Colors.redAccent,
-                              size: 26,
+                              size: AppSize.sp(24),
                             ),
                           ),
-                          const SizedBox(width: 15),
+                          SizedBox(width: AppSize.w(12)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,20 +122,18 @@ class NutritionCarousel extends StatelessWidget {
                                   style: TextStyle(
                                     color: theme.textColor,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 16,
+                                    fontSize: AppSize.sp(15),
                                   ),
                                 ),
-                                const SizedBox(height: 6),
+                                SizedBox(height: AppSize.h(5)),
                                 Row(
                                   children: List.generate(5, (starIndex) {
                                     return Icon(
                                       Icons.star,
-                                      size: 14,
+                                      size: AppSize.sp(13),
                                       color: starIndex < item['rating']
                                           ? Colors.orangeAccent
-                                          : theme.textColor.withOpacity(
-                                              0.2,
-                                            ), // Grey for empty stars
+                                          : theme.textColor.withOpacity(0.2),
                                     );
                                   }),
                                 ),
@@ -140,40 +142,37 @@ class NutritionCarousel extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 15),
+                      SizedBox(height: AppSize.h(12)),
                       Text(
                         item['desc'],
                         style: TextStyle(
                           color: theme.textColor.withOpacity(0.7),
-                          fontSize: 13,
+                          fontSize: AppSize.sp(12),
                           height: 1.4,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const Spacer(),
-                      Align(
-                        alignment: Alignment.bottomLeft,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 5,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isGood
-                                ? Colors.green.withOpacity(0.1)
-                                : Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            isGood
-                                ? lang.translate('dashboard.highlyRecommended')
-                                : lang.translate('dashboard.avoidLimit'),
-                            style: TextStyle(
-                              color: isGood ? Colors.green : Colors.redAccent,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppSize.w(10),
+                          vertical: AppSize.h(5),
+                        ),
+                        decoration: BoxDecoration(
+                          color: isGood
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(AppSize.r(8)),
+                        ),
+                        child: Text(
+                          isGood
+                              ? lang.translate('dashboard.highlyRecommended')
+                              : lang.translate('dashboard.avoidLimit'),
+                          style: TextStyle(
+                            color: isGood ? Colors.green : Colors.redAccent,
+                            fontSize: AppSize.sp(11),
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),

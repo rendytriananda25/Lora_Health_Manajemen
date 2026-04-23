@@ -359,11 +359,13 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
     ThemeProvider theme,
   ) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
+              flex: 2,
               child: Text(
                 label,
                 style: TextStyle(
@@ -371,14 +373,23 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                   fontSize: 16,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Color(0xFFC7B8F5),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+            const SizedBox(width: 8),
+            Flexible(
+              flex: 3,
+              child: Text(
+                value,
+                style: const TextStyle(
+                  color: Color(0xFFC7B8F5),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.right,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

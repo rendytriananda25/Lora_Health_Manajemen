@@ -177,12 +177,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     }
   }
 
-  void _modifyReps(int delta) {
-    setState(() {
-      _repsCount += delta;
-      if (_repsCount < 0) _repsCount = 0;
-    });
-  }
 
   void _handleFinish({required bool isTimer}) {
     _timer?.cancel();
@@ -194,7 +188,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
     // Panggil callback parent
     String result = isTimer
         ? "Done ($_secondsLeft s left)"
-        : "$_repsCount Reps";
+        : "${widget.data['target']} selesai";
 
     // ✅ FIX: Kasih delay 1.5 detik agar user sempat lihat "Centang Hijau" sebelum pindah/tutup
     if (isTimer) {
@@ -240,190 +234,199 @@ class _ExerciseCardState extends State<ExerciseCard> {
 
     String type = widget.data['type'] ?? "info";
 
-    return Container(
-      width: double.infinity,
-      // Reduced vertical margin to fix overflow
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: widget.isActive
-            ? [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ]
-            : [],
-        border: Border.all(
-          color: widget.isActive
-              ? (theme.isDarkMode ? Colors.white10 : Colors.black12)
-              : Colors.transparent,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: Column(
-          children: [
-            // 1. VIDEO AREA
-            // Show ONLY if video controller is initialized (i.e., valid video exists)
-            if (_videoController != null)
-              Expanded(
-                flex: 4,
-                child: Container(
-                  color: Colors
-                      .black, // Video area always dark/black background even in light mode
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // 🔥 Responsive sizing berdasarkan screen height device (bukan card)
+        final screenH = MediaQuery.of(context).size.height;
+        final bottomInset = MediaQuery.of(context).padding.bottom;
+        final isCompact = screenH < 700; // Device kecil (< 700dp)
+        final isVeryCompact = screenH < 600; // Device sangat kecil
+
+        final titleSize = isVeryCompact ? 17.0 : isCompact ? 20.0 : 26.0;
+        final subtitleSize = isVeryCompact ? 11.0 : isCompact ? 13.0 : 16.0;
+        final contentPadTop = isVeryCompact ? 10.0 : isCompact ? 16.0 : 24.0;
+        // Padding bawah konten: cukup untuk button (~70px) + safe area
+        final contentPadBottom = (70.0 + bottomInset).clamp(70.0, 100.0);
+        final buttonPadBottom = isVeryCompact ? 8.0 : isCompact ? 14.0 : 20.0;
+
+        return Container(
+          width: double.infinity,
+          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: widget.isActive
+                ? [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ]
+                : [],
+            border: Border.all(
+              color: widget.isActive
+                  ? (theme.isDarkMode ? Colors.white10 : Colors.black12)
+                  : Colors.transparent,
+            ),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(30),
+            child: Column(
+              children: [
+                // 1. VIDEO AREA
+                if (_videoController != null)
+                  Expanded(
+                    flex: isCompact ? 3 : 4,
+                    child: Container(
+                      color: Colors.black,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          YoutubePlayer(
+                            controller: _videoController!,
+                            showVideoProgressIndicator: true,
+                            progressIndicatorColor: const Color(0xFF008BFF),
+                            progressColors: const ProgressBarColors(
+                              playedColor: Color(0xFF008BFF),
+                              handleColor: Colors.white,
+                            ),
+                          ),
+                          if (_isCompleted)
+                            Container(
+                              color: Colors.black54,
+                              child: const Center(
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 60,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                // 2. INFO AREA
+                Expanded(
+                  flex: isCompact ? 5 : 4,
                   child: Stack(
-                    alignment: Alignment.center,
                     children: [
-                      YoutubePlayer(
-                        controller: _videoController!,
-                        showVideoProgressIndicator: true,
-                        progressIndicatorColor: const Color(0xFF008BFF),
-                        progressColors: const ProgressBarColors(
-                          playedColor: Color(0xFF008BFF),
-                          handleColor: Colors.white,
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(25, contentPadTop, 25, contentPadBottom),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Title Area
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    widget.data['name'],
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: titleSize,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.1,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (widget.data['video_url'] != null &&
+                                    widget.data['video_url'].isNotEmpty)
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 8.0),
+                                    child: Icon(
+                                      Icons.open_in_new,
+                                      color: theme.isDarkMode
+                                          ? Colors.white30
+                                          : Colors.black38,
+                                      size: 20,
+                                    ),
+                                  ),
+                              ],
+                            ),
+
+                            if (_videoController == null) const Spacer(),
+
+                            SizedBox(height: isCompact ? 3 : 5),
+
+                            // Subtitle hanya tampil untuk timer/info, bukan reps (sudah tampil besar di bawah)
+                            if (type != 'reps')
+                              Text(
+                                widget.data['target'] ?? "Target",
+                                style: TextStyle(color: subTextColor, fontSize: subtitleSize),
+                              ),
+
+                            if (_videoController == null) const Spacer(),
+
+                            const Spacer(),
+
+                            // Center Control (Timer or Reps)
+                            Center(
+                              child: type == 'time'
+                                  ? _buildTimerDisplay(
+                                      textColor,
+                                      subTextColor,
+                                      lang,
+                                      isCompact,
+                                    )
+                                  : (type == 'reps'
+                                        ? _buildRepsDisplay(
+                                            textColor,
+                                            subTextColor,
+                                            isCompact,
+                                          )
+                                        : const SizedBox()),
+                            ),
+
+                            const Spacer(),
+                          ],
                         ),
                       ),
-                      if (_isCompleted)
-                        Container(
-                          color: Colors.black54,
-                          child: const Center(
-                            child: Icon(
-                              Icons.check_circle,
-                              color: Colors.green,
-                              size: 60,
+
+                      // Bottom Button (Swipe to Action)
+                      if (!_isCompleted)
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              bottom: buttonPadBottom,
+                              left: 25,
+                              right: 25,
+                            ),
+                            child: SwipeButton(
+                              text: type == 'time'
+                                  ? (_isTimerRunning ? "PAUSE" : "MULAI TIMER")
+                                  : "LANJUT",
+                              textColor: buttonTextColor,
+                              backgroundColor: buttonColor,
+                              iconCircleColor: iconCircleColor,
+                              iconColor: iconColor,
+                              icon: type == 'time' && _isTimerRunning
+                                  ? Icons.pause
+                                  : Icons.double_arrow_rounded,
+                              onAction: () async {
+                                if (type == 'time') {
+                                  _toggleTimer();
+                                } else {
+                                  _handleFinish(isTimer: false);
+                                }
+                              },
                             ),
                           ),
                         ),
                     ],
                   ),
                 ),
-              ),
-
-            // 2. INFO AREA
-            Expanded(
-              flex: 4, // More space for controls to prevent overflow
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(25, 30, 25, 80),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title Area (No Sun Icon)
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Sun Icon REMOVED
-                            Expanded(
-                              child: Text(
-                                widget.data['name'],
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: 26,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.1,
-                                ),
-                                maxLines: 2,
-                              ),
-                            ),
-                            // External Link
-                            if (widget.data['video_url'] != null &&
-                                widget.data['video_url'].isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Icon(
-                                  Icons.open_in_new,
-                                  color: theme.isDarkMode
-                                      ? Colors.white30
-                                      : Colors.black38,
-                                  size: 20,
-                                ),
-                              ),
-                          ],
-                        ),
-
-                        // Spacer to push explanation to middle if no video
-                        if (_videoController == null) const Spacer(),
-
-                        const SizedBox(height: 5),
-
-                        // Subtitle / Explanation
-                        Padding(
-                          padding: const EdgeInsets.only(
-                            left: 0, // Reset left padding since no icon above
-                          ),
-                          child: Text(
-                            widget.data['target'] ?? "Target",
-                            style: TextStyle(color: subTextColor, fontSize: 16),
-                          ),
-                        ),
-
-                        if (_videoController == null) const Spacer(),
-
-                        const Spacer(),
-
-                        // Center Control (Timer or Reps)
-                        Center(
-                          child: type == 'time'
-                              ? _buildTimerDisplay(
-                                  textColor,
-                                  subTextColor,
-                                  lang,
-                                )
-                              : (type == 'reps'
-                                    ? _buildRepsControl(
-                                        textColor,
-                                        subTextColor,
-                                        lang,
-                                      )
-                                    : const SizedBox()),
-                        ),
-
-                        const Spacer(),
-                      ],
-                    ),
-                  ),
-
-                  // Bottom Button (Swipe to Action)
-                  if (!_isCompleted)
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: 25,
-                          left: 25,
-                          right: 25,
-                        ),
-                        child: SwipeButton(
-                          text: type == 'time'
-                              ? (_isTimerRunning ? "PAUSE" : "MULAI TIMER")
-                              : "LANJUT",
-                          textColor: buttonTextColor,
-                          backgroundColor: buttonColor,
-                          iconCircleColor: iconCircleColor,
-                          iconColor: iconColor,
-                          icon: type == 'time' && _isTimerRunning
-                              ? Icons.pause
-                              : Icons.double_arrow_rounded,
-                          onAction: () async {
-                            if (type == 'time') {
-                              _toggleTimer();
-                            } else {
-                              widget.onComplete(widget.data['name'], "Done");
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                ],
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -436,6 +439,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
     Color textColor,
     Color subColor,
     LanguageProvider lang,
+    bool isCompact,
   ) {
     int m = _secondsLeft ~/ 60;
     int s = _secondsLeft % 60;
@@ -443,57 +447,31 @@ class _ExerciseCardState extends State<ExerciseCard> {
       "${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}",
       style: TextStyle(
         color: textColor,
-        fontSize: 56,
+        fontSize: isCompact ? 40 : 56,
         fontWeight: FontWeight.w500,
         fontFamily: 'monospace',
       ),
     );
   }
 
-  Widget _buildRepsControl(
+  // Tampilan statis target repetisi (tidak bisa diubah user)
+  Widget _buildRepsDisplay(
     Color textColor,
     Color subColor,
-    LanguageProvider lang,
+    bool isCompact,
   ) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // MINUS BUTTON
-            IconButton(
-              onPressed: () => _modifyReps(-1),
-              icon: const Icon(
-                Icons.remove,
-                color: Color(0xFF008BFF),
-                size: 32,
-              ),
-            ),
-
-            const SizedBox(width: 20),
-
-            // NUMBER
-            Text(
-              "$_repsCount",
-              style: TextStyle(
-                color: textColor,
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(width: 20),
-
-            // PLUS BUTTON
-            IconButton(
-              onPressed: () => _modifyReps(1),
-              icon: const Icon(Icons.add, color: Color(0xFF008BFF), size: 32),
-            ),
-          ],
-        ),
-        Text("Repetisi", style: TextStyle(color: subColor, fontSize: 14)),
-      ],
+    final targetLabel = widget.data['target']?.toString() ?? "$_targetReps Reps";
+    return Text(
+      targetLabel,
+      style: TextStyle(
+        color: textColor,
+        fontSize: isCompact ? 32 : 44,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 1.0,
+      ),
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
     );
   }
 }

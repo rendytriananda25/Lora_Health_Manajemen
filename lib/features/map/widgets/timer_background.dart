@@ -10,7 +10,6 @@ class TimerBackground extends StatefulWidget {
   final ValueNotifier<int> secondsNotifier;
   final List<Map<String, dynamic>> exercises;
   final Function(String name, String result) onCompleteExercise;
-  final Function(int index) onSkipExercise;
   final VoidCallback onStop;
   final VoidCallback onStart;
 
@@ -23,7 +22,6 @@ class TimerBackground extends StatefulWidget {
     required this.onStop,
     required this.onStart,
     required this.onCompleteExercise,
-    required this.onSkipExercise,
   });
 
   @override
@@ -62,18 +60,13 @@ class _TimerBackgroundState extends State<TimerBackground> {
     return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
   }
 
-  // 🔥 FIX LOGIKA "SELESAI SESI" 🔥
+  // 🔥 LOGIKA "SELESAI SESI" — User WAJIB ikuti semua gerakan berurutan
   void _handleComplete(String name, String result) {
     // 1. Simpan hasil latihannya
     widget.onCompleteExercise(name, result);
 
-    // 2. Cek ada berapa total kartu yang aktif
-    final activeExercises = widget.exercises
-        .where((e) => e['isSelected'] ?? true)
-        .toList();
-
-    // 3. JIKA belum mentok (masih ada kartu selanjutnya)...
-    if (_currentExerciseIndex < activeExercises.length - 1) {
+    // 2. Cek masih ada exercise selanjutnya?
+    if (_currentExerciseIndex < widget.exercises.length - 1) {
       // ✅ GESER KE KARTU SELANJUTNYA SECARA OTOMATIS
       _pageController.animateToPage(
         _currentExerciseIndex + 1,
@@ -81,32 +74,36 @@ class _TimerBackgroundState extends State<TimerBackground> {
         curve: Curves.easeOutCubic,
       );
     } else {
-      // 4. JIKA sudah kartu paling ujung, baru panggil `onStop()` (Stop keseluruhan)
+      // Semua exercise selesai → Stop sesi
       widget.onStop();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final filteredExercises = widget.exercises
-        .where((e) => e['isSelected'] ?? true)
-        .toList();
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
+
+    final screenHeight = MediaQuery.of(context).size.height;
+    final bottomPad = MediaQuery.of(context).padding.bottom;
+    // Navbar space dinamis berdasarkan tinggi layar
+    final navbarSpace = (screenHeight * 0.14).clamp(90.0, 130.0);
+    // Top spacing dinamis (status bar + timer area)
+    final topSpace = (screenHeight * 0.09).clamp(50.0, 80.0);
 
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: theme.bgColor, // Adaptive Background
+      color: theme.bgColor,
       child: Column(
         children: [
-          const SizedBox(height: 70),
+          SizedBox(height: topSpace),
           ValueListenableBuilder<int>(
             valueListenable: widget.secondsNotifier,
             builder: (context, val, _) => Text(
               _formatTime(val),
               style: TextStyle(
-                color: theme.textColor, // Adaptive Text
+                color: theme.textColor,
                 fontSize: 50,
                 fontWeight: FontWeight.bold,
                 fontFamily: 'monospace',
@@ -125,7 +122,7 @@ class _TimerBackgroundState extends State<TimerBackground> {
 
           Expanded(
             child: widget.isRecording
-                ? (filteredExercises.isEmpty
+                ? (widget.exercises.isEmpty
                       ? Center(
                           child: Text(
                             lang.translate('map.noExerciseSelected'),
@@ -140,8 +137,8 @@ class _TimerBackgroundState extends State<TimerBackground> {
                               child: PageView.builder(
                                 controller: _pageController,
                                 physics:
-                                    const _ForwardBlockingScrollPhysics(), // ✅ Custom Physics
-                                itemCount: filteredExercises.length,
+                                    const _ForwardBlockingScrollPhysics(),
+                                itemCount: widget.exercises.length,
                                 onPageChanged: (index) {
                                   setState(() => _currentExerciseIndex = index);
                                 },
@@ -160,14 +157,14 @@ class _TimerBackgroundState extends State<TimerBackground> {
                                       opacity: opacity,
                                       child: ExerciseCard(
                                         key: ValueKey(
-                                          "${filteredExercises[index]['name']}_$index",
+                                          "${widget.exercises[index]['name']}_$index",
                                         ),
-                                        data: filteredExercises[index],
+                                        data: widget.exercises[index],
                                         isActive:
                                             index == _currentExerciseIndex,
                                         isLastExercise:
                                             index ==
-                                            filteredExercises.length - 1,
+                                            widget.exercises.length - 1,
                                         onComplete: _handleComplete,
                                       ),
                                     ),
@@ -175,10 +172,10 @@ class _TimerBackgroundState extends State<TimerBackground> {
                                 },
                               ),
                             ),
-                            const SizedBox(height: 100),
+                            SizedBox(height: navbarSpace + bottomPad),
                           ],
                         ))
-                : _buildPreStartChecklist(lang, theme),
+                : _buildPreStartPreview(lang, theme),
           ),
 
           if (!widget.isRecording)
@@ -190,14 +187,14 @@ class _TimerBackgroundState extends State<TimerBackground> {
                   height: 60,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: theme.textColor, // Adaptive Button Bg
+                    color: theme.textColor,
                     borderRadius: BorderRadius.circular(30),
                   ),
                   child: Center(
                     child: Text(
                       lang.translate('map.startSession'),
                       style: TextStyle(
-                        color: theme.boxColor, // Adaptive Button Text
+                        color: theme.boxColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -211,15 +208,17 @@ class _TimerBackgroundState extends State<TimerBackground> {
     );
   }
 
-  Widget _buildPreStartChecklist(LanguageProvider lang, ThemeProvider theme) {
+  // ✅ PREVIEW LIST (READ-ONLY) — User lihat daftar gerakan, tidak bisa pilih/skip
+  Widget _buildPreStartPreview(LanguageProvider lang, ThemeProvider theme) {
     return Column(
       children: [
         Text(
-          lang.translate('map.chooseExercise'),
+          lang.translate('map.targetToday'),
           style: TextStyle(
             color: theme.textColor,
             fontWeight: FontWeight.bold,
             fontSize: 12,
+            letterSpacing: 2,
           ),
         ),
         const SizedBox(height: 10),
@@ -229,15 +228,40 @@ class _TimerBackgroundState extends State<TimerBackground> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 100),
             itemBuilder: (context, i) {
               final ex = widget.exercises[i];
+              final bool isInfo = ex['type'] == 'info';
+
               return Container(
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: theme.textColor.withOpacity(0.05),
+                  color: theme.textColor.withOpacity(isInfo ? 0.03 : 0.05),
                   borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: theme.textColor.withOpacity(isInfo ? 0.05 : 0.08),
+                  ),
                 ),
-                child: CheckboxListTile(
-                  value: ex['isSelected'] ?? true,
-                  onChanged: (val) => setState(() => ex['isSelected'] = val),
+                child: ListTile(
+                  leading: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      color: isInfo
+                          ? Colors.amber.withOpacity(0.15)
+                          : const Color(0xFF008BFF).withOpacity(0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: isInfo
+                          ? Icon(Icons.lightbulb, color: Colors.amber, size: 18)
+                          : Text(
+                              "${i + 1}",
+                              style: TextStyle(
+                                color: const Color(0xFF008BFF),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                    ),
+                  ),
                   title: Text(
                     ex['name'],
                     style: TextStyle(
@@ -247,15 +271,16 @@ class _TimerBackgroundState extends State<TimerBackground> {
                     ),
                   ),
                   subtitle: Text(
-                    "${lang.translate('map.target')}: ${ex['target']}",
+                    isInfo
+                        ? ex['target']
+                        : "${lang.translate('map.target')}: ${ex['target']}",
                     style: TextStyle(
                       color: theme.textColor.withOpacity(0.54),
                       fontSize: 12,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  activeColor: theme.textColor,
-                  checkColor: theme.boxColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
               );
             },

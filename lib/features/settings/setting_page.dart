@@ -16,6 +16,7 @@ import 'package:lora_1/auth/login_page.dart';
 import 'package:lora_1/features/dashboard/data/nutrition_data.dart';
 import 'package:lora_1/features/map/data/workout_data.dart';
 import 'package:lora_1/features/gamification/badges_page.dart'; // ✅ Import Badges Page
+import 'package:lora_1/features/gamification/badge_translator.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -88,10 +89,11 @@ class _SettingsPageState extends State<SettingsPage> {
         });
 
         if (mounted) {
+          final lang = Provider.of<LanguageProvider>(context, listen: false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("📸 Foto Profil Diperbarui (Lokal)"),
-              backgroundColor: Color(0xFF008BFF),
+            SnackBar(
+              content: Text(lang.translate('settings.photoUpdated')),
+              backgroundColor: const Color(0xFF008BFF),
             ),
           );
         }
@@ -102,6 +104,58 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _handleLogout() async {
+    final theme = Provider.of<ThemeProvider>(context, listen: false);
+    final lang = Provider.of<LanguageProvider>(context, listen: false);
+
+    bool? confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: theme.boxColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: theme.borderColor),
+        ),
+        title: Text(
+          lang.translate('settings.logoutAccount'),
+          style: TextStyle(
+            color: theme.textColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          lang.translate('settings.confirmLogoutBody'),
+          style: TextStyle(color: theme.subTextColor),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text(
+              lang.translate('errors.cancel'),
+              style: TextStyle(color: theme.subTextColor),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.logoutBtnBg,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: Text(
+              lang.translate('settings.logout'),
+              style: TextStyle(
+                color: theme.logoutBtnText,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
     try {
       showDialog(
         context: context,
@@ -285,8 +339,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           ),
                           SettingItem(
                             icon: Icons.emoji_events_outlined,
-                            title:
-                                "Pencapaian & Badges", // TODO: Add translation key
+                            title: BadgeTranslator.translateTitle("Pencapaian & Badges", languageProvider),
                             isDarkMode: isDarkMode,
                             onTap: () => _pushPopup(const BadgesPage()),
                           ),

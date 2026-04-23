@@ -7,6 +7,704 @@ class WorkoutData {
   // 🔄 VARIABLE RUNTIME (Diisi dari Firebase)
   static Map<String, dynamic>? _onlineWorkoutData;
 
+  // ============================================================
+  // 📚 REFERENSI ILMIAH PROGRESIVITAS:
+  // - ACSM (2021). Guidelines for Exercise Testing and Prescription, 11th Ed.
+  //   → Progressive overload 5-10%/minggu, deload setiap 4 minggu (W4 = 70% volume)
+  // - NSCA (2016). Essentials of Strength Training and Conditioning, 4th Ed.
+  //   → "2-for-2 Rule", rep range hipertrofi 8-12 RM
+  // - Schoenfeld, B.J. (2010). Journal of Strength and Conditioning Research, 24(10).
+  //   → Validasi rep range 8-12 untuk muscle gain
+  // - Garber, C.E., et al. (2011). Medicine & Science in Sports & Exercise, 43(7).
+  //   → Weight loss: 150-300 menit/minggu moderate intensity
+  // ============================================================
+
+  // 🔥 DATA PROGRESIVITAS — Per goal × per gerakan × per level × per minggu
+  // W4 = DELOAD WEEK (volume -30% untuk recovery & pencegahan cedera)
+  // Loop 4 minggu tanpa batas, base naik otomatis tiap siklus via startDate
+  static final Map<String, dynamic> _progressionData = {
+    // ══════════════════════════════════════════════════════
+    // 🔥 WEIGHT LOSS — Fokus: Kardio + HIIT, rep tinggi
+    // Referensi: ACSM 150-300 mnt/minggu moderate intensity
+    // ══════════════════════════════════════════════════════
+    "WEIGHT_LOSS": {
+      "Jumping Jacks": {
+        "NEVER": {
+          "W1": "30 Reps",
+          "W2": "35 Reps",
+          "W3": "40 Reps",
+          "W4": "25 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "45 Reps",
+          "W2": "50 Reps",
+          "W3": "55 Reps",
+          "W4": "35 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "55 Reps",
+          "W2": "62 Reps",
+          "W3": "70 Reps",
+          "W4": "45 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "70 Reps",
+          "W2": "80 Reps",
+          "W3": "90 Reps",
+          "W4": "60 Reps (Deload)",
+        },
+      },
+      "High Knees": {
+        "NEVER": {
+          "W1": "20 Reps",
+          "W2": "25 Reps",
+          "W3": "30 Reps",
+          "W4": "15 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "35 Reps",
+          "W2": "40 Reps",
+          "W3": "45 Reps",
+          "W4": "25 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "45 Reps",
+          "W2": "52 Reps",
+          "W3": "60 Reps",
+          "W4": "35 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "60 Reps",
+          "W2": "70 Reps",
+          "W3": "80 Reps",
+          "W4": "50 Reps (Deload)",
+        },
+      },
+      "Burpees": {
+        // Gerakan kompleks: kenaikan konservatif 5-7% (risiko overuse injury)
+        "NEVER": {
+          "W1": "5 Reps",
+          "W2": "6 Reps",
+          "W3": "7 Reps",
+          "W4": "4 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "10 Reps",
+          "W2": "12 Reps",
+          "W3": "13 Reps",
+          "W4": "8 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "15 Reps",
+          "W2": "17 Reps",
+          "W3": "19 Reps",
+          "W4": "12 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "20 Reps",
+          "W2": "22 Reps",
+          "W3": "25 Reps",
+          "W4": "15 Reps (Deload)",
+        },
+      },
+      "Mountain Climber": {
+        "NEVER": {
+          "W1": "16 Reps",
+          "W2": "20 Reps",
+          "W3": "24 Reps",
+          "W4": "12 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "24 Reps",
+          "W2": "28 Reps",
+          "W3": "32 Reps",
+          "W4": "18 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "32 Reps",
+          "W2": "36 Reps",
+          "W3": "40 Reps",
+          "W4": "24 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "40 Reps",
+          "W2": "46 Reps",
+          "W3": "52 Reps",
+          "W4": "32 Reps (Deload)",
+        },
+      },
+      "Squat Jump": {
+        // Plyometric: kenaikan konservatif, risiko lutut jika terlalu cepat
+        "NEVER": {
+          "W1": "8 Reps",
+          "W2": "10 Reps",
+          "W3": "12 Reps",
+          "W4": "6 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "15 Reps",
+          "W2": "17 Reps",
+          "W3": "20 Reps",
+          "W4": "10 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "20 Reps",
+          "W2": "23 Reps",
+          "W3": "26 Reps",
+          "W4": "15 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "25 Reps",
+          "W2": "28 Reps",
+          "W3": "32 Reps",
+          "W4": "20 Reps (Deload)",
+        },
+      },
+      "Plank Jacks": {
+        "NEVER": {
+          "W1": "20 Detik",
+          "W2": "25 Detik",
+          "W3": "30 Detik",
+          "W4": "15 Detik (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "30 Detik",
+          "W2": "35 Detik",
+          "W3": "40 Detik",
+          "W4": "25 Detik (Deload)",
+        },
+        "OFTEN": {
+          "W1": "40 Detik",
+          "W2": "47 Detik",
+          "W3": "55 Detik",
+          "W4": "30 Detik (Deload)",
+        },
+        "DAILY": {
+          "W1": "55 Detik",
+          "W2": "65 Detik",
+          "W3": "75 Detik",
+          "W4": "45 Detik (Deload)",
+        },
+      },
+      "Skaters": {
+        "NEVER": {
+          "W1": "10 Reps",
+          "W2": "12 Reps",
+          "W3": "14 Reps",
+          "W4": "8 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "16 Reps",
+          "W2": "18 Reps",
+          "W3": "20 Reps",
+          "W4": "12 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "20 Reps",
+          "W2": "23 Reps",
+          "W3": "26 Reps",
+          "W4": "16 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "26 Reps",
+          "W2": "30 Reps",
+          "W3": "34 Reps",
+          "W4": "22 Reps (Deload)",
+        },
+      },
+      "Tuck Jumps": {
+        // High impact plyometric: kenaikan paling konservatif
+        "NEVER": {
+          "W1": "5 Reps",
+          "W2": "6 Reps",
+          "W3": "7 Reps",
+          "W4": "4 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "8 Reps",
+          "W2": "9 Reps",
+          "W3": "11 Reps",
+          "W4": "6 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "12 Reps",
+          "W2": "14 Reps",
+          "W3": "16 Reps",
+          "W4": "9 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "16 Reps",
+          "W2": "18 Reps",
+          "W3": "20 Reps",
+          "W4": "12 Reps (Deload)",
+        },
+      },
+    },
+
+    // ══════════════════════════════════════════════════════
+    // 💪 MUSCLE GAIN — Fokus: Strength, sets × reps, hipertrofi
+    // Referensi: NSCA 8-12 RM untuk hipertrofi, istirahat 60-90 detik
+    // ══════════════════════════════════════════════════════
+    "MUSCLE_GAIN": {
+      "Push Up": {
+        "NEVER": {
+          "W1": "3x8 Reps",
+          "W2": "3x10 Reps",
+          "W3": "3x12 Reps",
+          "W4": "2x8 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x12 Reps",
+          "W2": "3x15 Reps",
+          "W3": "4x12 Reps",
+          "W4": "3x8 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "4x12 Reps",
+          "W2": "4x15 Reps",
+          "W3": "4x17 Reps",
+          "W4": "3x10 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x15 Reps",
+          "W2": "4x18 Reps",
+          "W3": "5x15 Reps",
+          "W4": "3x12 Reps (Deload)",
+        },
+      },
+      "Diamond Push Up": {
+        // Isolasi trisep: hindari overload sendi siku, mulai konservatif
+        "NEVER": {
+          "W1": "3x5 Reps",
+          "W2": "3x6 Reps",
+          "W3": "3x8 Reps",
+          "W4": "2x5 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x8 Reps",
+          "W2": "3x10 Reps",
+          "W3": "3x12 Reps",
+          "W4": "2x6 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x10 Reps",
+          "W2": "3x12 Reps",
+          "W3": "4x10 Reps",
+          "W4": "3x7 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x10 Reps",
+          "W2": "4x12 Reps",
+          "W3": "4x14 Reps",
+          "W4": "3x8 Reps (Deload)",
+        },
+      },
+      "Pike Push Up": {
+        "NEVER": {
+          "W1": "3x5 Reps",
+          "W2": "3x6 Reps",
+          "W3": "3x8 Reps",
+          "W4": "2x4 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x8 Reps",
+          "W2": "3x10 Reps",
+          "W3": "3x12 Reps",
+          "W4": "2x6 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x10 Reps",
+          "W2": "3x12 Reps",
+          "W3": "4x10 Reps",
+          "W4": "3x7 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x10 Reps",
+          "W2": "4x12 Reps",
+          "W3": "4x14 Reps",
+          "W4": "3x8 Reps (Deload)",
+        },
+      },
+      "Squat": {
+        "NEVER": {
+          "W1": "3x12 Reps",
+          "W2": "3x15 Reps",
+          "W3": "3x18 Reps",
+          "W4": "2x10 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x15 Reps",
+          "W2": "3x18 Reps",
+          "W3": "4x15 Reps",
+          "W4": "3x10 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "4x15 Reps",
+          "W2": "4x18 Reps",
+          "W3": "4x20 Reps",
+          "W4": "3x12 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x20 Reps",
+          "W2": "4x23 Reps",
+          "W3": "5x20 Reps",
+          "W4": "3x15 Reps (Deload)",
+        },
+      },
+      "Bulgarian Split Squat": {
+        // Unilateral: beban lebih berat per kaki, awali konservatif
+        "NEVER": {
+          "W1": "3x6/Kaki",
+          "W2": "3x8/Kaki",
+          "W3": "3x10/Kaki",
+          "W4": "2x5/Kaki (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x8/Kaki",
+          "W2": "3x10/Kaki",
+          "W3": "3x12/Kaki",
+          "W4": "2x6/Kaki (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x10/Kaki",
+          "W2": "3x12/Kaki",
+          "W3": "4x10/Kaki",
+          "W4": "3x7/Kaki (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x10/Kaki",
+          "W2": "4x12/Kaki",
+          "W3": "4x14/Kaki",
+          "W4": "3x8/Kaki (Deload)",
+        },
+      },
+      "Plank": {
+        "NEVER": {
+          "W1": "3x20 Detik",
+          "W2": "3x25 Detik",
+          "W3": "3x30 Detik",
+          "W4": "2x15 Detik (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x30 Detik",
+          "W2": "3x40 Detik",
+          "W3": "3x50 Detik",
+          "W4": "2x25 Detik (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x45 Detik",
+          "W2": "3x55 Detik",
+          "W3": "3x65 Detik",
+          "W4": "3x30 Detik (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x60 Detik",
+          "W2": "3x75 Detik",
+          "W3": "3x90 Detik",
+          "W4": "3x45 Detik (Deload)",
+        },
+      },
+      "Lunges": {
+        "NEVER": {
+          "W1": "3x8/Kaki",
+          "W2": "3x10/Kaki",
+          "W3": "3x12/Kaki",
+          "W4": "2x6/Kaki (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x10/Kaki",
+          "W2": "3x12/Kaki",
+          "W3": "3x14/Kaki",
+          "W4": "2x8/Kaki (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x12/Kaki",
+          "W2": "3x15/Kaki",
+          "W3": "4x12/Kaki",
+          "W4": "3x8/Kaki (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x12/Kaki",
+          "W2": "4x14/Kaki",
+          "W3": "4x16/Kaki",
+          "W4": "3x10/Kaki (Deload)",
+        },
+      },
+      "Tricep Dips": {
+        "NEVER": {
+          "W1": "3x8 Reps",
+          "W2": "3x10 Reps",
+          "W3": "3x12 Reps",
+          "W4": "2x6 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x10 Reps",
+          "W2": "3x12 Reps",
+          "W3": "3x15 Reps",
+          "W4": "2x8 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x12 Reps",
+          "W2": "3x15 Reps",
+          "W3": "4x12 Reps",
+          "W4": "3x8 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "4x12 Reps",
+          "W2": "4x15 Reps",
+          "W3": "4x18 Reps",
+          "W4": "3x10 Reps (Deload)",
+        },
+      },
+      "Handstand Push-Up (Wall)": {
+        // Gerakan advanced: pemula wajib kuasai Pike Push Up dulu
+        "NEVER": {
+          "W1": "SKIP - Kuasai Pike Push Up dulu",
+          "W2": "SKIP",
+          "W3": "SKIP",
+          "W4": "SKIP",
+        },
+        "SOMETIMES": {
+          "W1": "2x3 Reps",
+          "W2": "2x4 Reps",
+          "W3": "2x5 Reps",
+          "W4": "2x3 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x5 Reps",
+          "W2": "3x6 Reps",
+          "W3": "3x7 Reps",
+          "W4": "2x4 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x6 Reps",
+          "W2": "3x8 Reps",
+          "W3": "4x6 Reps",
+          "W4": "2x5 Reps (Deload)",
+        },
+      },
+    },
+
+    // ══════════════════════════════════════════════════════
+    // 🌿 KEEP FIT — Fokus: Mobilitas + Maintenance
+    // Referensi: ACSM maintenance = 60-70% dari training load
+    // Kenaikan lebih lambat, fokus durasi & kualitas gerak
+    // ══════════════════════════════════════════════════════
+    "KEEP_FIT": {
+      "Pemanasan Dinamis": {
+        // Durasi pemanasan tetap (tidak perlu progresivitas)
+        "NEVER": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+        "SOMETIMES": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+        "OFTEN": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+        "DAILY": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+      },
+      "Bird Dog": {
+        "NEVER": {
+          "W1": "2x8 Reps",
+          "W2": "2x10 Reps",
+          "W3": "2x12 Reps",
+          "W4": "2x6 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "3x10 Reps",
+          "W2": "3x12 Reps",
+          "W3": "3x14 Reps",
+          "W4": "2x8 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x12 Reps",
+          "W2": "3x14 Reps",
+          "W3": "3x16 Reps",
+          "W4": "2x10 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x14 Reps",
+          "W2": "3x16 Reps",
+          "W3": "4x14 Reps",
+          "W4": "3x10 Reps (Deload)",
+        },
+      },
+      "Superman": {
+        "NEVER": {
+          "W1": "2x8 Reps",
+          "W2": "2x10 Reps",
+          "W3": "2x12 Reps",
+          "W4": "2x6 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "2x12 Reps",
+          "W2": "2x14 Reps",
+          "W3": "3x12 Reps",
+          "W4": "2x8 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x12 Reps",
+          "W2": "3x14 Reps",
+          "W3": "3x16 Reps",
+          "W4": "2x10 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x15 Reps",
+          "W2": "3x17 Reps",
+          "W3": "4x15 Reps",
+          "W4": "3x10 Reps (Deload)",
+        },
+      },
+      "Cat-Cow Stretch": {
+        // Mobility: durasi tidak perlu naik signifikan
+        "NEVER": {
+          "W1": "1 Menit",
+          "W2": "1.5 Menit",
+          "W3": "2 Menit",
+          "W4": "1 Menit (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "2 Menit",
+          "W2": "2 Menit",
+          "W3": "2 Menit",
+          "W4": "1.5 Menit (Deload)",
+        },
+        "OFTEN": {
+          "W1": "2 Menit",
+          "W2": "2 Menit",
+          "W3": "2 Menit",
+          "W4": "2 Menit",
+        },
+        "DAILY": {
+          "W1": "2 Menit",
+          "W2": "2 Menit",
+          "W3": "2 Menit",
+          "W4": "2 Menit",
+        },
+      },
+      "Push Up": {
+        "NEVER": {
+          "W1": "2x6 Reps",
+          "W2": "2x8 Reps",
+          "W3": "2x10 Reps",
+          "W4": "2x5 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "2x10 Reps",
+          "W2": "2x12 Reps",
+          "W3": "3x10 Reps",
+          "W4": "2x7 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x10 Reps",
+          "W2": "3x12 Reps",
+          "W3": "3x14 Reps",
+          "W4": "2x8 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x12 Reps",
+          "W2": "3x15 Reps",
+          "W3": "4x12 Reps",
+          "W4": "3x8 Reps (Deload)",
+        },
+      },
+      "Squat": {
+        "NEVER": {
+          "W1": "2x10 Reps",
+          "W2": "2x12 Reps",
+          "W3": "2x15 Reps",
+          "W4": "2x8 Reps (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "2x15 Reps",
+          "W2": "3x12 Reps",
+          "W3": "3x14 Reps",
+          "W4": "2x10 Reps (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x14 Reps",
+          "W2": "3x16 Reps",
+          "W3": "3x18 Reps",
+          "W4": "2x12 Reps (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x18 Reps",
+          "W2": "3x20 Reps",
+          "W3": "4x18 Reps",
+          "W4": "3x12 Reps (Deload)",
+        },
+      },
+      "Plank": {
+        "NEVER": {
+          "W1": "2x15 Detik",
+          "W2": "2x20 Detik",
+          "W3": "2x25 Detik",
+          "W4": "2x12 Detik (Deload)",
+        },
+        "SOMETIMES": {
+          "W1": "2x25 Detik",
+          "W2": "2x30 Detik",
+          "W3": "3x25 Detik",
+          "W4": "2x18 Detik (Deload)",
+        },
+        "OFTEN": {
+          "W1": "3x30 Detik",
+          "W2": "3x35 Detik",
+          "W3": "3x40 Detik",
+          "W4": "2x25 Detik (Deload)",
+        },
+        "DAILY": {
+          "W1": "3x40 Detik",
+          "W2": "3x50 Detik",
+          "W3": "3x60 Detik",
+          "W4": "3x30 Detik (Deload)",
+        },
+      },
+      "Cooling Down": {
+        // Pendinginan: tetap (tidak perlu progresivitas)
+        "NEVER": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+        "SOMETIMES": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+        "OFTEN": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+        "DAILY": {
+          "W1": "5 Menit",
+          "W2": "5 Menit",
+          "W3": "5 Menit",
+          "W4": "5 Menit",
+        },
+      },
+    },
+  };
+
   // 💾 DATA LOKAL (SOURCE CODE) - Editable oleh Admin di sini
   static final Map<String, dynamic> _defaultWorkoutLibrary = {
     "running": {
@@ -49,25 +747,25 @@ class WorkoutData {
           "target": "10 Menit",
           "type": "time",
           "icon_code": 58788,
-        }, // Icons.accessibility_new
+        },
         {
           "name": "{focus}",
           "target": "{target}",
           "type": "dist",
           "icon_code": 59382,
-        }, // Icons.directions_run
+        },
         {
           "name": "Cooling Down",
           "target": "5 Menit",
           "type": "time",
           "icon_code": 60235,
-        }, // Icons.ac_unit
+        },
       ],
       "female_extra": {
         "name": "Injury Prevention",
         "target": "Tambahkan glute activation untuk stabilitas ACL.",
         "type": "info",
-        "icon_code": 61279, // Icons.health_and_safety,
+        "icon_code": 61279,
       },
     },
 
@@ -107,89 +805,75 @@ class WorkoutData {
           "target": "5 Menit",
           "type": "time",
           "icon_code": 59846,
-        }, // Icons.settings_input_component
+        },
         {
           "name": "{focus}",
           "target": "{target}",
           "type": "dist",
           "icon_code": 59361,
-        }, // Icons.directions_bike
+        },
       ],
       "female_extra": {
         "name": "Sport Note",
         "target": "Perhatikan kekuatan core & pinggul untuk efisiensi kayuhan.",
         "type": "info",
-        "icon_code": 61279, // Icons.health_and_safety,
+        "icon_code": 61279,
       },
     },
 
     "basketball": {
       "title": "BASKETBALL ELITE SYSTEM",
       "levels": {
-        "NEVER": {"duration": 30}, // Beginner Session
-        "SOMETIMES": {"duration": 45}, // Intermediate Session
-        "OFTEN": {"duration": 75}, // Pro-Lite Session
-        "DAILY": {"duration": 90}, // Pro Athlete Session
+        "NEVER": {"duration": 30},
+        "SOMETIMES": {"duration": 45},
+        "OFTEN": {"duration": 75},
+        "DAILY": {"duration": 90},
       },
       "male_template": [
-        // 1. Warm Up (Beginner Data)
         {
           "name": "Dynamic Stretching",
           "target": "10 Menit",
           "type": "time",
           "icon_code": 58788,
-
           "video_url":
               "https://youtube.com/shorts/nPCPhqEJ3r4?si=MFQEnVj9dQDnhtTH",
-          "start_at": 6, // Mulai detik ke-6
+          "start_at": 6,
         },
         {
           "name": "Ball Slaps & Handling",
           "target": "50 Reps",
           "type": "reps",
           "icon_code": 60230,
-
           "video_url": "",
         },
-
-        // 2. Main Drill (Intermediate Data: Mikan Drill + Shooting) - Scalable Duration
         {
           "name": "Mikan Drill + Form Shooting",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60230,
-
           "video_url": "",
         },
-
-        // 3. Defense (Intermediate Data)
         {
           "name": "Zig-Zag Defensive Slides",
           "target": "4 Full Court",
           "type": "reps",
           "icon_code": 59382,
-
           "video_url": "",
         },
-
-        // 4. Physical (Intermediate Data)
         {
           "name": "Physical: Push Ups",
           "target": "3 Sets x 15",
           "type": "reps",
           "icon_code": 59405,
-
           "video_url": "",
         },
       ],
       "female_template": [
-        // 1. Warm Up (Beginner Data)
         {
           "name": "Dynamic Mobility",
           "target": "10 Menit",
           "type": "time",
           "icon_code": 58788,
-
           "video_url": "",
         },
         {
@@ -197,47 +881,34 @@ class WorkoutData {
           "target": "2 Menit",
           "type": "time",
           "icon_code": 60230,
-
           "video_url": "",
         },
-
-        // 2. Skill (Beginner Data)
         {
           "name": "Pocket Dribble Focus",
           "target": "2 Menit/Tangan",
           "type": "time",
           "icon_code": 60230,
-
           "video_url": "",
         },
-
-        // 3. Main Drill (Intermediate Data: Catch & Shoot) - Scalable Duration
         {
           "name": "Catch & Shoot Midrange",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60230,
-
           "video_url": "",
         },
-
-        // 4. Pressure Shooting (Intermediate Data)
         {
           "name": "Free Throw Pressure",
           "target": "10 Reps (Miss=Sprint)",
           "type": "reps",
           "icon_code": 60230,
-
           "video_url": "",
         },
-
-        // 5. Injury Prevention (Wajib untuk Wanita - ACL Support)
         {
           "name": "Injury Prevention",
           "target": "Latihan Glute & Hamstring (3x12 Squat)",
           "type": "info",
           "icon_code": 61279,
-
           "video_url": "",
         },
       ],
@@ -246,19 +917,17 @@ class WorkoutData {
     "football": {
       "title": "PRO FOOTBALL TRAINING",
       "levels": {
-        "NEVER": {"duration": 30}, // Beginner: Ball Mastery
-        "SOMETIMES": {"duration": 45}, // Intermediate: Tactical Power
-        "OFTEN": {"duration": 70}, // Advanced: High Intensity
-        "DAILY": {"duration": 90}, // Pro: Explosive Power
+        "NEVER": {"duration": 30},
+        "SOMETIMES": {"duration": 45},
+        "OFTEN": {"duration": 70},
+        "DAILY": {"duration": 90},
       },
       "male_template": [
-        // 1. Warm Up & Ball Mastery (Beginner)
         {
           "name": "Toe Taps (Ball Feel)",
           "target": "100 Reps",
           "type": "reps",
           "icon_code": 60231,
-
           "video_url": "",
         },
         {
@@ -266,58 +935,43 @@ class WorkoutData {
           "target": "20 Meters x 5",
           "type": "dist",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 2. Technique (Beginner/Intermediate)
         {
           "name": "Wall Pass (First Touch)",
           "target": "50 Reps/Kaki",
           "type": "reps",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 3. Main Drill (Intermediate/Pro: Rondo & High Press)
         {
           "name": "Rondo Simulation / High Press",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 4. Physical (Intermediate: Power)
         {
           "name": "Long Ball Accuracy",
           "target": "20 Reps (30m)",
           "type": "reps",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 5. Finishing (Pro: High Intensity)
         {
           "name": "Agility Ladder Runs",
           "target": "5 Sets",
           "type": "reps",
           "icon_code": 59382,
-
           "video_url": "",
         },
       ],
       "female_template": [
-        // 1. Warm Up & Technique (Beginner)
         {
           "name": "Slalom Dribble",
           "target": "10 Cones (1m gap)",
           "type": "reps",
           "icon_code": 60231,
-
           "video_url": "",
         },
         {
@@ -325,47 +979,34 @@ class WorkoutData {
           "target": "10 Menit",
           "type": "time",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 2. Main Drill (Intermediate: Possession)
         {
           "name": "Possession Control / 5v5 Sim",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 3. Power (Intermediate)
         {
           "name": "Shooting from Distance",
           "target": "20 Shots",
           "type": "reps",
           "icon_code": 60231,
-
           "video_url": "",
         },
-
-        // 4. Pro Drill (Atltet Pro)
         {
           "name": "Counter Attack Sprint",
           "target": "60m Sprint to Finish",
           "type": "dist",
           "icon_code": 59382,
-
           "video_url": "",
         },
-
-        // 5. Injury Prevention (FIFA 11+ for Female Athletes)
         {
           "name": "FIFA 11+ Prevention",
           "target": "Ligament Strength (ACL Focus)",
           "type": "info",
           "icon_code": 61279,
-
           "video_url": "",
         },
       ],
@@ -389,16 +1030,13 @@ class WorkoutData {
             "target": "50 Reps",
             "type": "reps",
             "icon_code": 58788,
-
             "video_url": "https://youtu.be/uLVt6u15L98?si=uC5vLHkj2D3_kJv0",
-            // "start_at": 10, // Opsional: Mulai dari detik ke-10
           },
           {
             "name": "High Knees",
             "target": "40 Reps",
             "type": "reps",
             "icon_code": 59382,
-
             "video_url": "https://youtu.be/DfjpR6dzLVg?si=-v45UmeEg8XQEkR9",
           },
           {
@@ -406,7 +1044,6 @@ class WorkoutData {
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/TU8QYVW0gDU?si=ITmFLNROw4lppAUf",
           },
           {
@@ -414,7 +1051,6 @@ class WorkoutData {
             "target": "30 Reps",
             "type": "reps",
             "icon_code": 59375,
-
             "video_url": "https://youtu.be/hq_0YlyfqGM?si=3mBtIbVOFduKekyb",
           },
           {
@@ -422,7 +1058,6 @@ class WorkoutData {
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59132,
-
             "video_url": "https://youtu.be/YGGq0AE5Uyc?si=1qJPDMWhFRkPYlNs",
           },
           {
@@ -430,7 +1065,6 @@ class WorkoutData {
             "target": "30 Detik",
             "type": "time",
             "icon_code": 61460,
-
             "video_url": "https://youtu.be/VasEy9dNzZM?si=ivIuI1ST_3bvoJHv",
           },
           {
@@ -438,7 +1072,6 @@ class WorkoutData {
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59387,
-
             "video_url": "https://youtu.be/JkacHtlPYds?si=L_mf21x2A4aVReSR",
           },
           {
@@ -446,7 +1079,6 @@ class WorkoutData {
             "target": "10 Reps",
             "type": "reps",
             "icon_code": 59375,
-
             "video_url": "https://youtu.be/Yl7tEmpzknY?si=vM68iQu1FCysddO2",
           },
         ],
@@ -456,7 +1088,6 @@ class WorkoutData {
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/WDIpL0pjun0?si=zDuCBirrmOOE_VbB",
           },
           {
@@ -464,7 +1095,6 @@ class WorkoutData {
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/XtU2VQVuLYs?si=6Nypxn60TdpwpeM1",
           },
           {
@@ -472,7 +1102,6 @@ class WorkoutData {
             "target": "10 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/XckEEwa1BPI?si=HeLqwG3Zrw03qoN_",
           },
           {
@@ -480,7 +1109,6 @@ class WorkoutData {
             "target": "25 Reps",
             "type": "reps",
             "icon_code": 58788,
-
             "video_url": "https://youtu.be/l83R5PblSMA?si=QK87lhXiavi22BQO",
           },
           {
@@ -488,7 +1116,6 @@ class WorkoutData {
             "target": "12 Reps/Kaki",
             "type": "reps",
             "icon_code": 59387,
-
             "video_url": "https://youtu.be/Fmjj7wFJWRE?si=KPE2vbZhj_Pxy-Jy",
           },
           {
@@ -496,7 +1123,6 @@ class WorkoutData {
             "target": "60 Detik",
             "type": "time",
             "icon_code": 61460,
-
             "video_url": "https://youtu.be/pvIjsG5Svck?si=DzxiyLessznNw-Bw",
           },
           {
@@ -504,7 +1130,6 @@ class WorkoutData {
             "target": "15 Reps/Kaki",
             "type": "reps",
             "icon_code": 59387,
-
             "video_url": "https://youtu.be/tQNktxPkSeE?si=MAMAAu2MHfjHkP7Q",
           },
           {
@@ -512,7 +1137,6 @@ class WorkoutData {
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/HCf97NPYeGY?si=X23VkYQuYKAoXt_r",
           },
           {
@@ -520,7 +1144,6 @@ class WorkoutData {
             "target": "5 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/WxgJS48wf1M?si=Y_HZ_TeanzPWAODh",
           },
         ],
@@ -530,7 +1153,6 @@ class WorkoutData {
             "target": "5 Menit",
             "type": "time",
             "icon_code": 58788,
-
             "video_url": "https://youtu.be/3qyWpJ34dWw?si=QSAYITuJMp3E5zYB",
           },
           {
@@ -538,7 +1160,6 @@ class WorkoutData {
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 58788,
-
             "video_url": "https://youtu.be/k2azbhhuKuM?si=jKZCpYDMGyNaJ_pn",
           },
           {
@@ -546,7 +1167,6 @@ class WorkoutData {
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 60235,
-
             "video_url": "https://youtu.be/tYMHYWVvFjs?si=Ja47xW1te-hEigqA",
           },
           {
@@ -554,7 +1174,6 @@ class WorkoutData {
             "target": "2 Menit",
             "type": "time",
             "icon_code": 60235,
-
             "video_url": "https://youtu.be/LIVJZZyZ2qM?si=T5CjHWfI5YRjBvQt",
           },
           {
@@ -562,7 +1181,6 @@ class WorkoutData {
             "target": "10 Reps",
             "type": "reps",
             "icon_code": 59405,
-
             "video_url": "https://youtu.be/WDIpL0pjun0?si=zDuCBirrmOOE_VbB",
           },
           {
@@ -570,7 +1188,6 @@ class WorkoutData {
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 58788,
-
             "video_url": "https://youtu.be/l83R5PblSMA?si=QK87lhXiavi22BQO",
           },
           {
@@ -578,7 +1195,6 @@ class WorkoutData {
             "target": "30 Detik",
             "type": "time",
             "icon_code": 61460,
-
             "video_url": "https://youtu.be/pvIjsG5Svck?si=DzxiyLessznNw-Bw",
           },
           {
@@ -594,6 +1210,41 @@ class WorkoutData {
     },
   };
 
+  // -------------------------------------------------------
+  // 🔧 HELPER: Hitung minggu ke berapa berdasarkan TOTAL SESI AKTIF
+  // Bukan dari tanggal kalender, tapi dari berapa kali user benar-benar workout
+  // Setiap 7 sesi = naik 1 minggu, loop setiap 4 minggu (28 sesi)
+  // -------------------------------------------------------
+  static String getCurrentWeekKey(int totalSessions) {
+    // 0-6 sesi = W1, 7-13 = W2, 14-20 = W3, 21-27 = W4 (Deload)
+    // 28+ = loop kembali (siklus baru)
+    final weekNumber = (totalSessions ~/ 7) % 4;
+    return "W${weekNumber + 1}";
+  }
+
+  // -------------------------------------------------------
+  // 🔧 HELPER: Ambil target reps yang sudah diprogresifkan
+  // Return "—" jika data tidak tersedia (fallback ke target default)
+  // -------------------------------------------------------
+  static String getProgressiveTarget({
+    required String exerciseName,
+    required String goal,
+    required String level,
+    required String weekKey,
+  }) {
+    try {
+      final goalData = _progressionData[goal];
+      if (goalData == null) return "—";
+      final exerciseData = goalData[exerciseName];
+      if (exerciseData == null) return "—";
+      final levelData = exerciseData[level];
+      if (levelData == null) return "—";
+      return levelData[weekKey] ?? "—";
+    } catch (e) {
+      return "—";
+    }
+  }
+
   // 🔥 UTAMA: Generate Routine berdasarkan Data (Online / Local)
   static Map<String, dynamic> generateRoutine({
     required String sportType,
@@ -603,14 +1254,12 @@ class WorkoutData {
     String weather = "",
     required int temp,
     bool isIndoor = false,
-    int frequency = 1, // New Parameter
+    int frequency = 1,
+    int totalSessions = 0, // 🔥 Total sesi dari gamification (bukan tanggal)
     LanguageProvider? lang,
   }) {
     // 1. Pilih Sumber Data
-    // 🔥 FIX: Paksa pakai data lokal karena user baru saja edit link YouTube di sini.
-    // Kalau pakai _onlineWorkoutData, dia bakal ambil data lama dari Firebase yang belum ada link-nya.
     Map<String, dynamic> library = _defaultWorkoutLibrary;
-    // Map<String, dynamic> library = _onlineWorkoutData ?? _defaultWorkoutLibrary;
 
     String sportKey = _mapSportKey(sportType);
     String userLevel = level.toUpperCase();
@@ -621,9 +1270,8 @@ class WorkoutData {
     String userGender = _normalizeGender(gender);
     String userGoal = goal.toUpperCase();
 
-    // Default return jika data tidak ditemukan
     if (!library.containsKey(sportKey)) {
-      sportKey = "home"; // Fallback ke home workout
+      sportKey = "home";
     }
 
     final sportData = library[sportKey];
@@ -635,16 +1283,16 @@ class WorkoutData {
 
     // A. LARI & SEPEDA
     if (sportKey == "running" || sportKey == "cycling") {
-      weatherAdvice = _getWeatherText(sportData['weather_advice'], temp);
-      if (userGender == "FEMALE" &&
-          sportData['weather_advice']['hydration_female'] != null) {
-        // Add hydration logic if needed, simplifikasi info weather
-      }
+      weatherAdvice = _getWeatherText(
+        sportKey,
+        sportData['weather_advice'],
+        temp,
+        lang,
+      );
 
       final levelData =
           sportData['levels'][userLevel] ?? sportData['levels']['SOMETIMES'];
 
-      // Logika Gender & Weather Adjustment
       String targetDisplay = levelData['male_target'] ?? "30 min";
       String focus = levelData['focus'] ?? "General Workout";
 
@@ -662,19 +1310,17 @@ class WorkoutData {
         sportData['template'].map((x) => Map<String, dynamic>.from(x)),
       );
 
-      // Isi Template
       for (var ex in template) {
         ex['name'] = ex['name'].replaceAll("{focus}", focus);
         ex['target'] = ex['target'].replaceAll("{target}", targetDisplay);
       }
       exercises = template;
 
-      // Extra info buat cewek
       if (userGender == "FEMALE" && sportData['female_extra'] != null) {
         exercises.add(Map<String, dynamic>.from(sportData['female_extra']));
       }
     }
-    // B. BASKET & BOLA (Team Sports)
+    // B. BASKET & BOLA
     else if (sportKey == "basketball" || sportKey == "football") {
       final levelData = sportData['levels'][userLevel] ?? {"duration": 45};
       double duration = (levelData['duration'] as num).toDouble();
@@ -682,14 +1328,17 @@ class WorkoutData {
       if (userGender == "FEMALE" && !isIndoor) {
         duration = _applyFemaleWeatherAdjustment(duration, temp, weather);
         weatherAdvice = _getWeatherText(
+          "home",
           library['home']['weather_advice'],
           temp,
-        ); // Pinjam weather logic home
+          lang,
+        );
       } else {
-        // Male default logic
         weatherAdvice = _getWeatherText(
+          "running",
           library["running"]['weather_advice'],
           temp,
+          lang,
         );
       }
 
@@ -708,9 +1357,15 @@ class WorkoutData {
       }
       exercises = template;
     }
-    // C. HOME WORKOUT
+    // C. HOME WORKOUT — 🔥 DENGAN PROGRESIVITAS
     else {
-      weatherAdvice = _getWeatherText(sportData['weather_advice'], temp);
+      weatherAdvice = _getWeatherText(
+        "home",
+        sportData['weather_advice'],
+        temp,
+        lang,
+      );
+
       String goalKey = "KEEP_FIT";
       if (userGoal.contains("WEIGHT") ||
           userGoal.contains("KURUS") ||
@@ -727,7 +1382,23 @@ class WorkoutData {
         rawList.map((x) => Map<String, dynamic>.from(x)),
       );
 
-      // Female Adjustments for Reps
+      // 🔥 TERAPKAN PROGRESIVITAS berdasarkan total sesi aktif
+      String weekKey = getCurrentWeekKey(totalSessions);
+
+      for (var ex in exercises) {
+        String progressiveTarget = getProgressiveTarget(
+          exerciseName: ex['name'],
+          goal: goalKey,
+          level: userLevel,
+          weekKey: weekKey,
+        );
+        // Update target hanya jika data progresivitas tersedia dan bukan SKIP
+        if (progressiveTarget != "—" && !progressiveTarget.startsWith("SKIP")) {
+          ex['target'] = progressiveTarget;
+        }
+      }
+
+      // Female Adjustments for Reps (tetap berlaku)
       if (userGender == "FEMALE" && userGoal.contains("WEIGHT")) {
         for (var ex in exercises) {
           if (ex['type'] == 'reps') {
@@ -743,27 +1414,22 @@ class WorkoutData {
       }
     }
 
-    // 🔥 UPDATE LOGIC JAM 12 & 18 (REQUEST WAK)
+    // 🔥 UPDATE LOGIC JAM 12 & 18
     String sessionLabel = "";
     bool isRestTime = false;
 
     if (frequency == 2) {
-      // Logic Khusus 2x Sehari
       int hour = DateTime.now().hour;
-
       if (hour >= 18) {
-        // JAM 18.00 - 23.59 -> MODE ISTIRAHAT
         isRestTime = true;
       } else if (hour >= 12) {
-        // JAM 12.00 - 17.59 -> SESI SORE
         sessionLabel = " (Sesi Sore ☀️)";
       } else {
-        // JAM 00.00 - 11.59 -> SESI PAGI
         sessionLabel = " (Sesi Pagi 🌅)";
       }
     }
 
-    // Process Icons (Convert Code to IconData)
+    // Process Icons
     for (var ex in exercises) {
       if (ex['icon_code'] != null) {
         ex['icon'] = IconData(ex['icon_code'], fontFamily: 'MaterialIcons');
@@ -774,7 +1440,6 @@ class WorkoutData {
 
     // Add Lora Advice / Rest Card
     if (isRestTime) {
-      // HAPUS SEMUA LATIHAN -> GANTI SARAN ISTIRAHAT
       exercises.clear();
       exercises.add({
         "name": "Waktunya Istirahat 🌙",
@@ -786,9 +1451,13 @@ class WorkoutData {
       weatherAdvice = "Selamat beristirahat.";
       title = "REST MODE";
     } else {
-      // Masukkan Kartu Saran Normal
+      String loraTitle = lang != null
+          ? (lang.translate('workout.loraAdvice') != 'workout.loraAdvice'
+                ? lang.translate('workout.loraAdvice')
+                : 'Saran Lora')
+          : 'Saran Lora';
       exercises.insert(0, {
-        "name": "Saran Lora$sessionLabel",
+        "name": "$loraTitle$sessionLabel",
         "target": weatherAdvice,
         "type": "info",
         "icon": Icons.lightbulb,
@@ -822,19 +1491,40 @@ class WorkoutData {
     return "UNKNOWN";
   }
 
-  static String _getWeatherText(dynamic adviceData, int temp) {
+  static String _getWeatherText(
+    String sportKey,
+    dynamic adviceData,
+    int temp,
+    LanguageProvider? lang,
+  ) {
     if (adviceData == null) return "Cuaca OK.";
     final advice = Map<String, dynamic>.from(adviceData as Map);
     String tp = '$temp';
     String msg = "";
+
+    String getTranslationText(String levelType, String fallback) {
+      if (lang != null) {
+        String prefix = sportKey;
+        if (sportKey == "running") prefix = "run";
+        if (sportKey == "cycling") prefix = "cycle";
+        String key = "workout.${prefix}${levelType}";
+        String translated = lang.translate(key);
+        if (translated != key) return translated;
+      }
+      return fallback;
+    }
+
     if (temp >= 33)
-      msg = advice['danger'] ?? "";
+      msg = getTranslationText("Danger", advice['danger'] ?? "");
     else if (temp >= 28)
-      msg = advice['hot'] ?? advice['warm'] ?? "";
+      msg = getTranslationText(
+        "Hot",
+        advice['hot'] ?? getTranslationText("Warm", advice['warm'] ?? ""),
+      );
     else if (temp >= 18)
-      msg = advice['ideal'] ?? "";
+      msg = getTranslationText("Ideal", advice['ideal'] ?? "");
     else
-      msg = advice['cold'] ?? "";
+      msg = getTranslationText("Cold", advice['cold'] ?? "");
 
     return msg.replaceAll("{temp}", tp);
   }
@@ -856,7 +1546,6 @@ class WorkoutData {
   // 🔥 FUNGSI ADMIN: Upload ke Firebase
   static Future<void> seedToFirebase() async {
     try {
-      // ✅ Gunakan URL spesifik (Asia-Southeast1) agar konsisten dengan SettingsPage
       final db = FirebaseDatabase.instanceFor(
         app: Firebase.app(),
         databaseURL:
@@ -878,9 +1567,6 @@ class WorkoutData {
       final snapshot = await ref.get();
       if (snapshot.exists && snapshot.value is Map) {
         _onlineWorkoutData = Map<String, dynamic>.from(snapshot.value as Map);
-        // Convert nested maps recursively if needed, but Dart handles dynamic decently
-        // We might need to handle List conversion manually from Firebase's Object format if indexes are used
-        // But for simple use case, this usually works.
         print("✅ Online Workout Data Loaded!");
       }
     } catch (e) {

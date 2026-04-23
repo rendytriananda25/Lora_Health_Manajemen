@@ -6,7 +6,6 @@ import 'badges.dart';
 import 'rank_system.dart';
 
 class BadgeService {
-  // Unified method to handle Stats, Exp, Rank, and Badges
   static Future<GamificationResult> processSession(
     String userId,
     Map<String, dynamic> sessionData,
@@ -14,11 +13,9 @@ class BadgeService {
     final dbRef = FirebaseDatabase.instance.ref();
     final userNode = dbRef.child("users/$userId");
 
-    // 1. Fetch Gamification Data & Badges
     final gameSnap = await userNode.child("gamification").get();
     final badgeSnap = await userNode.child("badges").get();
 
-    // Initialize Stats
     int currentExp = 0;
     int currentStreak = 0;
     String? lastDateStr;
@@ -41,8 +38,6 @@ class BadgeService {
         totalSessions = int.tryParse(data['total_sessions'].toString()) ?? 0;
       }
     }
-
-    // 2. Migration: If stats missing, calculate from history (One time only)
     if (needsMigration) {
       final historySnap = await userNode.child("history").get();
       if (historySnap.exists && historySnap.value is Map) {
@@ -53,28 +48,8 @@ class BadgeService {
           totalDist += (s['distance_km'] as num? ?? 0).toDouble();
           totalCals += (s['calories'] as num? ?? 0).toInt();
         });
-        // Note: We don't recalculate streak here, assuming 0 or existing logic.
-        // Or we could, but let's stick to safe defaults if migration.
       }
     }
-
-    // 3. Add Current Session Data
-    // Note: The session is ALREADY in history?
-    // If MapPage calls this after save, yes.
-    // If we just migrated from history, does history include current session?
-    // Yes, MapPage pushes to history, THEN calls this.
-    // So if migration ran, it INCLUDED current session.
-    // If NO migration (stats exist), we MUST add current session.
-
-    // Problem: If migration ran, we double count?
-    // Migration reads ALL history. Current session IS in history.
-    // So if needsMigration, totals are up to date including current.
-    // If !needsMigration, we add current.
-
-    // Wait, MapPage saves to Firebase.
-    // So "history" contains the new record.
-    // If we migrate, we sum everything. Correct.
-    // If we have stats, stats (from previous) + current. Correct.
 
     if (!needsMigration) {
       totalDist += (sessionData['distance_km'] as num? ?? 0).toDouble();

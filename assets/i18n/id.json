@@ -277,7 +277,9 @@
     "security": "Keamanan",
     "changePassword": "Ubah Kata Sandi",
     "twoFactorAuth": "Autentikasi Dua Faktor",
-    "editName": "Ubah Nama"
+    "editName": "Ubah Nama",
+    "photoUpdated": "📸 Foto Profil Diperbarui (Lokal)",
+    "confirmLogoutBody": "Apakah Anda yakin ingin keluar?"
   },
   "personalInfo": {
     "title": "Informasi Pribadi",

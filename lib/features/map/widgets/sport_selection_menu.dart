@@ -30,6 +30,19 @@ class SportSelectionMenu extends StatelessWidget {
     }
   }
 
+  String _translateSport(String sport, LanguageProvider lang) {
+    if (lang.currentLanguage == 'id') return sport;
+    switch (sport) {
+      case "Lari": return lang.currentLanguage == 'en' ? "Running" : lang.currentLanguage == 'es' ? "Correr" : "ランニング";
+      case "Sepeda": return lang.currentLanguage == 'en' ? "Cycling" : lang.currentLanguage == 'es' ? "Ciclismo" : "サイクリング";
+      case "Basket": return lang.currentLanguage == 'en' ? "Basketball" : lang.currentLanguage == 'es' ? "Baloncesto" : "バスケットボール";
+      case "Sepak Bola": return lang.currentLanguage == 'en' ? "Football" : lang.currentLanguage == 'es' ? "Fútbol" : "サッカー";
+      case "Bola": return lang.currentLanguage == 'en' ? "Football" : lang.currentLanguage == 'es' ? "Fútbol" : "サッカー";
+      case "Home Workout": return lang.currentLanguage == 'ja' ? "ホームワークアウト" : sport; // Sisanya tetap sama
+      default: return sport;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
@@ -68,7 +81,7 @@ class SportSelectionMenu extends StatelessWidget {
                       color: theme.textColor,
                     ),
                     title: Text(
-                      sportName,
+                      _translateSport(sportName, lang),
                       style: TextStyle(
                         color: theme.textColor,
                         fontSize: 13,

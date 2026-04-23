@@ -52,6 +52,7 @@ class _MapPageState extends State<MapPage> {
   String _userGender = "UNKNOWN";
   String _userName = "User"; // ✅ Untuk sapaan fleksibel
   double _userWeight = 60.0; // Default weight
+  int _totalSessions = 0; // 🔥 Total sesi aktif dari gamification
 
   // ✅ Weather Logic
   String _currentTemp = "--";
@@ -164,8 +165,7 @@ class _MapPageState extends State<MapPage> {
     var loadedGender = prefs.getString('user_gender') ?? "UNKNOWN";
     int loadedFrequency = prefs.getInt('user_frequency') ?? 1;
     double loadedWeight = 60.0;
-
-    // Cek local storage dulu kalau ada (opsional), tapi prioritas database
+    int loadedTotalSessions = 0;
 
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -178,10 +178,17 @@ class _MapPageState extends State<MapPage> {
         if (data['frequency'] != null) {
           loadedFrequency = int.tryParse(data['frequency'].toString()) ?? 1;
         }
-        // ✅ Ambil Berat Badan (Weight)
         if (data['weight'] != null) {
           loadedWeight = double.tryParse(data['weight'].toString()) ?? 60.0;
         }
+      }
+
+      // 🔥 Ambil total_sessions dari gamification
+      final gameSnap = await FirebaseDatabase.instance
+          .ref("users/${user.uid}/gamification/total_sessions")
+          .get();
+      if (gameSnap.exists) {
+        loadedTotalSessions = int.tryParse(gameSnap.value.toString()) ?? 0;
       }
     }
 
@@ -192,6 +199,7 @@ class _MapPageState extends State<MapPage> {
         _userGender = _normalizeGender(loadedGender);
         _userFrequency = loadedFrequency;
         _userWeight = loadedWeight > 0 ? loadedWeight : 60.0;
+        _totalSessions = loadedTotalSessions;
       });
       _generateRoutine();
       _syncWeatherReminder();
@@ -239,7 +247,6 @@ class _MapPageState extends State<MapPage> {
   String _getTargetByLevel(String sport, String level) {
     final s = sport.toUpperCase();
     final l = level.toUpperCase();
-
     if (s == "LARI") {
       if (l == "NEVER") return "2.0 KM";
       if (l == "SOMETIMES") return "4.0 KM";
@@ -278,6 +285,19 @@ class _MapPageState extends State<MapPage> {
     return "20 Menit";
   }
 
+  String _getTranslatedSport(String sport, LanguageProvider lang) {
+    if (lang.currentLanguage == 'id') return sport;
+    switch (sport) {
+      case "Lari": return lang.currentLanguage == 'en' ? "Running" : lang.currentLanguage == 'es' ? "Correr" : "ランニング";
+      case "Sepeda": return lang.currentLanguage == 'en' ? "Cycling" : lang.currentLanguage == 'es' ? "Ciclismo" : "サイクリング";
+      case "Basket": return lang.currentLanguage == 'en' ? "Basketball" : lang.currentLanguage == 'es' ? "Baloncesto" : "バスケットボール";
+      case "Sepak Bola": return lang.currentLanguage == 'en' ? "Football" : lang.currentLanguage == 'es' ? "Fútbol" : "サッカー";
+      case "Bola": return lang.currentLanguage == 'en' ? "Football" : lang.currentLanguage == 'es' ? "Fútbol" : "サッカー";
+      case "Home Workout": return lang.currentLanguage == 'ja' ? "ホームワークアウト" : sport;
+      default: return sport;
+    }
+  }
+
   int _userFrequency = 1;
 
   void _generateRoutine() {
@@ -290,6 +310,7 @@ class _MapPageState extends State<MapPage> {
       weather: _weatherCondition,
       temp: _tempValue,
       frequency: _userFrequency,
+      totalSessions: _totalSessions, // 🔥 Progresivitas berdasarkan sesi aktif
       lang: lang,
     );
     if (mounted) {
@@ -416,9 +437,23 @@ class _MapPageState extends State<MapPage> {
         double durationHours = _secondsNotifier.value / 3600.0;
         int caloriesBurned = (met * _userWeight * durationHours).toInt();
 
-        // Fallback minimal 1 kalori jika durasi > 10 detik
-        if (caloriesBurned == 0 && _secondsNotifier.value > 10)
+        // ✅ Tambahan Kalori Berdasarkan Volume Latihan (Repetisi)
+        if (!_isGpsSport && _workoutSessionData.isNotEmpty) {
+          double bonusCalories = 0.0;
+          for (var item in _workoutSessionData) {
+            String res = item['result']?.toString() ?? "";
+            if (res.toLowerCase().contains("reps")) {
+              int count = int.tryParse(res.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0;
+              bonusCalories += count * 0.4; // Estimasi 0.4 kcal per repetisi gerakan
+            }
+          }
+          caloriesBurned += bonusCalories.toInt();
+        }
+
+        // Fallback minimal 1 kalori jika durasi > 10 detik atau punya data latihan
+        if (caloriesBurned == 0 && (_secondsNotifier.value > 10 || _workoutSessionData.isNotEmpty)) {
           caloriesBurned = 1;
+        }
 
         await dbRef.push().set({
           'activity': _selectedSport,
@@ -560,8 +595,10 @@ class _MapPageState extends State<MapPage> {
           .replaceAll('{name}', firstName);
     }
 
+    String translatedSport = _getTranslatedSport(_selectedSport, lang);
+
     String flexibleAdvice =
-        "$weatherGreeting ${lang.translate('map.letsGo').replaceAll('{sport}', _selectedSport).replaceAll('{target}', dailyTarget)}";
+        "$weatherGreeting ${lang.translate('map.letsGo').replaceAll('{sport}', translatedSport).replaceAll('{target}', dailyTarget)}";
 
     return Scaffold(
       backgroundColor: theme.bgColor,
@@ -609,7 +646,7 @@ class _MapPageState extends State<MapPage> {
             )
           else
             TimerBackground(
-              selectedSport: _selectedSport,
+              selectedSport: translatedSport,
               isRecording: _isRecording,
               secondsNotifier: _secondsNotifier,
               exercises: _exercises,
@@ -617,7 +654,6 @@ class _MapPageState extends State<MapPage> {
               onStart: _startTrackingManual,
               onCompleteExercise: (n, r) =>
                   _workoutSessionData.add({"name": n, "result": r}),
-              onSkipExercise: (i) => setState(() => _exercises.removeAt(i)),
             ),
 
           if (isMapSport)
@@ -651,7 +687,7 @@ class _MapPageState extends State<MapPage> {
           if (!_isRecording)
             TipsPopup(
               showTips: _showTips,
-              selectedSport: _selectedSport,
+              selectedSport: translatedSport,
               targetText: dailyTarget,
               weatherAdvice: flexibleAdvice,
               onToggle: () => setState(() => _showTips = !_showTips),
@@ -705,7 +741,7 @@ class _MapPageState extends State<MapPage> {
               left: 20,
               right: 20,
               child: GlassControlPanel(
-                selectedSport: _selectedSport,
+                selectedSport: translatedSport,
                 currentTemp: _currentTemp,
                 isRecording: _isRecording,
                 onToggleRecord: _isRecording

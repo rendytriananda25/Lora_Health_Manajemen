@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart'; // ✅ Tambahkan Provider
+import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-
 import 'firebase_options.dart';
-import 'core/services/language_provider.dart'; // ✅ Pastikan path ini benar
-import 'core/services/theme_provider.dart'; // ✅ Added ThemeProvider
+import 'core/services/language_provider.dart';
+import 'core/services/theme_provider.dart';
 import 'features/notification/notification_service.dart';
 import 'features/notification/workout_reminder_service.dart';
 import 'screen/navbar.dart';
@@ -18,16 +17,12 @@ import 'features/map/data/workout_data.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 🌍 1. Inisialisasi Language & Theme Provider
   final languageProvider = LanguageProvider();
   await languageProvider.initialize();
 
-  final themeProvider = ThemeProvider(); // ✅ Init Theme
+  final themeProvider = ThemeProvider();
   await themeProvider.initialize();
   debugPrint("🚀 Main: Theme Initialized");
-
-  // 📱 2. Atur UI Overlay (Status Bar & Orientasi)
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -37,15 +32,9 @@ void main() async {
     ),
   );
   await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-  // 🔥 3. Inisialisasi Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-
-  // Notifikasi + reminder
   await NotificationService.instance.init();
   await WorkoutReminderService.instance.initDefault();
-
-  // 🚀 4. Load Data Global (Background)
   NutritionData.fetchFromFirebase();
   WorkoutData.fetchFromFirebase();
 
@@ -53,7 +42,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider.value(value: languageProvider),
-        ChangeNotifierProvider.value(value: themeProvider), // ✅ Inject Theme
+        ChangeNotifierProvider.value(value: themeProvider),
       ],
       child: const MyApp(),
     ),
@@ -68,21 +57,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Watch Providers for Global Updates
     final themeProvider = Provider.of<ThemeProvider>(context);
-
-    // Note: Language is used inside consumers/widgets usually,
-    // but we can listen here if needed for Title updates.
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Lora Assistant',
-      theme: themeProvider.themeData, // ✅ Apply Dynamic Theme
-      // --- LOGIC ROUTING PINTAR (RENDY TRIANANDA) ---
+      theme: themeProvider.themeData,
       home: Builder(
         builder: (context) {
-          // 📱 Dynamic System UI Overlay
-          // Memastikan Navbar & Status Bar ikut berubah warna sesuai tema
           final isDark = themeProvider.isDarkMode;
           SystemChrome.setSystemUIOverlayStyle(
             SystemUiOverlayStyle(
@@ -90,8 +71,7 @@ class MyApp extends StatelessWidget {
               statusBarIconBrightness: isDark
                   ? Brightness.light
                   : Brightness.dark,
-              systemNavigationBarColor:
-                  themeProvider.bgColor, // Ikuti warna background
+              systemNavigationBarColor: themeProvider.bgColor,
               systemNavigationBarIconBrightness: isDark
                   ? Brightness.light
                   : Brightness.dark,
@@ -101,7 +81,6 @@ class MyApp extends StatelessWidget {
           return StreamBuilder<User?>(
             stream: FirebaseAuth.instance.authStateChanges(),
             builder: (context, authSnapshot) {
-              // A. Loading State
               if (authSnapshot.connectionState == ConnectionState.waiting) {
                 return Scaffold(
                   backgroundColor: themeProvider.bgColor, // Use Theme Color
@@ -110,12 +89,8 @@ class MyApp extends StatelessWidget {
                   ),
                 );
               }
-
-              // B. Jika User SUDAH LOGIN
               if (authSnapshot.hasData && authSnapshot.data != null) {
                 final user = authSnapshot.data!;
-
-                // Cek ke Realtime Database untuk Favorite Sports
                 return FutureBuilder<DataSnapshot>(
                   future:
                       FirebaseDatabase.instanceFor(
@@ -136,19 +111,13 @@ class MyApp extends StatelessWidget {
                         ),
                       );
                     }
-
-                    // Jika data olahraga ADA -> Ke Dashboard/Navbar
                     if (dbSnapshot.hasData && dbSnapshot.data!.exists) {
                       return const Navbar();
                     }
-
-                    // Jika data olahraga TIDAK ADA -> Pilih Olahraga (Onboarding step 2)
                     return const SetupPage();
                   },
                 );
               }
-
-              // C. Jika User BELUM LOGIN -> Onboarding
               return const OnboardingScreen();
             },
           );

@@ -277,7 +277,9 @@
     "security": "セキュリティ",
     "changePassword": "パスワード変更",
     "twoFactorAuth": "2要素認証",
-    "editName": "名前を変更"
+    "editName": "名前を変更",
+    "photoUpdated": "📸 プロフィール写真を更新しました（ローカル）",
+    "confirmLogoutBody": "ログアウトしてもよろしいですか？"
   },
   "personalInfo": {
     "title": "個人情報",
