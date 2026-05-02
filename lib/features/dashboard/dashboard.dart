@@ -464,14 +464,19 @@ class _DashboardPageState extends State<DashboardPage> {
           Positioned.fill(
             child: ScrollConfiguration(
               behavior: const ScrollBehavior().copyWith(overscroll: false),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                AppSize.w(20),
-                AppSize.h(140),
-                AppSize.w(20),
-                AppSize.h(150),
-              ),
-                physics: const ClampingScrollPhysics(),
+              child: RefreshIndicator(
+                onRefresh: _initDashboard,
+                color: const Color(0xFF008BFF),
+                backgroundColor: theme.boxColor,
+                edgeOffset: AppSize.h(120), // Munculkan spinner di bawah header
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.fromLTRB(
+                    AppSize.w(20),
+                    AppSize.h(140),
+                    AppSize.w(20),
+                    AppSize.h(150),
+                  ),
+                  physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -526,6 +531,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
           ),
+        ),
 
           // HEADER - Di atas konten, tidak scrollable
           Positioned(

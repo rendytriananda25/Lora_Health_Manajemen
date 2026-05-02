@@ -245,8 +245,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
         final titleSize = isVeryCompact ? 17.0 : isCompact ? 20.0 : 26.0;
         final subtitleSize = isVeryCompact ? 11.0 : isCompact ? 13.0 : 16.0;
         final contentPadTop = isVeryCompact ? 10.0 : isCompact ? 16.0 : 24.0;
-        // Padding bawah konten: cukup untuk button (~70px) + safe area
-        final contentPadBottom = (70.0 + bottomInset).clamp(70.0, 100.0);
         final buttonPadBottom = isVeryCompact ? 8.0 : isCompact ? 14.0 : 20.0;
 
         return Container(
@@ -308,118 +306,102 @@ class _ExerciseCardState extends State<ExerciseCard> {
                     ),
                   ),
 
-                // 2. INFO AREA
+                // 2. INFO AREA — Layout tanpa Stack untuk hindari overflow
                 Expanded(
                   flex: isCompact ? 5 : 4,
-                  child: Stack(
-                    children: [
-                      Padding(
-                        padding: EdgeInsets.fromLTRB(25, contentPadTop, 25, contentPadBottom),
-                        child: Column(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(25, contentPadTop, 25, buttonPadBottom),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Title Area
+                        Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Title Area
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    widget.data['name'],
-                                    style: TextStyle(
-                                      color: textColor,
-                                      fontSize: titleSize,
-                                      fontWeight: FontWeight.w400,
-                                      height: 1.1,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                            Expanded(
+                              child: Text(
+                                widget.data['name'],
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.1,
                                 ),
-                                if (widget.data['video_url'] != null &&
-                                    widget.data['video_url'].isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 8.0),
-                                    child: Icon(
-                                      Icons.open_in_new,
-                                      color: theme.isDarkMode
-                                          ? Colors.white30
-                                          : Colors.black38,
-                                      size: 20,
-                                    ),
-                                  ),
-                              ],
-                            ),
-
-                            if (_videoController == null) const Spacer(),
-
-                            SizedBox(height: isCompact ? 3 : 5),
-
-                            // Subtitle hanya tampil untuk timer/info, bukan reps (sudah tampil besar di bawah)
-                            if (type != 'reps')
-                              Text(
-                                widget.data['target'] ?? "Target",
-                                style: TextStyle(color: subTextColor, fontSize: subtitleSize),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
                               ),
-
-                            if (_videoController == null) const Spacer(),
-
-                            const Spacer(),
-
-                            // Center Control (Timer or Reps)
-                            Center(
-                              child: type == 'time'
-                                  ? _buildTimerDisplay(
-                                      textColor,
-                                      subTextColor,
-                                      lang,
-                                      isCompact,
-                                    )
-                                  : (type == 'reps'
-                                        ? _buildRepsDisplay(
-                                            textColor,
-                                            subTextColor,
-                                            isCompact,
-                                          )
-                                        : const SizedBox()),
                             ),
-
-                            const Spacer(),
+                            if (widget.data['video_url'] != null &&
+                                widget.data['video_url'].isNotEmpty)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 8.0),
+                                child: Icon(
+                                  Icons.open_in_new,
+                                  color: theme.isDarkMode
+                                      ? Colors.white30
+                                      : Colors.black38,
+                                  size: 20,
+                                ),
+                              ),
                           ],
                         ),
-                      ),
 
-                      // Bottom Button (Swipe to Action)
-                      if (!_isCompleted)
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              bottom: buttonPadBottom,
-                              left: 25,
-                              right: 25,
-                            ),
-                            child: SwipeButton(
-                              text: type == 'time'
-                                  ? (_isTimerRunning ? "PAUSE" : "MULAI TIMER")
-                                  : "LANJUT",
-                              textColor: buttonTextColor,
-                              backgroundColor: buttonColor,
-                              iconCircleColor: iconCircleColor,
-                              iconColor: iconColor,
-                              icon: type == 'time' && _isTimerRunning
-                                  ? Icons.pause
-                                  : Icons.double_arrow_rounded,
-                              onAction: () async {
-                                if (type == 'time') {
-                                  _toggleTimer();
-                                } else {
-                                  _handleFinish(isTimer: false);
-                                }
-                              },
-                            ),
+                        if (_videoController == null) const Spacer(),
+
+                        SizedBox(height: isCompact ? 3 : 5),
+
+                        // Subtitle hanya tampil untuk timer/info, bukan reps
+                        if (type != 'reps')
+                          Text(
+                            widget.data['target'] ?? "Target",
+                            style: TextStyle(color: subTextColor, fontSize: subtitleSize),
                           ),
+
+                        const Spacer(),
+
+                        // Center Control (Timer or Reps)
+                        Center(
+                          child: type == 'time'
+                              ? _buildTimerDisplay(
+                                  textColor,
+                                  subTextColor,
+                                  lang,
+                                  isCompact,
+                                )
+                              : (type == 'reps'
+                                    ? _buildRepsDisplay(
+                                        textColor,
+                                        subTextColor,
+                                        isCompact,
+                                      )
+                                    : const SizedBox()),
                         ),
-                    ],
+
+                        const Spacer(),
+
+                        // Bottom Button (Swipe to Action) — Dalam flow Column
+                        if (!_isCompleted)
+                          SwipeButton(
+                            text: type == 'time'
+                                ? (_isTimerRunning ? "PAUSE" : "MULAI TIMER")
+                                : "LANJUT",
+                            textColor: buttonTextColor,
+                            backgroundColor: buttonColor,
+                            iconCircleColor: iconCircleColor,
+                            iconColor: iconColor,
+                            icon: type == 'time' && _isTimerRunning
+                                ? Icons.pause
+                                : Icons.double_arrow_rounded,
+                            onAction: () async {
+                              if (type == 'time') {
+                                _toggleTimer();
+                              } else {
+                                _handleFinish(isTimer: false);
+                              }
+                            },
+                          ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -477,7 +459,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
 }
 
 // ----------------------------------------------------
-// 🔥 CUSTOM SWIPE BUTTON (SLIDER) 🔥
+// 🔥 CUSTOM SWIPE BUTTON (SLIDER) — PREMIUM ANIMATED 🔥
 // ----------------------------------------------------
 class SwipeButton extends StatefulWidget {
   final String text;
@@ -503,11 +485,107 @@ class SwipeButton extends StatefulWidget {
   State<SwipeButton> createState() => _SwipeButtonState();
 }
 
-class _SwipeButtonState extends State<SwipeButton> {
+class _SwipeButtonState extends State<SwipeButton>
+    with TickerProviderStateMixin {
   double _dragValue = 0.0;
   bool _isDragging = false;
+  bool _triggered = false;
   final double _padding = 6.0;
-  final double _knobSize = 48.0; // 60 height - padding*2
+  final double _knobSize = 48.0;
+
+  // 🔥 Shimmer animation (hint arrows)
+  late AnimationController _shimmerController;
+  late Animation<double> _shimmerAnimation;
+
+  // 🔥 Pulse glow on knob
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
+
+  // 🔥 Spring-back animation
+  late AnimationController _springController;
+  late Animation<double> _springAnimation;
+
+  // 🔥 Success scale bounce
+  late AnimationController _successController;
+  late Animation<double> _successScale;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Shimmer: repeating arrow hint
+    _shimmerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+    _shimmerAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
+
+    // Pulse: knob glow
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    // Spring-back
+    _springController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _springAnimation = Tween<double>(begin: 0.0, end: 0.0).animate(
+      CurvedAnimation(parent: _springController, curve: Curves.elasticOut),
+    );
+    _springController.addListener(() {
+      if (mounted) setState(() => _dragValue = _springAnimation.value);
+    });
+
+    // Success bounce
+    _successController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _successScale = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _successController, curve: Curves.elasticOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _shimmerController.dispose();
+    _pulseController.dispose();
+    _springController.dispose();
+    _successController.dispose();
+    super.dispose();
+  }
+
+  void _springBack() {
+    _springAnimation = Tween<double>(begin: _dragValue, end: 0.0).animate(
+      CurvedAnimation(parent: _springController, curve: Curves.elasticOut),
+    );
+    _springController.forward(from: 0.0);
+  }
+
+  void _triggerSuccess() {
+    setState(() => _triggered = true);
+    _successController.forward(from: 0.0).then((_) {
+      widget.onAction();
+      if (mounted) {
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (mounted) {
+            setState(() {
+              _dragValue = 0.0;
+              _isDragging = false;
+              _triggered = false;
+            });
+          }
+        });
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -518,85 +596,185 @@ class _SwipeButtonState extends State<SwipeButton> {
         builder: (context, constraints) {
           final double maxWidth = constraints.maxWidth;
           final double maxDrag = maxWidth - _knobSize - (_padding * 2);
+          final double knobLeft = _padding + (_dragValue * maxDrag);
 
-          return Stack(
-            children: [
-              // 1. Background Container
-              Container(
-                decoration: BoxDecoration(
-                  color: widget.backgroundColor,
-                  borderRadius: BorderRadius.circular(30),
+          return AnimatedBuilder(
+            animation: _successScale,
+            builder: (context, child) => Transform.scale(
+              scale: _triggered ? _successScale.value : 1.0,
+              child: child,
+            ),
+            child: Stack(
+              children: [
+                // 1. Background + Progress Trail
+                Container(
+                  decoration: BoxDecoration(
+                    color: widget.backgroundColor,
+                    borderRadius: BorderRadius.circular(30),
+                  ),
                 ),
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: _knobSize + 10,
-                      right: _knobSize / 2,
+
+                // 1b. Progress fill trail
+                AnimatedContainer(
+                  duration: _isDragging
+                      ? Duration.zero
+                      : const Duration(milliseconds: 300),
+                  width: knobLeft + _knobSize / 2,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    gradient: LinearGradient(
+                      colors: [
+                        widget.iconCircleColor.withOpacity(0.15),
+                        widget.iconCircleColor.withOpacity(
+                          0.05 + (_dragValue * 0.25),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      widget.text,
-                      style: TextStyle(
-                        color: widget.textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                        letterSpacing: 2.0,
+                  ),
+                ),
+
+                // 2. Text + shimmer arrows
+                Positioned.fill(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: _knobSize + 10,
+                        right: _knobSize / 2,
                       ),
-                      textAlign: TextAlign.center,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Animated text opacity (fades as you drag)
+                          Flexible(
+                            child: Opacity(
+                              opacity: (1.0 - _dragValue * 1.5).clamp(0.0, 1.0),
+                              child: Text(
+                                widget.text,
+                                style: TextStyle(
+                                  color: widget.textColor,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  letterSpacing: 2.0,
+                                ),
+                                textAlign: TextAlign.center,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ),
+                          // Shimmer hint arrows (only when idle)
+                          if (!_isDragging && _dragValue == 0.0)
+                            AnimatedBuilder(
+                              animation: _shimmerAnimation,
+                              builder: (context, _) {
+                                return Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: List.generate(3, (i) {
+                                    // Staggered opacity per chevron
+                                    double phase =
+                                        (_shimmerAnimation.value + i * 0.25) %
+                                        1.0;
+                                    double opacity =
+                                        (phase < 0.5)
+                                            ? phase * 2.0
+                                            : (1.0 - phase) * 2.0;
+                                    return Opacity(
+                                      opacity: opacity.clamp(0.15, 0.7),
+                                      child: Icon(
+                                        Icons.chevron_right,
+                                        color: widget.textColor,
+                                        size: 16,
+                                      ),
+                                    );
+                                  }),
+                                );
+                              },
+                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              // 2. Sliding Knob
-              Positioned(
-                left: _padding + (_dragValue * maxDrag),
-                top: _padding,
-                bottom: _padding,
-                child: GestureDetector(
-                  onHorizontalDragStart: (details) {
-                    setState(() => _isDragging = true);
-                  },
-                  onHorizontalDragUpdate: (details) {
-                    double delta = details.primaryDelta! / maxDrag;
-                    setState(() {
-                      _dragValue = (_dragValue + delta).clamp(0.0, 1.0);
-                    });
-                  },
-                  onHorizontalDragEnd: (details) {
-                    if (_dragValue > 0.6) {
-                      // Trigger Action
-                      widget.onAction();
-                      // Reset with delay for visual feedback? Or instant?
-                      // Usually immediate reset or stay if loading.
-                      // For now reset.
+                // 3. Sliding Knob with glow
+                Positioned(
+                  left: knobLeft,
+                  top: _padding,
+                  bottom: _padding,
+                  child: GestureDetector(
+                    onHorizontalDragStart: (_) {
+                      _springController.stop();
+                      setState(() => _isDragging = true);
+                    },
+                    onHorizontalDragUpdate: (details) {
+                      double delta = details.primaryDelta! / maxDrag;
                       setState(() {
-                        _dragValue = 0.0;
-                        _isDragging = false;
+                        _dragValue = (_dragValue + delta).clamp(0.0, 1.0);
                       });
-                    } else {
-                      // Reset spring back
-                      setState(() {
-                        _dragValue = 0.0;
-                        _isDragging = false;
-                      });
-                    }
-                  },
-                  onTap: () {
-                    // Also support TAP for accessibility/ease
-                    widget.onAction();
-                  },
-                  child: Container(
-                    width: _knobSize,
-                    height: _knobSize,
-                    decoration: BoxDecoration(
-                      color: widget.iconCircleColor,
-                      shape: BoxShape.circle,
+                    },
+                    onHorizontalDragEnd: (_) {
+                      if (_dragValue > 0.6) {
+                        // Snap to end then trigger
+                        setState(() {
+                          _dragValue = 1.0;
+                          _isDragging = false;
+                        });
+                        _triggerSuccess();
+                      } else {
+                        setState(() => _isDragging = false);
+                        _springBack();
+                      }
+                    },
+                    onTap: () => widget.onAction(),
+                    child: AnimatedBuilder(
+                      animation: _pulseAnimation,
+                      builder: (context, child) {
+                        final glowOpacity = _isDragging
+                            ? 0.0
+                            : _pulseAnimation.value * 0.3;
+                        final knobScale = _isDragging ? 1.08 : 1.0;
+
+                        return Transform.scale(
+                          scale: knobScale,
+                          child: Container(
+                            width: _knobSize,
+                            height: _knobSize,
+                            decoration: BoxDecoration(
+                              color: _triggered
+                                  ? Colors.green
+                                  : widget.iconCircleColor,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (_triggered
+                                          ? Colors.green
+                                          : widget.iconCircleColor)
+                                      .withOpacity(glowOpacity),
+                                  blurRadius: 12,
+                                  spreadRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                _triggered ? Icons.check : widget.icon,
+                                key: ValueKey(_triggered),
+                                color: _triggered
+                                    ? Colors.white
+                                    : widget.iconColor,
+                                size: 20,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                    child: Icon(widget.icon, color: widget.iconColor, size: 20),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         },
       ),

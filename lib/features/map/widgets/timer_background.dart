@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lora_1/features/map/widgets/exercise_card.dart';
+import 'package:lora_1/features/map/services/session_completion_service.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
@@ -12,6 +13,7 @@ class TimerBackground extends StatefulWidget {
   final Function(String name, String result) onCompleteExercise;
   final VoidCallback onStop;
   final VoidCallback onStart;
+  final bool sessionCompleted;
 
   const TimerBackground({
     super.key,
@@ -22,6 +24,7 @@ class TimerBackground extends StatefulWidget {
     required this.onStop,
     required this.onStart,
     required this.onCompleteExercise,
+    this.sessionCompleted = false,
   });
 
   @override
@@ -175,10 +178,12 @@ class _TimerBackgroundState extends State<TimerBackground> {
                             SizedBox(height: navbarSpace + bottomPad),
                           ],
                         ))
-                : _buildPreStartPreview(lang, theme),
+                : widget.sessionCompleted
+                    ? _buildSessionDoneMessage(lang, theme)
+                    : _buildPreStartPreview(lang, theme),
           ),
 
-          if (!widget.isRecording)
+          if (!widget.isRecording && !widget.sessionCompleted)
             Padding(
               padding: const EdgeInsets.fromLTRB(40, 0, 40, 120),
               child: GestureDetector(
@@ -287,6 +292,85 @@ class _TimerBackgroundState extends State<TimerBackground> {
           ),
         ),
       ],
+    );
+  }
+
+  // 🔄 PESAN: Sesi sudah selesai, tunggu reset berikutnya
+  Widget _buildSessionDoneMessage(LanguageProvider lang, ThemeProvider theme) {
+    final timeLeft = SessionCompletionService.getTimeUntilNextSession();
+    final timeStr = SessionCompletionService.formatDuration(timeLeft);
+    final sessionLabel = SessionCompletionService.getCurrentSessionLabel();
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_circle_rounded,
+                color: Colors.green,
+                size: 60,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              "$sessionLabel Selesai! 💪",
+              style: TextStyle(
+                color: theme.textColor,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              "Kamu sudah menyelesaikan latihan untuk sesi ini. Istirahat dulu ya!",
+              style: TextStyle(
+                color: theme.textColor.withOpacity(0.6),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              decoration: BoxDecoration(
+                color: theme.textColor.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(
+                  color: theme.textColor.withOpacity(0.08),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.schedule,
+                    color: const Color(0xFF008BFF),
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    "Sesi berikutnya dalam $timeStr",
+                    style: TextStyle(
+                      color: theme.textColor.withOpacity(0.7),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

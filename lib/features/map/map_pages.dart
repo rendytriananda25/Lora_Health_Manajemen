@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:provider/provider.dart';
+import 'package:lora_1/features/map/services/session_completion_service.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 
@@ -68,6 +69,7 @@ class _MapPageState extends State<MapPage> {
   late final MapController _mapController;
   List<Map<String, dynamic>> _exercises = [];
   final List<Map<String, dynamic>> _workoutSessionData = [];
+  bool _sessionCompleted = false; // 🔄 Track apakah sesi sudah selesai
 
   @override
   void initState() {
@@ -300,8 +302,25 @@ class _MapPageState extends State<MapPage> {
 
   int _userFrequency = 1;
 
-  void _generateRoutine() {
+  void _generateRoutine() async {
     final lang = Provider.of<LanguageProvider>(context, listen: false);
+
+    // 🔄 CEK: Apakah sesi saat ini sudah selesai?
+    final isCompleted = await SessionCompletionService.isCurrentSessionCompleted(
+      sport: _selectedSport,
+    );
+
+    if (isCompleted) {
+      // Sesi sudah dilakukan — kosongkan exercises, tampilkan pesan
+      if (mounted) {
+        setState(() {
+          _sessionCompleted = true;
+          _exercises = [];
+        });
+      }
+      return;
+    }
+
     final result = WorkoutData.generateRoutine(
       sportType: _selectedSport,
       goal: _userGoal,
@@ -310,11 +329,12 @@ class _MapPageState extends State<MapPage> {
       weather: _weatherCondition,
       temp: _tempValue,
       frequency: _userFrequency,
-      totalSessions: _totalSessions, // 🔥 Progresivitas berdasarkan sesi aktif
+      totalSessions: _totalSessions,
       lang: lang,
     );
     if (mounted) {
       setState(() {
+        _sessionCompleted = false;
         _exercises = List<Map<String, dynamic>>.from(result['exercises'] ?? []);
       });
     }
@@ -483,6 +503,11 @@ class _MapPageState extends State<MapPage> {
           gameResult = await BadgeService.processSession(user.uid, sessionData);
         }
 
+        // 🔄 TANDAI SESI SELESAI — saran olahraga dikosongkan sampai sesi berikutnya
+        await SessionCompletionService.markSessionCompleted(
+          sport: _selectedSport,
+        );
+
         if (mounted) {
           final theme = Provider.of<ThemeProvider>(context, listen: false);
           // 1. Show Badge Unlock
@@ -650,6 +675,7 @@ class _MapPageState extends State<MapPage> {
               isRecording: _isRecording,
               secondsNotifier: _secondsNotifier,
               exercises: _exercises,
+              sessionCompleted: _sessionCompleted,
               onStop: _stopTrackingManual,
               onStart: _startTrackingManual,
               onCompleteExercise: (n, r) =>
