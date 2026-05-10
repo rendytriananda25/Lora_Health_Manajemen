@@ -45,19 +45,15 @@ class _ExerciseCardState extends State<ExerciseCard> {
   void initState() {
     super.initState();
     _parseTarget();
-    // OPTIMISASI PERFORMA: Delay load video
-    if (widget.isActive) {
-      _scheduleVideoPlay();
-    }
+    // ✅ OPTIMISASI: Video TIDAK auto-play. Hanya tampilkan thumbnail.
   }
 
   @override
   void didUpdateWidget(covariant ExerciseCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
-      if (widget.isActive) {
-        _scheduleVideoPlay();
-      } else {
+      if (!widget.isActive) {
+        // ✅ Card tidak aktif → langsung dispose video (hemat memory)
         _disposeVideoPlayer();
       }
     }
@@ -66,14 +62,15 @@ class _ExerciseCardState extends State<ExerciseCard> {
   void _parseTarget() {
     String t = widget.data['target'].toString().toLowerCase();
 
-    // Parse Waktu
+    // Parse Waktu — ✅ FIX: Ambil angka TERAKHIR sebelum satuan (bukan pertama!)
+    // Contoh: "3x20 Detik" → harus ambil 20, bukan 3
     if (t.contains("menit") || t.contains("min")) {
-      final match = RegExp(r'(\d+)').firstMatch(t);
+      final match = RegExp(r'(\d+)\s*(?:menit|min)').firstMatch(t);
       if (match != null) {
         _secondsLeft = int.parse(match.group(1)!) * 60;
       }
     } else if (t.contains("detik") || t.contains("sec")) {
-      final match = RegExp(r'(\d+)').firstMatch(t);
+      final match = RegExp(r'(\d+)\s*(?:detik|sec)').firstMatch(t);
       if (match != null) {
         _secondsLeft = int.parse(match.group(1)!);
       }
@@ -84,31 +81,24 @@ class _ExerciseCardState extends State<ExerciseCard> {
       final match = RegExp(r'(\d+)').firstMatch(t);
       if (match != null) {
         _targetReps = int.parse(match.group(1)!);
-        // Default repsCount = 0 or targetReps?
-        // Usually start from 0 and count up, or from target and count down.
-        // Based on screenshot "12 Repetisi" and "12" in center, let's assume we modify the count.
-        // For now, init at target if the user wants countdown or 0 for countup.
-        // Screenshot shows "12" large, and "12 Reps" small above.
-        // Let's set initial _repsCount to _targetReps so user can adjust if needed,
-        // OR simply set it to _targetReps as the goal.
-        // To match typical workout apps: Center number is what you did or target.
-        // Let's use _repsCount to track progress.
         _repsCount = _targetReps;
       }
     }
   }
 
-  void _scheduleVideoPlay() {
-    _videoInitTimer?.cancel();
-    // Delay 800ms to let UI finish transitions/animations first
-    _videoInitTimer = Timer(const Duration(milliseconds: 800), () {
-      if (mounted && widget.isActive) {
-        _initVideoPlayer();
-      }
-    });
+  // ✅ Helper getters
+  bool get _hasVideoUrl =>
+      widget.data['video_url'] != null &&
+      widget.data['video_url'].toString().isNotEmpty;
+
+  String get _thumbnailUrl {
+    if (!_hasVideoUrl) return '';
+    final videoId = YoutubePlayer.convertUrlToId(widget.data['video_url']) ?? '';
+    return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
   }
 
-  void _initVideoPlayer() {
+  /// ✅ OPTIMISASI: Video hanya di-load saat user tekan tombol Play.
+  void _loadVideoOnDemand() {
     if (_videoController != null) return;
 
     if (widget.data['video_url'] != null &&
@@ -120,17 +110,15 @@ class _ExerciseCardState extends State<ExerciseCard> {
           startSeconds = int.tryParse(widget.data['start_at'].toString()) ?? 0;
         }
 
-        // Initialize Controller
-        // Note: YoutubePlayerController can trigger platform channel work.
         _videoController = YoutubePlayerController(
           initialVideoId: videoId,
           flags: YoutubePlayerFlags(
             autoPlay: true,
-            mute: false,
+            mute: true,        // ✅ Mute by default (hemat audio processing)
             startAt: startSeconds,
             disableDragSeek: true,
-            loop: true,
-            forceHD: false, // Low end device preference
+            loop: false,       // ✅ Tidak loop (hemat CPU)
+            forceHD: false,    // ✅ Kualitas rendah (hemat bandwidth)
             hideControls: false,
           ),
         );
@@ -152,7 +140,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
   @override
   void dispose() {
     _timer?.cancel();
-    _disposeVideoPlayer(notify: false); // Jangan setState saat dispose!
+    _disposeVideoPlayer(notify: false);
     super.dispose();
   }
 
@@ -244,8 +232,8 @@ class _ExerciseCardState extends State<ExerciseCard> {
 
         final titleSize = isVeryCompact ? 17.0 : isCompact ? 20.0 : 26.0;
         final subtitleSize = isVeryCompact ? 11.0 : isCompact ? 13.0 : 16.0;
-        final contentPadTop = isVeryCompact ? 10.0 : isCompact ? 16.0 : 24.0;
-        final buttonPadBottom = isVeryCompact ? 8.0 : isCompact ? 14.0 : 20.0;
+        final contentPadTop = isVeryCompact ? 6.0 : isCompact ? 10.0 : 20.0;
+        final buttonPadBottom = isVeryCompact ? 4.0 : isCompact ? 8.0 : 16.0;
 
         return Container(
           width: double.infinity,
@@ -272,136 +260,197 @@ class _ExerciseCardState extends State<ExerciseCard> {
             borderRadius: BorderRadius.circular(30),
             child: Column(
               children: [
-                // 1. VIDEO AREA
-                if (_videoController != null)
+                // 1. VIDEO AREA — ✅ OPTIMISASI: Thumbnail first, load on tap
+                if (_hasVideoUrl)
                   Expanded(
-                    flex: isCompact ? 3 : 4,
+                    flex: isCompact ? 2 : 3,
                     child: Container(
                       color: Colors.black,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          YoutubePlayer(
-                            controller: _videoController!,
-                            showVideoProgressIndicator: true,
-                            progressIndicatorColor: const Color(0xFF008BFF),
-                            progressColors: const ProgressBarColors(
-                              playedColor: Color(0xFF008BFF),
-                              handleColor: Colors.white,
-                            ),
-                          ),
-                          if (_isCompleted)
-                            Container(
-                              color: Colors.black54,
-                              child: const Center(
-                                child: Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                  size: 60,
+                      child: _videoController != null
+                          // ✅ Video sudah dimuat — tampilkan player
+                          ? Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                YoutubePlayer(
+                                  controller: _videoController!,
+                                  showVideoProgressIndicator: true,
+                                  progressIndicatorColor: const Color(0xFF008BFF),
+                                  progressColors: const ProgressBarColors(
+                                    playedColor: Color(0xFF008BFF),
+                                    handleColor: Colors.white,
+                                  ),
                                 ),
+                                if (_isCompleted)
+                                  Container(
+                                    color: Colors.black54,
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                        size: 60,
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            )
+                          // ✅ Video belum dimuat — tampilkan thumbnail + play button (RINGAN)
+                          : GestureDetector(
+                              onTap: () => _loadVideoOnDemand(),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // Thumbnail dari YouTube
+                                  Image.network(
+                                    _thumbnailUrl,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    errorBuilder: (_, __, ___) => Container(
+                                      color: Colors.black87,
+                                      child: const Center(
+                                        child: Icon(Icons.videocam_off, color: Colors.white38, size: 40),
+                                      ),
+                                    ),
+                                  ),
+                                  // Dark overlay
+                                  Container(color: Colors.black38),
+                                  // Play button
+                                  Container(
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF008BFF).withOpacity(0.9),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
+                                  ),
+                                  // Label
+                                  const Positioned(
+                                    bottom: 10,
+                                    child: Text(
+                                      'Tap untuk putar tutorial',
+                                      style: TextStyle(color: Colors.white70, fontSize: 11),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                        ],
-                      ),
                     ),
                   ),
 
                 // 2. INFO AREA — Layout tanpa Stack untuk hindari overflow
                 Expanded(
-                  flex: isCompact ? 5 : 4,
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(25, contentPadTop, 25, buttonPadBottom),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Title Area
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                widget.data['name'],
-                                style: TextStyle(
-                                  color: textColor,
-                                  fontSize: titleSize,
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.1,
+                  flex: isCompact ? 5 : 5,
+                  child: LayoutBuilder(
+                    builder: (context, infoConstraints) {
+                      return SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: infoConstraints.maxHeight,
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(25, contentPadTop, 25, buttonPadBottom),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Title Area
+                                    Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            widget.data['name'],
+                                            style: TextStyle(
+                                              color: textColor,
+                                              fontSize: titleSize,
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.1,
+                                            ),
+                                            maxLines: 2,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        if (widget.data['video_url'] != null &&
+                                            widget.data['video_url'].isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: Icon(
+                                              Icons.open_in_new,
+                                              color: theme.isDarkMode
+                                                  ? Colors.white30
+                                                  : Colors.black38,
+                                              size: 20,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+
+                                    SizedBox(height: isCompact ? 3 : 5),
+
+                                    // Subtitle hanya tampil untuk timer/info, bukan reps
+                                    if (type != 'reps')
+                                      Text(
+                                        widget.data['target'] ?? "Target",
+                                        style: TextStyle(color: subTextColor, fontSize: subtitleSize),
+                                      ),
+                                  ],
                                 ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+
+                                const SizedBox(height: 10),
+
+                                // Center Control (Timer or Reps)
+                                Center(
+                                  child: type == 'time'
+                                      ? _buildTimerDisplay(
+                                          textColor,
+                                          subTextColor,
+                                          lang,
+                                          isCompact,
+                                        )
+                                      : (type == 'reps'
+                                            ? _buildRepsDisplay(
+                                                textColor,
+                                                subTextColor,
+                                                isCompact,
+                                              )
+                                            : const SizedBox()),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // Bottom Button (Swipe to Action)
+                                if (!_isCompleted)
+                                  SwipeButton(
+                                    text: type == 'time'
+                                        ? (_isTimerRunning ? "PAUSE" : "MULAI TIMER")
+                                        : "LANJUT",
+                                    textColor: buttonTextColor,
+                                    backgroundColor: buttonColor,
+                                    iconCircleColor: iconCircleColor,
+                                    iconColor: iconColor,
+                                    icon: type == 'time' && _isTimerRunning
+                                        ? Icons.pause
+                                        : Icons.double_arrow_rounded,
+                                    onAction: () async {
+                                      if (type == 'time') {
+                                        _toggleTimer();
+                                      } else {
+                                        _handleFinish(isTimer: false);
+                                      }
+                                    },
+                                  )
+                                else
+                                  const SizedBox(height: 60), // Placeholder agar layout tetap rapi jika tombol hilang
+                              ],
                             ),
-                            if (widget.data['video_url'] != null &&
-                                widget.data['video_url'].isNotEmpty)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Icon(
-                                  Icons.open_in_new,
-                                  color: theme.isDarkMode
-                                      ? Colors.white30
-                                      : Colors.black38,
-                                  size: 20,
-                                ),
-                              ),
-                          ],
-                        ),
-
-                        if (_videoController == null) const Spacer(),
-
-                        SizedBox(height: isCompact ? 3 : 5),
-
-                        // Subtitle hanya tampil untuk timer/info, bukan reps
-                        if (type != 'reps')
-                          Text(
-                            widget.data['target'] ?? "Target",
-                            style: TextStyle(color: subTextColor, fontSize: subtitleSize),
                           ),
-
-                        const Spacer(),
-
-                        // Center Control (Timer or Reps)
-                        Center(
-                          child: type == 'time'
-                              ? _buildTimerDisplay(
-                                  textColor,
-                                  subTextColor,
-                                  lang,
-                                  isCompact,
-                                )
-                              : (type == 'reps'
-                                    ? _buildRepsDisplay(
-                                        textColor,
-                                        subTextColor,
-                                        isCompact,
-                                      )
-                                    : const SizedBox()),
                         ),
-
-                        const Spacer(),
-
-                        // Bottom Button (Swipe to Action) — Dalam flow Column
-                        if (!_isCompleted)
-                          SwipeButton(
-                            text: type == 'time'
-                                ? (_isTimerRunning ? "PAUSE" : "MULAI TIMER")
-                                : "LANJUT",
-                            textColor: buttonTextColor,
-                            backgroundColor: buttonColor,
-                            iconCircleColor: iconCircleColor,
-                            iconColor: iconColor,
-                            icon: type == 'time' && _isTimerRunning
-                                ? Icons.pause
-                                : Icons.double_arrow_rounded,
-                            onAction: () async {
-                              if (type == 'time') {
-                                _toggleTimer();
-                              } else {
-                                _handleFinish(isTimer: false);
-                              }
-                            },
-                          ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -493,19 +542,12 @@ class _SwipeButtonState extends State<SwipeButton>
   final double _padding = 6.0;
   final double _knobSize = 48.0;
 
-  // 🔥 Shimmer animation (hint arrows)
-  late AnimationController _shimmerController;
-  late Animation<double> _shimmerAnimation;
-
-  // 🔥 Pulse glow on knob
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
-
-  // 🔥 Spring-back animation
+  // ✅ OPTIMISASI: Hanya 2 controller (dulu 4)
+  // Spring-back animation
   late AnimationController _springController;
   late Animation<double> _springAnimation;
 
-  // 🔥 Success scale bounce
+  // Success scale bounce
   late AnimationController _successController;
   late Animation<double> _successScale;
 
@@ -513,25 +555,7 @@ class _SwipeButtonState extends State<SwipeButton>
   void initState() {
     super.initState();
 
-    // Shimmer: repeating arrow hint
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    )..repeat();
-    _shimmerAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
-    );
-
-    // Pulse: knob glow
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
-
-    // Spring-back
+    // Spring-back (hanya saat user lepas drag sebelum threshold)
     _springController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -543,7 +567,7 @@ class _SwipeButtonState extends State<SwipeButton>
       if (mounted) setState(() => _dragValue = _springAnimation.value);
     });
 
-    // Success bounce
+    // Success bounce (hanya saat swipe berhasil)
     _successController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -555,8 +579,6 @@ class _SwipeButtonState extends State<SwipeButton>
 
   @override
   void dispose() {
-    _shimmerController.dispose();
-    _pulseController.dispose();
     _springController.dispose();
     _successController.dispose();
     super.dispose();
@@ -663,33 +685,18 @@ class _SwipeButtonState extends State<SwipeButton>
                               ),
                             ),
                           ),
-                          // Shimmer hint arrows (only when idle)
+                          // ✅ OPTIMISASI: Static chevrons (dulu AnimationController.repeat)
                           if (!_isDragging && _dragValue == 0.0)
-                            AnimatedBuilder(
-                              animation: _shimmerAnimation,
-                              builder: (context, _) {
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: List.generate(3, (i) {
-                                    // Staggered opacity per chevron
-                                    double phase =
-                                        (_shimmerAnimation.value + i * 0.25) %
-                                        1.0;
-                                    double opacity =
-                                        (phase < 0.5)
-                                            ? phase * 2.0
-                                            : (1.0 - phase) * 2.0;
-                                    return Opacity(
-                                      opacity: opacity.clamp(0.15, 0.7),
-                                      child: Icon(
-                                        Icons.chevron_right,
-                                        color: widget.textColor,
-                                        size: 16,
-                                      ),
-                                    );
-                                  }),
-                                );
-                              },
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: List.generate(3, (i) => Opacity(
+                                opacity: 0.3 + (i * 0.15),
+                                child: Icon(
+                                  Icons.chevron_right,
+                                  color: widget.textColor,
+                                  size: 16,
+                                ),
+                              )),
                             ),
                         ],
                       ),
@@ -727,49 +734,41 @@ class _SwipeButtonState extends State<SwipeButton>
                       }
                     },
                     onTap: () => widget.onAction(),
-                    child: AnimatedBuilder(
-                      animation: _pulseAnimation,
-                      builder: (context, child) {
-                        final glowOpacity = _isDragging
-                            ? 0.0
-                            : _pulseAnimation.value * 0.3;
-                        final knobScale = _isDragging ? 1.08 : 1.0;
-
-                        return Transform.scale(
-                          scale: knobScale,
-                          child: Container(
-                            width: _knobSize,
-                            height: _knobSize,
-                            decoration: BoxDecoration(
-                              color: _triggered
-                                  ? Colors.green
-                                  : widget.iconCircleColor,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (_triggered
-                                          ? Colors.green
-                                          : widget.iconCircleColor)
-                                      .withOpacity(glowOpacity),
-                                  blurRadius: 12,
-                                  spreadRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: Icon(
-                                _triggered ? Icons.check : widget.icon,
-                                key: ValueKey(_triggered),
-                                color: _triggered
-                                    ? Colors.white
-                                    : widget.iconColor,
-                                size: 20,
+                    // ✅ OPTIMISASI: Knob statis (dulu pakai AnimatedBuilder+repeat)
+                    child: Transform.scale(
+                      scale: _isDragging ? 1.08 : 1.0,
+                      child: Container(
+                        width: _knobSize,
+                        height: _knobSize,
+                        decoration: BoxDecoration(
+                          color: _triggered
+                              ? Colors.green
+                              : widget.iconCircleColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            if (!_isDragging)
+                              BoxShadow(
+                                color: (_triggered
+                                        ? Colors.green
+                                        : widget.iconCircleColor)
+                                    .withOpacity(0.15),
+                                blurRadius: 12,
+                                spreadRadius: 4,
                               ),
-                            ),
+                          ],
+                        ),
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: Icon(
+                            _triggered ? Icons.check : widget.icon,
+                            key: ValueKey(_triggered),
+                            color: _triggered
+                                ? Colors.white
+                                : widget.iconColor,
+                            size: 20,
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ),
                 ),

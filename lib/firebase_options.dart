@@ -48,6 +48,8 @@ class DefaultFirebaseOptions {
     authDomain: 'lora-1-b0d0c.firebaseapp.com',
     storageBucket: 'lora-1-b0d0c.firebasestorage.app',
     measurementId: 'G-ZCBJLBZGLQ',
+    databaseURL:
+        'https://lora-1-b0d0c-default-rtdb.asia-southeast1.firebasedatabase.app', // atau https://lora-1-b0d0c.firebaseio.com
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -64,7 +66,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1015515769306',
     projectId: 'lora-1-b0d0c',
     storageBucket: 'lora-1-b0d0c.firebasestorage.app',
-    iosClientId: '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
+    iosClientId:
+        '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
     iosBundleId: 'com.example.lora1',
   );
 
@@ -74,7 +77,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1015515769306',
     projectId: 'lora-1-b0d0c',
     storageBucket: 'lora-1-b0d0c.firebasestorage.app',
-    iosClientId: '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
+    iosClientId:
+        '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
     iosBundleId: 'com.example.lora1',
   );
 
@@ -87,5 +91,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'lora-1-b0d0c.firebasestorage.app',
     measurementId: 'G-JMC4KE1VCP',
   );
-
 }

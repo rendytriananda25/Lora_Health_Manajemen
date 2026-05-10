@@ -295,7 +295,7 @@ class _TimerBackgroundState extends State<TimerBackground> {
     );
   }
 
-  // 🔄 PESAN: Sesi sudah selesai, tunggu reset berikutnya
+  // ═══ FUTURISTIC SESSION DONE SCREEN ═══
   Widget _buildSessionDoneMessage(LanguageProvider lang, ThemeProvider theme) {
     final timeLeft = SessionCompletionService.getTimeUntilNextSession();
     final timeStr = SessionCompletionService.formatDuration(timeLeft);
@@ -307,62 +307,136 @@ class _TimerBackgroundState extends State<TimerBackground> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_circle_rounded,
-                color: Colors.green,
-                size: 60,
-              ),
+            // ── FUTURISTIC CHECK ICON ──
+            Stack(
+              alignment: Alignment.center,
+              children: [
+                // Outer glow ring
+                Container(
+                  width: 130,
+                  height: 130,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        const Color(0xFF00E676).withOpacity(0.08),
+                        const Color(0xFF00E676).withOpacity(0.02),
+                        Colors.transparent,
+                      ],
+                      stops: const [0.4, 0.7, 1.0],
+                    ),
+                  ),
+                ),
+                // Middle ring
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00E676).withOpacity(0.15),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+                // Inner ring
+                Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFF00E676).withOpacity(0.3),
+                      width: 2,
+                    ),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        const Color(0xFF00E676).withOpacity(0.12),
+                        const Color(0xFF00C853).withOpacity(0.06),
+                      ],
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.check_rounded,
+                    color: Color(0xFF00E676),
+                    size: 36,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 28),
+
+            // ── TITLE ──
             Text(
-              "$sessionLabel Selesai! 💪",
+              "$sessionLabel Selesai",
               style: TextStyle(
                 color: theme.textColor,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 10),
+
+            const SizedBox(height: 12),
+
+            // ── SUBTITLE ──
             Text(
-              "Kamu sudah menyelesaikan latihan untuk sesi ini. Istirahat dulu ya!",
+              "Latihan telah diselesaikan.\nTubuhmu butuh recovery untuk performa maksimal.",
               style: TextStyle(
-                color: theme.textColor.withOpacity(0.6),
-                fontSize: 14,
+                color: theme.textColor.withOpacity(0.5),
+                fontSize: 13,
+                height: 1.6,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 20),
+
+            const SizedBox(height: 28),
+
+            // ── COUNTDOWN CARD (Glassmorphism) ──
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               decoration: BoxDecoration(
-                color: theme.textColor.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(15),
+                color: theme.textColor.withOpacity(0.04),
+                borderRadius: BorderRadius.circular(50),
                 border: Border.all(
-                  color: theme.textColor.withOpacity(0.08),
+                  color: const Color(0xFF008BFF).withOpacity(0.15),
+                  width: 1,
                 ),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.schedule,
-                    color: const Color(0xFF008BFF),
-                    size: 18,
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF008BFF).withOpacity(0.12),
+                    ),
+                    child: const Icon(
+                      Icons.schedule_rounded,
+                      color: Color(0xFF008BFF),
+                      size: 15,
+                    ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Text(
-                    "Sesi berikutnya dalam $timeStr",
+                    "Sesi berikutnya dalam ",
                     style: TextStyle(
-                      color: theme.textColor.withOpacity(0.7),
+                      color: theme.textColor.withOpacity(0.5),
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  Text(
+                    timeStr,
+                    style: const TextStyle(
+                      color: Color(0xFF008BFF),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],

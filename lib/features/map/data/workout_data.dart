@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutData {
   // 🔄 VARIABLE RUNTIME (Diisi dari Firebase)
@@ -1547,7 +1548,7 @@ class WorkoutData {
     LanguageProvider? lang,
   }) {
     // 1. Pilih Sumber Data
-    Map<String, dynamic> library = _defaultWorkoutLibrary;
+    Map<String, dynamic> library = _onlineWorkoutData ?? _defaultWorkoutLibrary;
 
     String sportKey = _mapSportKey(sportType);
     String userLevel = level.toUpperCase();
@@ -1714,15 +1715,16 @@ class WorkoutData {
       }
     }
 
-    // 🔥 UPDATE LOGIC JAM 12 & 18
+    // 🔥 SESSION LOGIC — Sinkron dengan SessionCompletionService
+    // Pagi: 05:00–14:59 | Sore: 15:00–22:59 | Istirahat: 23:00–04:59
     String sessionLabel = "";
     bool isRestTime = false;
 
     if (frequency == 2) {
       int hour = DateTime.now().hour;
-      if (hour >= 18) {
+      if (hour >= 23 || hour < 5) {
         isRestTime = true;
-      } else if (hour >= 12) {
+      } else if (hour >= 15) {
         sessionLabel = " (Sesi Sore ☀️)";
       } else {
         sessionLabel = " (Sesi Pagi 🌅)";
@@ -1777,6 +1779,11 @@ class WorkoutData {
   // 🔄 DAILY ROLLING: Pilih subset gerakan berbeda setiap hari
   // Menggunakan seed dari tanggal agar konsisten sepanjang hari
   // tapi berubah keesokan harinya
+  //
+  // ✅ ATURAN URUTAN:
+  //   1. "Pemanasan Dinamis" → SELALU di posisi PERTAMA
+  //   2. Gerakan inti (rolling) → di tengah
+  //   3. "Cooling Down" → SELALU di posisi TERAKHIR
   static List<Map<String, dynamic>> _selectDailyExercises(
     List<Map<String, dynamic>> pool,
     int exercisesPerDay, {
@@ -1786,33 +1793,43 @@ class WorkoutData {
 
     final now = DateTime.now();
     final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
-    final daySeed = now.year * 1000 + dayOfYear;
+    final uidHashCode = FirebaseAuth.instance.currentUser?.uid.hashCode ?? 0;
+    final daySeed = now.year * 1000 + dayOfYear + uidHashCode;
     final random = Random(daySeed);
 
-    List<Map<String, dynamic>> fixed = [];
+    // Pisahkan: warmup, cooldown, dan sisanya
+    Map<String, dynamic>? warmup;
+    Map<String, dynamic>? cooldown;
     List<Map<String, dynamic>> rotatable = [];
 
     for (var ex in pool) {
-      if (alwaysIncludeNames.contains(ex['name'])) {
-        fixed.add(ex);
+      final name = ex['name']?.toString() ?? '';
+      if (name == 'Pemanasan Dinamis') {
+        warmup = ex;
+      } else if (name == 'Cooling Down') {
+        cooldown = ex;
+      } else if (alwaysIncludeNames.contains(name)) {
+        // Fixed lainnya (selain warmup/cooldown) → masuk rotatable agar tetap ikut
+        rotatable.insert(0, ex); // prioritas di depan
       } else {
         rotatable.add(ex);
       }
     }
 
-    int pickCount = (exercisesPerDay - fixed.length).clamp(0, rotatable.length);
-    rotatable.shuffle(random);
+    // Hitung berapa gerakan inti yang perlu dipilih
+    int fixedCount = (warmup != null ? 1 : 0) + (cooldown != null ? 1 : 0);
+    int pickCount = (exercisesPerDay - fixedCount).clamp(0, rotatable.length);
 
-    // Gabungkan: fixed exercises di posisi asli, rotatable di antara
+    // Acak & ambil sejumlah pickCount
+    rotatable.shuffle(random);
+    List<Map<String, dynamic>> selected = rotatable.take(pickCount).toList();
+
+    // Susun ulang: warmup → inti → cooldown
     List<Map<String, dynamic>> result = [];
-    int rotatableIdx = 0;
-    for (var ex in pool) {
-      if (alwaysIncludeNames.contains(ex['name'])) {
-        result.add(ex);
-      } else if (rotatable.take(pickCount).contains(ex)) {
-        result.add(ex);
-      }
-    }
+    if (warmup != null) result.add(warmup);
+    result.addAll(selected);
+    if (cooldown != null) result.add(cooldown);
+
     return result;
   }
 

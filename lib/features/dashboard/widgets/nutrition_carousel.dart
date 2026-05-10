@@ -4,9 +4,11 @@ import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/core/utils/app_size.dart';
 
+import 'package:lora_1/features/dashboard/domain/entities/food_entity.dart';
+
 class NutritionCarousel extends StatelessWidget {
   final String userGoal;
-  final List<Map<String, dynamic>> allFoods;
+  final List<FoodEntity> allFoods;
 
   const NutritionCarousel({
     super.key,
@@ -73,7 +75,7 @@ class NutritionCarousel extends StatelessWidget {
               physics: const ClampingScrollPhysics(),
               itemBuilder: (context, index) {
                 final item = allFoods[index];
-                bool isGood = item['type'] == "good";
+                bool isGood = item.type == "good";
                 return Container(
                   width: AppSize.w(270),
                   margin: EdgeInsets.only(right: AppSize.w(15)),
@@ -105,7 +107,7 @@ class NutritionCarousel extends StatelessWidget {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              item['icon'],
+                              item.icon,
                               color: isGood ? Colors.green : Colors.redAccent,
                               size: AppSize.sp(24),
                             ),
@@ -116,7 +118,7 @@ class NutritionCarousel extends StatelessWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  item['name'],
+                                  item.displayName,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
@@ -131,7 +133,7 @@ class NutritionCarousel extends StatelessWidget {
                                     return Icon(
                                       Icons.star,
                                       size: AppSize.sp(13),
-                                      color: starIndex < item['rating']
+                                      color: starIndex < item.rating
                                           ? Colors.orangeAccent
                                           : theme.textColor.withOpacity(0.2),
                                     );
@@ -144,7 +146,7 @@ class NutritionCarousel extends StatelessWidget {
                       ),
                       SizedBox(height: AppSize.h(12)),
                       Text(
-                        item['desc'],
+                        item.description,
                         style: TextStyle(
                           color: theme.textColor.withOpacity(0.7),
                           fontSize: AppSize.sp(12),

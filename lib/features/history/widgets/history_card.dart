@@ -87,7 +87,9 @@ class HistoryCard extends StatelessWidget {
               flex: 5,
               child: (type == 'BMI' || activity.contains('BMI'))
                   ? _buildBMIStats(data, theme)
-                  : _buildTrackingStats(data, theme),
+                  : _isDistanceSport(activity)
+                      ? _buildTrackingStats(data, theme)
+                      : _buildWorkoutStats(data, theme),
             ),
             Icon(
               Icons.arrow_forward_ios,
@@ -115,6 +117,32 @@ class HistoryCard extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         _buildStatItem(distance, "km", theme),
+        const SizedBox(width: 12),
+        _buildStatItem(data['calories']?.toString() ?? "0", "kcal", theme),
+      ],
+    );
+  }
+
+  // ✅ Cek apakah olahraga ini berbasis jarak tempuh
+  bool _isDistanceSport(String activity) {
+    return activity.contains('LARI') ||
+           activity.contains('SEPEDA') ||
+           activity.contains('JALAN') ||
+           activity.contains('RUN') ||
+           activity.contains('CYCL') ||
+           activity.contains('WALK');
+  }
+
+  // ✅ Widget statistik untuk olahraga non-jarak (Home Workout, Basket, Bola)
+  Widget _buildWorkoutStats(Map data, ThemeProvider theme) {
+    int durationSec = (data['duration_sec'] as num? ?? 0).toInt();
+    int durationMin = (durationSec / 60).ceil();
+    String durLabel = durationMin > 0 ? "$durationMin" : "--";
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        _buildStatItem(durLabel, "min", theme),
         const SizedBox(width: 12),
         _buildStatItem(data['calories']?.toString() ?? "0", "kcal", theme),
       ],

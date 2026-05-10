@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
-import 'package:lora_1/features/map/map_pages.dart';
-import 'package:lora_1/features/history/history_page.dart';
-import 'package:lora_1/features/dashboard/dashboard.dart';
-import 'package:lora_1/features/bmi/bmi_page.dart';
+import 'package:lora_1/features/workout/presentation/pages/workout_page.dart';
+import 'package:lora_1/features/history/presentation/pages/history_page.dart';
+import 'package:lora_1/features/dashboard/presentation/pages/dashboard_page.dart';
+import 'package:lora_1/features/bmi/presentation/pages/bmi_page.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({super.key});
@@ -25,7 +25,7 @@ class _NavbarState extends State<Navbar> {
       case 0:
         return const DashboardPage();
       case 1:
-        return const MapPage();
+        return const WorkoutPage();
       case 2:
         return const HistoryPage();
       case 3:

@@ -55,12 +55,12 @@ class SessionCompletionService {
     return prefs.getBool(key) ?? false;
   }
 
-  /// Ambil label sesi saat ini ("Sesi Pagi 🌅" atau "Sesi Sore ☀️")
+  /// Ambil label sesi saat ini
   static String getCurrentSessionLabel() {
     final now = DateTime.now();
-    if (now.hour >= 15) return "Sesi Sore ☀️";
-    if (now.hour >= 5) return "Sesi Pagi 🌅";
-    return "Sesi Malam 🌙";
+    if (now.hour >= 15) return "Sesi Sore";
+    if (now.hour >= 5) return "Sesi Pagi";
+    return "Sesi Malam";
   }
 
   /// Hitung berapa lama lagi sampai sesi berikutnya reset
