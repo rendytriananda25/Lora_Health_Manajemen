@@ -343,7 +343,7 @@ class _SettingsPageState extends State<SettingsPage> {
                                 style: TextStyle(color: Colors.white),
                               ),
                               content: const Text(
-                                "Update database makanan ke Firebase sekarang?",
+                                "Update data lora sekarang?",
                                 style: TextStyle(color: Colors.white70),
                               ),
                               actions: [

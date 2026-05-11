@@ -1647,7 +1647,9 @@ class WorkoutData {
 
       // 🔄 DAILY ROLLING: Rotasi gerakan basket/bola setiap hari
       String warmupName = template.isNotEmpty ? template.first['name'] : '';
-      exercises = _selectDailyExercises(template, 5,
+      exercises = _selectDailyExercises(
+        template,
+        5,
         alwaysIncludeNames: [warmupName],
       );
     }
@@ -1681,7 +1683,11 @@ class WorkoutData {
       if (goalKey == "KEEP_FIT") {
         fixedNames = ['Pemanasan Dinamis', 'Cooling Down'];
       }
-      exercises = _selectDailyExercises(fullPool, 6, alwaysIncludeNames: fixedNames);
+      exercises = _selectDailyExercises(
+        fullPool,
+        6,
+        alwaysIncludeNames: fixedNames,
+      );
 
       // 🔥 TERAPKAN PROGRESIVITAS berdasarkan total sesi aktif
       String weekKey = getCurrentWeekKey(totalSessions);
@@ -1725,9 +1731,9 @@ class WorkoutData {
       if (hour >= 23 || hour < 5) {
         isRestTime = true;
       } else if (hour >= 15) {
-        sessionLabel = " (Sesi Sore ☀️)";
+        sessionLabel = " (Sesi Sore)";
       } else {
-        sessionLabel = " (Sesi Pagi 🌅)";
+        sessionLabel = " (Sesi Pagi)";
       }
     }
 
@@ -1744,7 +1750,7 @@ class WorkoutData {
     if (isRestTime) {
       exercises.clear();
       exercises.add({
-        "name": "Waktunya Istirahat 🌙",
+        "name": "Waktunya Istirahat",
         "target": "Tubuh butuh recovery untuk performa maksimal besok.",
         "type": "info",
         "icon": Icons.nights_stay,

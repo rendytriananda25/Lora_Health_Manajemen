@@ -7,6 +7,10 @@ class WorkoutSessionEntity {
   final DateTime time;
   final List<Map<String, dynamic>>? workoutDetails;
   final String? details;
+  /// Rute GPS (titik-titik koordinat lat/lng) untuk olahraga tracking.
+  final List<Map<String, double>>? path;
+  /// Tipe sesi: "TRACKING" untuk GPS sport, "HOME_WORKOUT" dll.
+  final String? type;
 
   const WorkoutSessionEntity({
     required this.activity,
@@ -16,6 +20,8 @@ class WorkoutSessionEntity {
     required this.time,
     this.workoutDetails,
     this.details,
+    this.path,
+    this.type,
   });
 
   Map<String, dynamic> toFirebaseMap() => {
@@ -26,5 +32,7 @@ class WorkoutSessionEntity {
     'time': time.toIso8601String(),
     'details': details,
     'workout_details': workoutDetails,
+    if (path != null) 'path': path,
+    if (type != null) 'type': type,
   };
 }

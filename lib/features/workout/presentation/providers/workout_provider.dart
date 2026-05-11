@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lora_1/features/workout/domain/repositories/workout_repository.dart';
 import 'package:lora_1/features/workout/domain/usecases/calculate_calories.dart';
 import 'package:lora_1/features/workout/domain/usecases/workout_utils.dart';
@@ -86,11 +87,25 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   String translateSportName(String sport, String langCode) =>
       _translateSport(sport, langCode);
 
-  // ─── APP LIFECYCLE (Daily Rolling) ─────────────────────────
+  // ─── APP LIFECYCLE (Daily Rolling & Notif) ───────────────
+  bool _isAppInBackground = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && !isRecording) {
-      _checkDayChanged();
+    if (state == AppLifecycleState.resumed) {
+      _isAppInBackground = false;
+      if (!isRecording) {
+        _checkDayChanged();
+      } else {
+        // App kembali ke layar, hapus notifikasi background
+        _cancelTrackingNotification();
+      }
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _isAppInBackground = true;
+      if (isRecording) {
+        // App di-minimize, munculkan notifikasi live
+        _updateTrackingNotification();
+      }
     }
   }
 
@@ -221,6 +236,62 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
+  // ─── LIVE NOTIFICATION 🔴 ─────────────────────────────────
+  static const int _trackingNotifId = 888;
+  final FlutterLocalNotificationsPlugin _notifPlugin = FlutterLocalNotificationsPlugin();
+  bool _notifToggle = false; // Toggle untuk efek kedip 🔴/⚫
+
+  /// Format detik ke MM:SS
+  String _formatTime(int totalSec) {
+    int min = totalSec ~/ 60;
+    int sec = totalSec % 60;
+    return '${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+  }
+
+  /// Update notifikasi live tracking setiap detik (Hanya jika di background)
+  Future<void> _updateTrackingNotification() async {
+    if (!_isAppInBackground) return; // 🔥 HANYA MUNCUL DI BACKGROUND
+
+    _notifToggle = !_notifToggle;
+    final String recDot = _notifToggle ? '🔴' : '⚫';
+    final String timeStr = _formatTime(secondsNotifier.value);
+    final String distStr = distanceNotifier.value.toStringAsFixed(2);
+
+    final androidDetails = AndroidNotificationDetails(
+      'lora_tracking',
+      'Tracking Olahraga',
+      channelDescription: 'Notifikasi saat tracking olahraga aktif',
+      importance: Importance.low,
+      priority: Priority.low,
+      ongoing: true,        // Tidak bisa di-swipe
+      autoCancel: false,
+      showWhen: false,
+      playSound: false,
+      enableVibration: false,
+      // Style: Big text agar info lengkap
+      styleInformation: BigTextStyleInformation(
+        isGpsSport
+            ? '$recDot  $timeStr   •   $distStr km'
+            : '$recDot  $timeStr',
+        contentTitle: '$recDot REC — $selectedSport',
+      ),
+    );
+
+    await _notifPlugin.show(
+      _trackingNotifId,
+      '$recDot REC — $selectedSport',
+      isGpsSport
+          ? '⏱ $timeStr   •   📍 $distStr km'
+          : '⏱ $timeStr',
+      NotificationDetails(android: androidDetails),
+    );
+  }
+
+  /// Hapus notifikasi tracking
+  Future<void> _cancelTrackingNotification() async {
+    await _notifPlugin.cancel(_trackingNotifId);
+  }
+
   // ─── TRACKING ──────────────────────────────────────────────
   void startTracking() {
     HapticFeedback.mediumImpact();
@@ -233,10 +304,18 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       secondsNotifier.value++;
+      // 🔴 Update live notification setiap detik
+      _updateTrackingNotification();
     });
 
     if (isGpsSport) {
       _positionStream = _locationService.getPositionStream().listen((pos) {
+        // 🔥 FIX: Filter titik GPS noise sebelum ditambahkan ke rute
+        LatLng? lastPoint = routePoints.isNotEmpty ? routePoints.last : null;
+        if (!_locationService.isValidPoint(pos, lastPoint)) {
+          return; // Buang titik GPS yang tidak valid
+        }
+
         LatLng newPoint = LatLng(pos.latitude, pos.longitude);
         if (routePoints.isNotEmpty) {
           distanceNotifier.value += _locationService.calculateDistance(
@@ -258,6 +337,7 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     _timer?.cancel();
     _positionStream?.cancel();
+    await _cancelTrackingNotification(); // 🔴 Hapus notifikasi REC
 
     // ✅ Kalkulasi kalori menggunakan UseCase
     int caloriesBurned = _calculateCalories(
@@ -280,6 +360,12 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
               .map((e) => "${e['name']}: ${e['result']}")
               .join(', ')
           : null,
+      // 🔥 FIX: Simpan rute GPS agar polyline bisa ditampilkan di history
+      path: isGpsSport
+          ? routePoints.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList()
+          : null,
+      // 🔥 FIX: Simpan type agar history_card bisa menampilkan ikon yang benar
+      type: isGpsSport ? 'TRACKING' : selectedSport.toUpperCase().replaceAll(' ', '_'),
     );
 
     await _repository.saveWorkoutSession(session);
