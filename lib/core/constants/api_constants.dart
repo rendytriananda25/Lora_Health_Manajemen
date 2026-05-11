@@ -1,10 +1,12 @@
+import 'secrets.dart';
+
 class ApiConstants {
   ApiConstants._();
 
   static const String firebaseDatabaseUrl =
       'https://lora-1-b0d0c-default-rtdb.asia-southeast1.firebasedatabase.app';
 
-  static const String weatherApiKey = 'd0fa6ab4f8080a9265e6a1bdf035fad0';
+  static const String weatherApiKey = Secrets.weatherApiKey;
   static const String weatherBaseUrl =
       'https://api.openweathermap.org/data/2.5';
 
