@@ -6,29 +6,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutData {
-  // 🔄 VARIABLE RUNTIME (Diisi dari Firebase)
+
   static Map<String, dynamic>? _onlineWorkoutData;
 
-  // ============================================================
-  // 📚 REFERENSI ILMIAH PROGRESIVITAS:
-  // - ACSM (2021). Guidelines for Exercise Testing and Prescription, 11th Ed.
-  //   → Progressive overload 5-10%/minggu, deload setiap 4 minggu (W4 = 70% volume)
-  // - NSCA (2016). Essentials of Strength Training and Conditioning, 4th Ed.
-  //   → "2-for-2 Rule", rep range hipertrofi 8-12 RM
-  // - Schoenfeld, B.J. (2010). Journal of Strength and Conditioning Research, 24(10).
-  //   → Validasi rep range 8-12 untuk muscle gain
-  // - Garber, C.E., et al. (2011). Medicine & Science in Sports & Exercise, 43(7).
-  //   → Weight loss: 150-300 menit/minggu moderate intensity
-  // ============================================================
 
-  // 🔥 DATA PROGRESIVITAS — Per goal × per gerakan × per level × per minggu
-  // W4 = DELOAD WEEK (volume -30% untuk recovery & pencegahan cedera)
-  // Loop 4 minggu tanpa batas, base naik otomatis tiap siklus via startDate
+
   static final Map<String, dynamic> _progressionData = {
-    // ══════════════════════════════════════════════════════
-    // 🔥 WEIGHT LOSS — Fokus: Kardio + HIIT, rep tinggi
-    // Referensi: ACSM 150-300 mnt/minggu moderate intensity
-    // ══════════════════════════════════════════════════════
+
     "WEIGHT_LOSS": {
       "Jumping Jacks": {
         "NEVER": {
@@ -83,7 +67,6 @@ class WorkoutData {
         },
       },
       "Burpees": {
-        // Gerakan kompleks: kenaikan konservatif 5-7% (risiko overuse injury)
         "NEVER": {
           "W1": "5 Reps",
           "W2": "6 Reps",
@@ -136,7 +119,6 @@ class WorkoutData {
         },
       },
       "Squat Jump": {
-        // Plyometric: kenaikan konservatif, risiko lutut jika terlalu cepat
         "NEVER": {
           "W1": "8 Reps",
           "W2": "10 Reps",
@@ -215,7 +197,6 @@ class WorkoutData {
         },
       },
       "Tuck Jumps": {
-        // High impact plyometric: kenaikan paling konservatif
         "NEVER": {
           "W1": "5 Reps",
           "W2": "6 Reps",
@@ -243,10 +224,7 @@ class WorkoutData {
       },
     },
 
-    // ══════════════════════════════════════════════════════
-    // 💪 MUSCLE GAIN — Fokus: Strength, sets × reps, hipertrofi
-    // Referensi: NSCA 8-12 RM untuk hipertrofi, istirahat 60-90 detik
-    // ══════════════════════════════════════════════════════
+
     "MUSCLE_GAIN": {
       "Push Up": {
         "NEVER": {
@@ -275,7 +253,6 @@ class WorkoutData {
         },
       },
       "Diamond Push Up": {
-        // Isolasi trisep: hindari overload sendi siku, mulai konservatif
         "NEVER": {
           "W1": "3x5 Reps",
           "W2": "3x6 Reps",
@@ -354,7 +331,6 @@ class WorkoutData {
         },
       },
       "Bulgarian Split Squat": {
-        // Unilateral: beban lebih berat per kaki, awali konservatif
         "NEVER": {
           "W1": "3x6/Kaki",
           "W2": "3x8/Kaki",
@@ -459,7 +435,6 @@ class WorkoutData {
         },
       },
       "Handstand Push-Up (Wall)": {
-        // Gerakan advanced: pemula wajib kuasai Pike Push Up dulu
         "NEVER": {
           "W1": "SKIP - Kuasai Pike Push Up dulu",
           "W2": "SKIP",
@@ -487,14 +462,8 @@ class WorkoutData {
       },
     },
 
-    // ══════════════════════════════════════════════════════
-    // 🌿 KEEP FIT — Fokus: Mobilitas + Maintenance
-    // Referensi: ACSM maintenance = 60-70% dari training load
-    // Kenaikan lebih lambat, fokus durasi & kualitas gerak
-    // ══════════════════════════════════════════════════════
     "KEEP_FIT": {
       "Pemanasan Dinamis": {
-        // Durasi pemanasan tetap (tidak perlu progresivitas)
         "NEVER": {
           "W1": "5 Menit",
           "W2": "5 Menit",
@@ -573,7 +542,6 @@ class WorkoutData {
         },
       },
       "Cat-Cow Stretch": {
-        // Mobility: durasi tidak perlu naik signifikan
         "NEVER": {
           "W1": "1 Menit",
           "W2": "1.5 Menit",
@@ -678,7 +646,6 @@ class WorkoutData {
         },
       },
       "Cooling Down": {
-        // Pendinginan: tetap (tidak perlu progresivitas)
         "NEVER": {
           "W1": "5 Menit",
           "W2": "5 Menit",
@@ -707,7 +674,6 @@ class WorkoutData {
     },
   };
 
-  // 💾 DATA LOKAL (SOURCE CODE) - Editable oleh Admin di sini
   static final Map<String, dynamic> _defaultWorkoutLibrary = {
     "running": {
       "title": "RUNNING MISSION",
@@ -1499,22 +1465,13 @@ class WorkoutData {
     },
   };
 
-  // -------------------------------------------------------
-  // 🔧 HELPER: Hitung minggu ke berapa berdasarkan TOTAL SESI AKTIF
-  // Bukan dari tanggal kalender, tapi dari berapa kali user benar-benar workout
-  // Setiap 7 sesi = naik 1 minggu, loop setiap 4 minggu (28 sesi)
-  // -------------------------------------------------------
+
   static String getCurrentWeekKey(int totalSessions) {
-    // 0-6 sesi = W1, 7-13 = W2, 14-20 = W3, 21-27 = W4 (Deload)
-    // 28+ = loop kembali (siklus baru)
     final weekNumber = (totalSessions ~/ 7) % 4;
     return "W${weekNumber + 1}";
   }
 
-  // -------------------------------------------------------
-  // 🔧 HELPER: Ambil target reps yang sudah diprogresifkan
-  // Return "—" jika data tidak tersedia (fallback ke target default)
-  // -------------------------------------------------------
+
   static String getProgressiveTarget({
     required String exerciseName,
     required String goal,
@@ -1534,7 +1491,6 @@ class WorkoutData {
     }
   }
 
-  // 🔥 UTAMA: Generate Routine berdasarkan Data (Online / Local)
   static Map<String, dynamic> generateRoutine({
     required String sportType,
     required String goal,
@@ -1544,10 +1500,10 @@ class WorkoutData {
     required int temp,
     bool isIndoor = false,
     int frequency = 1,
-    int totalSessions = 0, // 🔥 Total sesi dari gamification (bukan tanggal)
+    int totalSessions = 0,
+
     LanguageProvider? lang,
   }) {
-    // 1. Pilih Sumber Data
     Map<String, dynamic> library = _onlineWorkoutData ?? _defaultWorkoutLibrary;
 
     String sportKey = _mapSportKey(sportType);
@@ -1568,9 +1524,7 @@ class WorkoutData {
     String weatherAdvice = "";
     List<Map<String, dynamic>> exercises = [];
 
-    // --- LOGIKA PER CABANG OLAHRAGA ---
 
-    // A. LARI & SEPEDA
     if (sportKey == "running" || sportKey == "cycling") {
       weatherAdvice = _getWeatherText(
         sportKey,
@@ -1609,7 +1563,6 @@ class WorkoutData {
         exercises.add(Map<String, dynamic>.from(sportData['female_extra']));
       }
     }
-    // B. BASKET & BOLA
     else if (sportKey == "basketball" || sportKey == "football") {
       final levelData = sportData['levels'][userLevel] ?? {"duration": 45};
       double duration = (levelData['duration'] as num).toDouble();
@@ -1645,7 +1598,6 @@ class WorkoutData {
         );
       }
 
-      // 🔄 DAILY ROLLING: Rotasi gerakan basket/bola setiap hari
       String warmupName = template.isNotEmpty ? template.first['name'] : '';
       exercises = _selectDailyExercises(
         template,
@@ -1653,7 +1605,7 @@ class WorkoutData {
         alwaysIncludeNames: [warmupName],
       );
     }
-    // C. HOME WORKOUT — 🔥 DENGAN PROGRESIVITAS
+
     else {
       weatherAdvice = _getWeatherText(
         "home",
@@ -1678,7 +1630,6 @@ class WorkoutData {
         rawList.map((x) => Map<String, dynamic>.from(x)),
       );
 
-      // 🔄 DAILY ROLLING: Rotasi gerakan home workout setiap hari
       List<String> fixedNames = [];
       if (goalKey == "KEEP_FIT") {
         fixedNames = ['Pemanasan Dinamis', 'Cooling Down'];
@@ -1689,7 +1640,6 @@ class WorkoutData {
         alwaysIncludeNames: fixedNames,
       );
 
-      // 🔥 TERAPKAN PROGRESIVITAS berdasarkan total sesi aktif
       String weekKey = getCurrentWeekKey(totalSessions);
 
       for (var ex in exercises) {
@@ -1699,13 +1649,11 @@ class WorkoutData {
           level: userLevel,
           weekKey: weekKey,
         );
-        // Update target hanya jika data progresivitas tersedia dan bukan SKIP
         if (progressiveTarget != "—" && !progressiveTarget.startsWith("SKIP")) {
           ex['target'] = progressiveTarget;
         }
       }
 
-      // Female Adjustments for Reps (tetap berlaku)
       if (userGender == "FEMALE" && userGoal.contains("WEIGHT")) {
         for (var ex in exercises) {
           if (ex['type'] == 'reps') {
@@ -1721,8 +1669,6 @@ class WorkoutData {
       }
     }
 
-    // 🔥 SESSION LOGIC — Sinkron dengan SessionCompletionService
-    // Pagi: 05:00–14:59 | Sore: 15:00–22:59 | Istirahat: 23:00–04:59
     String sessionLabel = "";
     bool isRestTime = false;
 
@@ -1737,7 +1683,6 @@ class WorkoutData {
       }
     }
 
-    // Process Icons
     for (var ex in exercises) {
       if (ex['icon_code'] != null) {
         ex['icon'] = IconData(ex['icon_code'], fontFamily: 'MaterialIcons');
@@ -1746,7 +1691,6 @@ class WorkoutData {
       }
     }
 
-    // Add Lora Advice / Rest Card
     if (isRestTime) {
       exercises.clear();
       exercises.add({
@@ -1780,16 +1724,7 @@ class WorkoutData {
     };
   }
 
-  // --- HELPER FUNCTIONS ---
 
-  // 🔄 DAILY ROLLING: Pilih subset gerakan berbeda setiap hari
-  // Menggunakan seed dari tanggal agar konsisten sepanjang hari
-  // tapi berubah keesokan harinya
-  //
-  // ✅ ATURAN URUTAN:
-  //   1. "Pemanasan Dinamis" → SELALU di posisi PERTAMA
-  //   2. Gerakan inti (rolling) → di tengah
-  //   3. "Cooling Down" → SELALU di posisi TERAKHIR
   static List<Map<String, dynamic>> _selectDailyExercises(
     List<Map<String, dynamic>> pool,
     int exercisesPerDay, {
@@ -1803,7 +1738,6 @@ class WorkoutData {
     final daySeed = now.year * 1000 + dayOfYear + uidHashCode;
     final random = Random(daySeed);
 
-    // Pisahkan: warmup, cooldown, dan sisanya
     Map<String, dynamic>? warmup;
     Map<String, dynamic>? cooldown;
     List<Map<String, dynamic>> rotatable = [];
@@ -1815,22 +1749,18 @@ class WorkoutData {
       } else if (name == 'Cooling Down') {
         cooldown = ex;
       } else if (alwaysIncludeNames.contains(name)) {
-        // Fixed lainnya (selain warmup/cooldown) → masuk rotatable agar tetap ikut
-        rotatable.insert(0, ex); // prioritas di depan
+        rotatable.insert(0, ex);
       } else {
         rotatable.add(ex);
       }
     }
 
-    // Hitung berapa gerakan inti yang perlu dipilih
     int fixedCount = (warmup != null ? 1 : 0) + (cooldown != null ? 1 : 0);
     int pickCount = (exercisesPerDay - fixedCount).clamp(0, rotatable.length);
 
-    // Acak & ambil sejumlah pickCount
     rotatable.shuffle(random);
     List<Map<String, dynamic>> selected = rotatable.take(pickCount).toList();
 
-    // Susun ulang: warmup → inti → cooldown
     List<Map<String, dynamic>> result = [];
     if (warmup != null) result.add(warmup);
     result.addAll(selected);
@@ -1908,7 +1838,6 @@ class WorkoutData {
     return res;
   }
 
-  // 🔥 FUNGSI ADMIN: Upload ke Firebase
   static Future<void> seedToFirebase() async {
     try {
       final db = FirebaseDatabase.instanceFor(
@@ -1925,7 +1854,6 @@ class WorkoutData {
     }
   }
 
-  // 🔥 FUNGSI CLIENT: Ambil dari Firebase
   static Future<void> fetchFromFirebase() async {
     try {
       final ref = FirebaseDatabase.instance.ref("data/workout_data");

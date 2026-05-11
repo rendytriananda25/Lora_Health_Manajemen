@@ -106,12 +106,10 @@ class _BmiChartPageState extends State<BmiChartPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── GRAFIK ──────────────────────────────────────
                       _buildWeightChart(theme),
 
                       const SizedBox(height: 28),
 
-                      // ── RIWAYAT TANGGAL ──────────────────────────────
                       Text(
                         'Riwayat Pengecekan',
                         style: TextStyle(
@@ -129,9 +127,7 @@ class _BmiChartPageState extends State<BmiChartPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // GRAFIK BERAT BADAN
-  // ─────────────────────────────────────────────────────────────
+
   Widget _buildWeightChart(ThemeProvider theme) {
     final data = _bmiHistory.length > 10
         ? _bmiHistory.sublist(_bmiHistory.length - 10)
@@ -162,7 +158,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header grafik
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -194,7 +189,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
 
           const SizedBox(height: 20),
 
-          // CHART BARS
           SizedBox(
             height: 180,
             child: Row(
@@ -210,7 +204,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Nilai berat
                         Text(
                           w.toStringAsFixed(1),
                           style: const TextStyle(
@@ -220,7 +213,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        // Bar
                         AnimatedContainer(
                           duration: Duration(milliseconds: 300 + i * 60),
                           curve: Curves.easeOut,
@@ -245,12 +237,10 @@ class _BmiChartPageState extends State<BmiChartPage> {
             ),
           ),
 
-          // Garis separator
           const SizedBox(height: 8),
           Divider(color: theme.textColor.withOpacity(0.06), height: 1),
           const SizedBox(height: 8),
 
-          // Label tanggal di bawah bar
           Row(
             children: List.generate(data.length, (i) {
               final date = data[i]['date_obj'] as DateTime;
@@ -276,9 +266,7 @@ class _BmiChartPageState extends State<BmiChartPage> {
     );
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // RIWAYAT TANGGAL (simpel, fokus ke waktu pengecekan)
-  // ─────────────────────────────────────────────────────────────
+
   Widget _buildDateList(ThemeProvider theme) {
     final reversed = _bmiHistory.reversed.toList();
 
@@ -304,7 +292,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
           ),
           child: Row(
             children: [
-              // Dot status
               Container(
                 width: 10,
                 height: 10,
@@ -315,7 +302,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
                 ),
               ),
 
-              // Tanggal & jam
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -350,7 +336,6 @@ class _BmiChartPageState extends State<BmiChartPage> {
                 ),
               ),
 
-              // Berat & status
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [

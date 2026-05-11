@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
-import 'package:lora_1/core/services/theme_provider.dart'; // ✅ Added
+import 'package:lora_1/core/services/theme_provider.dart';
 import '../widgets/setting_widgets.dart';
 
 class NotificationPage extends StatefulWidget {
@@ -17,16 +17,16 @@ class _NotificationPageState extends State<NotificationPage> {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context); // ✅ Theme
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: theme.bgColor, // ✅ Adaptive
+      backgroundColor: theme.bgColor,
       body: SafeArea(
         child: Column(
           children: [
             SettingHeader(
               title: lang.translate('notification.title'),
-              isDarkMode: theme.isDarkMode, // ✅ Pass Theme
+              isDarkMode: theme.isDarkMode,
             ),
             Padding(
               padding: const EdgeInsets.all(24.0),
@@ -37,7 +37,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     lang.translate('notification.pushDescription'),
                     pushNotify,
                     (val) => setState(() => pushNotify = val),
-                    theme, // ✅ Pass Theme
+                    theme,
                   ),
                   const SizedBox(height: 20),
                   _buildSwitchTile(
@@ -45,7 +45,7 @@ class _NotificationPageState extends State<NotificationPage> {
                     lang.translate('notification.activityDescription'),
                     activityNotify,
                     (val) => setState(() => activityNotify = val),
-                    theme, // ✅ Pass Theme
+                    theme,
                   ),
                 ],
               ),

@@ -13,7 +13,7 @@ class GlassCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.boxColor.withOpacity(
           0.9,
-        ), // Sedikit transparan untuk efek glass
+        ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.textColor.withOpacity(0.05)),
         boxShadow: [

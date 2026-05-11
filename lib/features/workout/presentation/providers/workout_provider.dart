@@ -16,12 +16,6 @@ import 'package:lora_1/features/gamification/badge_service.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// ═══════════════════════════════════════════════════════════════
-/// WorkoutProvider — State Management untuk halaman Map/Workout.
-///
-/// Semua logika bisnis (kalkulasi kalori, target by level, dll)
-/// sudah dipindah ke UseCase. Provider ini hanya mengorkestrasi.
-/// ═══════════════════════════════════════════════════════════════
 class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   final WorkoutRepository _repository;
   final CalculateCalories _calculateCalories;
@@ -43,7 +37,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  // ─── STATE ─────────────────────────────────────────────────
   final ValueNotifier<int> secondsNotifier = ValueNotifier<int>(0);
   final ValueNotifier<double> distanceNotifier = ValueNotifier<double>(0.0);
 
@@ -76,10 +69,8 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _timer;
   StreamSubscription<Position>? _positionStream;
 
-  // 🔄 DAILY ROLLING: Track hari terakhir routine di-generate
   int _lastGeneratedDayOfYear = -1;
 
-  // ─── PUBLIC GETTERS ────────────────────────────────────────
   bool get isGpsSport => _checkSportType.isGpsSport(selectedSport);
 
   String getTarget() => _getTargetByLevel(selectedSport, userLevel);
@@ -87,7 +78,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   String translateSportName(String sport, String langCode) =>
       _translateSport(sport, langCode);
 
-  // ─── APP LIFECYCLE (Daily Rolling & Notif) ───────────────
   bool _isAppInBackground = false;
 
   @override
@@ -97,13 +87,11 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
       if (!isRecording) {
         _checkDayChanged();
       } else {
-        // App kembali ke layar, hapus notifikasi background
         _cancelTrackingNotification();
       }
     } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _isAppInBackground = true;
       if (isRecording) {
-        // App di-minimize, munculkan notifikasi live
         _updateTrackingNotification();
       }
     }
@@ -116,19 +104,16 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
         _lastGeneratedDayOfYear != todayDayOfYear) {
       _lastGeneratedDayOfYear = todayDayOfYear;
       sessionCompleted = false;
-      // generateRoutine will be called by the page when it detects the change
       notifyListeners();
     }
   }
 
-  /// Flag: true jika hari sudah berganti sejak generate terakhir
   bool get isDayChanged {
     final now = DateTime.now();
     final todayDayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
     return _lastGeneratedDayOfYear != todayDayOfYear;
   }
 
-  // ─── INIT ──────────────────────────────────────────────────
   Future<void> init() async {
     final now = DateTime.now();
     _lastGeneratedDayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
@@ -198,7 +183,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  // ─── GENERATE ROUTINE (delegasi ke WorkoutData) ────────────
   Future<void> generateRoutine(LanguageProvider lang) async {
     debugPrint('🔄 generateRoutine: sport=$selectedSport, goal=$userGoal, level=$userLevel');
 
@@ -236,21 +220,20 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  // ─── LIVE NOTIFICATION 🔴 ─────────────────────────────────
   static const int _trackingNotifId = 888;
   final FlutterLocalNotificationsPlugin _notifPlugin = FlutterLocalNotificationsPlugin();
-  bool _notifToggle = false; // Toggle untuk efek kedip 🔴/⚫
+  bool _notifToggle = false;
 
-  /// Format detik ke MM:SS
+
   String _formatTime(int totalSec) {
     int min = totalSec ~/ 60;
     int sec = totalSec % 60;
     return '${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
   }
 
-  /// Update notifikasi live tracking setiap detik (Hanya jika di background)
   Future<void> _updateTrackingNotification() async {
-    if (!_isAppInBackground) return; // 🔥 HANYA MUNCUL DI BACKGROUND
+    if (!_isAppInBackground) return;
+
 
     _notifToggle = !_notifToggle;
     final String recDot = _notifToggle ? '🔴' : '⚫';
@@ -263,12 +246,11 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
       channelDescription: 'Notifikasi saat tracking olahraga aktif',
       importance: Importance.low,
       priority: Priority.low,
-      ongoing: true,        // Tidak bisa di-swipe
+      ongoing: true,
       autoCancel: false,
       showWhen: false,
       playSound: false,
       enableVibration: false,
-      // Style: Big text agar info lengkap
       styleInformation: BigTextStyleInformation(
         isGpsSport
             ? '$recDot  $timeStr   •   $distStr km'
@@ -287,12 +269,10 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
   }
 
-  /// Hapus notifikasi tracking
   Future<void> _cancelTrackingNotification() async {
     await _notifPlugin.cancel(_trackingNotifId);
   }
 
-  // ─── TRACKING ──────────────────────────────────────────────
   void startTracking() {
     HapticFeedback.mediumImpact();
     isRecording = true;
@@ -304,16 +284,16 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       secondsNotifier.value++;
-      // 🔴 Update live notification setiap detik
+
       _updateTrackingNotification();
     });
 
     if (isGpsSport) {
       _positionStream = _locationService.getPositionStream().listen((pos) {
-        // 🔥 FIX: Filter titik GPS noise sebelum ditambahkan ke rute
+
         LatLng? lastPoint = routePoints.isNotEmpty ? routePoints.last : null;
         if (!_locationService.isValidPoint(pos, lastPoint)) {
-          return; // Buang titik GPS yang tidak valid
+          return;
         }
 
         LatLng newPoint = LatLng(pos.latitude, pos.longitude);
@@ -330,16 +310,15 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     }
   }
 
-  /// Eksekusi stop dan simpan sesi. Return GamificationResult jika ada.
   Future<GamificationResult?> executeStop() async {
     isSaving = true;
     notifyListeners();
 
     _timer?.cancel();
     _positionStream?.cancel();
-    await _cancelTrackingNotification(); // 🔴 Hapus notifikasi REC
+    await _cancelTrackingNotification();
 
-    // ✅ Kalkulasi kalori menggunakan UseCase
+
     int caloriesBurned = _calculateCalories(
       sport: selectedSport,
       weightKg: userWeight,
@@ -360,17 +339,16 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
               .map((e) => "${e['name']}: ${e['result']}")
               .join(', ')
           : null,
-      // 🔥 FIX: Simpan rute GPS agar polyline bisa ditampilkan di history
+
       path: isGpsSport
           ? routePoints.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList()
           : null,
-      // 🔥 FIX: Simpan type agar history_card bisa menampilkan ikon yang benar
+
       type: isGpsSport ? 'TRACKING' : selectedSport.toUpperCase().replaceAll(' ', '_'),
     );
 
     await _repository.saveWorkoutSession(session);
 
-    // Gamification
     final sessionData = {
       'workout_details': !isGpsSport ? workoutSessionData : null,
       'calories': caloriesBurned,
@@ -449,7 +427,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
   }
 
-  /// Helper: Dapatkan greeting cuaca berdasarkan suhu & bahasa.
   String getWeatherGreeting(LanguageProvider lang) {
     String firstName = userName.split(' ')[0];
     if (tempValue >= 18 && tempValue <= 27) {

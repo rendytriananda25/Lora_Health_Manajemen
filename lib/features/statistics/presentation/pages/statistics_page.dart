@@ -4,9 +4,7 @@ import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/statistics/presentation/providers/stats_provider.dart';
 
-// Import UI spesifik jika diperlukan (sementara bisa inline jika sederhana)
 import '../widgets/charts.dart';
-// Note: kita implement ulang _build bagian BMI jika di perlukan.
 
 class StatisticsPage extends StatefulWidget {
   const StatisticsPage({super.key});
@@ -32,7 +30,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
     return Consumer<StatsProvider>(
       builder: (context, statsProvider, child) {
-        // Dynamic Feedback Color base on Theme
         Color adaptiveFeedbackColor = statsProvider.feedback?.color ?? Colors.transparent;
         if (!theme.isDarkMode && statsProvider.feedback?.icon == Icons.auto_graph) {
           adaptiveFeedbackColor = theme.boxColor;
@@ -65,7 +62,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // 1. SELECTOR OLAHRAGA
                           SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             child: Row(
@@ -105,17 +101,14 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
                           const SizedBox(height: 20),
 
-                          // ── CONDITIONAL: CEK BMI vs Olahraga biasa ──────────
                           if (statsProvider.selectedSport.contains('BMI'))
                             _buildBmiSection(theme, statsProvider, lang)
                           else ...[
-                            // ✅ 2. KARTU NOTIFIKASI / INSIGHT
                             if (statsProvider.feedback != null)
                               _buildPerformanceInsight(theme, adaptiveFeedbackColor, statsProvider),
 
                             const SizedBox(height: 20),
 
-                            // 3. GRID RINGKASAN
                             Row(
                               children: [
                                 Expanded(
@@ -225,7 +218,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
     );
   }
 
-  // ✅ WIDGET TAMPILAN NOTIFIKASI / INSIGHT
   Widget _buildPerformanceInsight(ThemeProvider theme, Color bgColor, StatsProvider provider) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -509,8 +501,6 @@ class _StatisticsPageState extends State<StatisticsPage> {
       );
     }
     
-    // Simplification for brevity, logic remains identical or is passed to a chart widget.
-    // To not make the page overly long, I am using a simple list view for BMI data representation
     return Column(
       children: provider.stats.bmiWeightData.reversed.take(5).map((e) {
         return Container(

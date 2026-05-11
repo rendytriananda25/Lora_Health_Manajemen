@@ -117,7 +117,6 @@ class SyncedSuccessDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
 
-    // Auto close after 2 seconds if user doesn't tap
     Future.delayed(const Duration(seconds: 2), () {
       if (context.mounted) onClose();
     });

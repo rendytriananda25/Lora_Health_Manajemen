@@ -109,7 +109,6 @@ class _SettingsPageState extends State<SettingsPage> {
     }
   }
 
-  // 🔥 FUNGSI RAHASIA ADMIN
   Future<void> _adminUpdateData() async {
     showDialog(
       context: context,
@@ -123,7 +122,7 @@ class _SettingsPageState extends State<SettingsPage> {
     await WorkoutData.seedToFirebase();
 
     if (mounted) {
-      Navigator.pop(context); // Tutup loading
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("✅ Database Nutrisi & Workout Berhasil Diupdate!"),
@@ -135,7 +134,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 GLOBAL THEME
+
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
 
@@ -146,9 +145,6 @@ class _SettingsPageState extends State<SettingsPage> {
           builder: (context, languageProvider, _) {
             return Column(
               children: [
-                // ==========================================
-                // 1. BAGIAN ATAS FIXED (Header + Tombol Tema)
-                // ==========================================
                 Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 24,
@@ -165,7 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      // 🔥 TOMBOL THEME (Global)
+
                       GestureDetector(
                         onTap: () {
                           themeProvider.toggleTheme();
@@ -200,9 +196,6 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
 
-                // ==========================================
-                // 2. PROFIL FIXED
-                // ==========================================
                 Consumer<SettingsProvider>(
                   builder: (context, provider, _) {
                     final profile = provider.profile;
@@ -231,9 +224,6 @@ class _SettingsPageState extends State<SettingsPage> {
                 ),
                 const SizedBox(height: 20),
 
-                // ==========================================
-                // 3. MENU BOX TENGAH YANG BISA DI-SCROLL
-                // ==========================================
                 Expanded(
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 24),
@@ -256,7 +246,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                             ],
                     ),
-                    // 🔥 BAGIAN INI SAJA YANG BISA DI SCROLL
+
                     child: SingleChildScrollView(
                       physics: const BouncingScrollPhysics(),
                       child: Column(
@@ -278,7 +268,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             title: languageProvider.translate(
                               'settings.personalInfo',
                             ),
-                            isDarkMode: isDarkMode, // ✅ Pass Global Theme
+                            isDarkMode: isDarkMode,
                             onTap: () async {
                               await _pushPopup(const PersonalInfoPage());
                               if (mounted) {
@@ -297,7 +287,7 @@ class _SettingsPageState extends State<SettingsPage> {
                             title: languageProvider.translate(
                               'settings.security',
                             ),
-                            isDarkMode: isDarkMode, // ✅ Pass Global Theme
+                            isDarkMode: isDarkMode,
                             onTap: () => _pushPopup(const SecurityPage()),
                           ),
                           SettingItem(
@@ -322,16 +312,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ),
 
-                // ==========================================
-                // 4. BAGIAN BAWAH FIXED (Logout & Versi)
-                // ==========================================
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
                   child: Column(
                     children: [
-                      _buildLogoutButton(themeProvider), // ✅ Pass Theme
+                      _buildLogoutButton(themeProvider),
                       const SizedBox(height: 15),
-                      // TOMBOL RAHASIA ADMIN
                       GestureDetector(
                         onLongPress: () {
                           showDialog(
@@ -393,7 +379,7 @@ class _SettingsPageState extends State<SettingsPage> {
       child: ElevatedButton(
         onPressed: _handleLogout,
         style: ElevatedButton.styleFrom(
-          backgroundColor: theme.logoutBtnBg, // ✅ Custom Logout Color
+          backgroundColor: theme.logoutBtnBg,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -407,7 +393,7 @@ class _SettingsPageState extends State<SettingsPage> {
             context,
           ).translate('settings.logoutAccount'),
           style: TextStyle(
-            color: theme.logoutBtnText, // ✅ Custom Text Color
+            color: theme.logoutBtnText,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -415,7 +401,6 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  // 🔥 CUSTOM POP-UP TRANSITION
   Future<void> _pushPopup(Widget page) {
     return Navigator.of(context).push(
       PageRouteBuilder(
@@ -425,7 +410,7 @@ class _SettingsPageState extends State<SettingsPage> {
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           final curvedAnimation = CurvedAnimation(
             parent: animation,
-            curve: Curves.easeOutBack, // Efek membal "pop"
+            curve: Curves.easeOutBack,
             reverseCurve: Curves.easeIn,
           );
 

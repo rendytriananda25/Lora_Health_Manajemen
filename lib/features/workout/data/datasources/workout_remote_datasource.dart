@@ -6,9 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:lora_1/core/constants/api_constants.dart';
 import 'package:lora_1/core/errors/exceptions.dart';
 
-/// DataSource untuk data workout dari Firebase + API.
 class WorkoutRemoteDataSource {
-  /// Ambil daftar olahraga user dari Firebase.
   Future<List<String>> fetchUserSports() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw const ServerException('User belum login');
@@ -32,7 +30,6 @@ class WorkoutRemoteDataSource {
     return loaded;
   }
 
-  /// Ambil preferensi user dari Firebase + SharedPreferences.
   Future<Map<String, dynamic>> fetchUserPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     final user = FirebaseAuth.instance.currentUser;
@@ -75,7 +72,6 @@ class WorkoutRemoteDataSource {
     };
   }
 
-  /// Ambil nama user dari Firebase.
   Future<String> fetchUserName() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return 'User';
@@ -87,7 +83,6 @@ class WorkoutRemoteDataSource {
     return user.displayName ?? 'User';
   }
 
-  /// Simpan sesi workout ke Firebase.
   Future<void> saveWorkoutSession(Map<String, dynamic> data) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw const ServerException('User belum login');
@@ -96,7 +91,6 @@ class WorkoutRemoteDataSource {
     await dbRef.push().set(data);
   }
 
-  /// Ambil data cuaca berdasarkan koordinat.
   Future<Map<String, dynamic>> fetchWeather(double lat, double lon) async {
     final url = ApiConstants.weatherUrl(lat, lon, lang: 'id');
     final response = await http.get(Uri.parse(url));

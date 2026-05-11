@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lora_1/features/dashboard/domain/entities/food_entity.dart';
 
-/// UseCase: Generate rekomendasi olahraga berdasarkan cuaca & goal.
-/// Logika bisnis ini dipindahkan dari _generateSmartRecommendations di widget.
 class GenerateRecommendations {
-  /// Hasilkan daftar saran olahraga berdasarkan suhu dan tujuan user.
   List<String> call({
     required double temperature,
     required String userGoal,
@@ -42,20 +39,14 @@ class GenerateRecommendations {
   }
 }
 
-/// UseCase: Generate daily meal plan dari daftar makanan.
-/// Logika bisnis ini dipindahkan dari _generateDailyPlan di widget.
 class GenerateDailyPlan {
-  /// Pilih 3 makanan acak bertipe 'good' dan beri label waktu makan.
   List<FoodEntity> call(List<FoodEntity> allFoods) {
-    // 1. Filter hanya makanan "good"
     final goodFoods = allFoods.where((f) => f.type == 'good').toList();
 
     if (goodFoods.isEmpty) return [];
 
-    // 2. Acak urutan
     goodFoods.shuffle();
 
-    // 3. Ambil 3 pertama & kasih label waktu makan
     final selected = goodFoods.take(3).toList();
 
     final hour = DateTime.now().hour;
@@ -78,10 +69,7 @@ class GenerateDailyPlan {
   }
 }
 
-/// UseCase: Tentukan detail AQI (status, warna, tips).
-/// Logika bisnis ini dipindahkan dari _getAQIDetail di widget.
 class GetEnvironmentDetail {
-  /// Analisis AQI dan kembalikan status + tips.
   Map<String, dynamic> getAQIDetail(int aqi, TranslateFunction translate) {
     if (aqi <= 50) {
       return {
@@ -104,7 +92,6 @@ class GetEnvironmentDetail {
     }
   }
 
-  /// Analisis UV Index dan kembalikan status + tips.
   Map<String, dynamic> getUVDetail(double uv, TranslateFunction translate) {
     if (uv <= 2) {
       return {
@@ -128,5 +115,4 @@ class GetEnvironmentDetail {
   }
 }
 
-/// Alias untuk fungsi translate supaya UseCase tidak bergantung pada LanguageProvider.
 typedef TranslateFunction = String Function(String key);

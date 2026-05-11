@@ -99,7 +99,7 @@ class GlassControlPanel extends StatelessWidget {
                 color: isRecording
                     ? const Color.fromARGB(255, 255, 0, 0)
                     : theme
-                          .textColor, // Reverse color for button (Black on White bg, White on Dark bg)
+                          .textColor,
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Center(
@@ -110,7 +110,7 @@ class GlassControlPanel extends StatelessWidget {
                   style: TextStyle(
                     color: isRecording
                         ? Colors.white
-                        : theme.boxColor, // Contrast text
+                        : theme.boxColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
                   ),

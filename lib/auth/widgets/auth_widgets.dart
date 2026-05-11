@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-// --- TEXT FIELD ---
 class AuthTextField extends StatefulWidget {
   final TextEditingController controller;
   final String hintText;
@@ -59,7 +58,6 @@ class _AuthTextFieldState extends State<AuthTextField> {
   }
 }
 
-// --- MAIN BUTTON ---
 class AuthButton extends StatelessWidget {
   final String text;
   final VoidCallback onTap;
@@ -117,7 +115,6 @@ class AuthButton extends StatelessWidget {
   }
 }
 
-// --- SOCIAL BUTTON ---
 class SocialLoginButton extends StatelessWidget {
   final String text;
   final String iconPath;

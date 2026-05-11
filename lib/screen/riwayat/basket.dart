@@ -71,7 +71,6 @@ class HistoryBasketDetailPage extends StatelessWidget {
               "${((data['duration_sec'] ?? 0) / 60).round()} menit",
               theme,
             ),
-            // Tambahkan statistik spesifik basket lainnya di sini
           ],
         ),
       ),

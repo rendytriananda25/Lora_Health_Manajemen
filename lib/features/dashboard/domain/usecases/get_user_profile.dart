@@ -3,7 +3,6 @@ import 'package:lora_1/core/usecases/usecase.dart';
 import 'package:lora_1/features/dashboard/domain/entities/user_profile_entity.dart';
 import 'package:lora_1/features/dashboard/domain/repositories/dashboard_repository.dart';
 
-/// UseCase: Ambil profil user (nama, goal, level, favorites, foto).
 class GetUserProfile extends UseCase<UserProfileEntity, NoParams> {
   final DashboardRepository repository;
 

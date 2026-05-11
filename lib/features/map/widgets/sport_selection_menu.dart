@@ -38,7 +38,7 @@ class SportSelectionMenu extends StatelessWidget {
       case "Basket": return lang.currentLanguage == 'en' ? "Basketball" : lang.currentLanguage == 'es' ? "Baloncesto" : "バスケットボール";
       case "Sepak Bola": return lang.currentLanguage == 'en' ? "Football" : lang.currentLanguage == 'es' ? "Fútbol" : "サッカー";
       case "Bola": return lang.currentLanguage == 'en' ? "Football" : lang.currentLanguage == 'es' ? "Fútbol" : "サッカー";
-      case "Home Workout": return lang.currentLanguage == 'ja' ? "ホームワークアウト" : sport; // Sisanya tetap sama
+      case "Home Workout": return lang.currentLanguage == 'ja' ? "ホームワークアウト" : sport;
       default: return sport;
     }
   }

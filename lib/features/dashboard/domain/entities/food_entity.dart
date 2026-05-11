@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 
-/// Entity makanan — representasi satu item makanan untuk dashboard.
 class FoodEntity {
-  final String rawName;     // Nama asli (untuk translasi)
-  final String displayName; // Nama yang ditampilkan
-  final int rating;         // 5 = good, 2 = bad
-  final String description; // "200 kcal • Tinggi protein"
+  final String rawName;
+  final String displayName;
+  final int rating;
+  final String description;
   final IconData icon;
-  final String type;        // 'good' atau 'bad'
-  final String? mealTime;   // SARAPAN, MAKAN SIANG, MAKAN MALAM
+  final String type;
+  final String? mealTime;
 
   const FoodEntity({
     required this.rawName,

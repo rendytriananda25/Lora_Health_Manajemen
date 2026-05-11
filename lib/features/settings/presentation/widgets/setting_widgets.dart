@@ -1,7 +1,6 @@
-import 'dart:io'; // ✅ Import dart:io
+import 'dart:io';
 import 'package:flutter/material.dart';
 
-// ✅ WIDGET 1: HEADER
 class SettingHeader extends StatelessWidget {
   final String title;
   final bool isDarkMode;
@@ -44,13 +43,12 @@ class SettingHeader extends StatelessWidget {
   }
 }
 
-// ✅ WIDGET 2: PROFILE CARD (Updated with Local Photo)
 class SettingProfileCard extends StatelessWidget {
   final String fullName;
   final String email;
   final String? photoUrl;
-  final String? localPhotoPath; // ✅ Local Photo Path
-  final VoidCallback? onPhotoTap; // ✅ Edit Action
+  final String? localPhotoPath;
+  final VoidCallback? onPhotoTap;
   final bool isDarkMode;
 
   const SettingProfileCard({
@@ -78,7 +76,6 @@ class SettingProfileCard extends StatelessWidget {
       }
     }
 
-    // Fallback to network if no local
     if (imageProvider == null && photoUrl != null && photoUrl!.isNotEmpty) {
       imageProvider = NetworkImage(photoUrl!);
     }
@@ -102,7 +99,6 @@ class SettingProfileCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Profile Picture (Editable or Static)
           if (onPhotoTap != null)
             GestureDetector(
               onTap: onPhotoTap,
@@ -120,14 +116,13 @@ class SettingProfileCard extends StatelessWidget {
                           )
                         : null,
                   ),
-                  // Camera Icon Overlay (Only if editable)
                   Positioned(
                     bottom: 0,
                     right: 0,
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: const BoxDecoration(
-                        color: Color(0xFF008BFF), // Lora Blue
+                        color: Color(0xFF008BFF),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -173,7 +168,6 @@ class SettingProfileCard extends StatelessWidget {
   }
 }
 
-// ✅ WIDGET 3: SETTING ITEM
 class SettingItem extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -199,7 +193,7 @@ class SettingItem extends StatelessWidget {
       child: Material(
         color: bg,
         borderRadius: BorderRadius.circular(18),
-        elevation: isDarkMode ? 0 : 2, // Shadow kecil buat Light Mode
+        elevation: isDarkMode ? 0 : 2,
         shadowColor: Colors.black12,
         clipBehavior: Clip.antiAlias,
         child: InkWell(

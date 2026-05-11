@@ -35,16 +35,16 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context); // ✅ Global Theme
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: theme.bgColor, // ✅ Adaptive Background
+      backgroundColor: theme.bgColor,
       body: SafeArea(
         child: Column(
           children: [
             SettingHeader(
               title: lang.translate('personalInfo.title'),
-              isDarkMode: theme.isDarkMode, // ✅ Pass Theme
+              isDarkMode: theme.isDarkMode,
             ),
             Expanded(
               child: SingleChildScrollView(
@@ -101,7 +101,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                                           )
                                         : null,
                                   ),
-                                  // Camera Icon Overlay
                                   Positioned(
                                     bottom: 0,
                                     right: 4,
@@ -207,7 +206,6 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     );
   }
 
-  // ✅ POPUP EDIT NAMA
   void _showEditNameDialog(
     String currentName,
     LanguageProvider lang,
@@ -217,7 +215,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: theme.boxColor, // ✅ Adaptive
+        backgroundColor: theme.boxColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           lang.translate('personalInfo.changeName'),
@@ -271,7 +269,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.boxColor, // ✅ Adaptive
+        color: theme.boxColor,
         borderRadius: BorderRadius.circular(25),
         border: Border.all(color: theme.borderColor),
         boxShadow: theme.isDarkMode
@@ -324,7 +322,7 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
       margin: const EdgeInsets.only(bottom: 15),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       decoration: BoxDecoration(
-        color: theme.boxColor, // ✅ Adaptive
+        color: theme.boxColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: theme.borderColor),
         boxShadow: theme.isDarkMode

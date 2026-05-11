@@ -34,7 +34,6 @@ class SetupService {
       await prefs.setInt('user_frequency', frequency);
 
       if (user != null) {
-        // 2. Format Data untuk Firebase
         final selectedNames = selectedIndices
             .map((i) => SetupConstants.sports[i]['name'] ?? "Unknown")
             .toList();
@@ -51,7 +50,6 @@ class SetupService {
 
         final genderLabel = gender == "MALE" ? "Laki-laki" : "Perempuan";
 
-        // 3. Simpan ke Firebase Realtime Database
         await FirebaseDatabase.instance.ref("users/${user.uid}").update({
           "sports": sportsForMap,
           "favorite_sports": selectedNames,
@@ -68,13 +66,11 @@ class SetupService {
           },
         });
 
-        // 4. Jadwalkan Reminder
         await WorkoutReminderService.instance.scheduleDailyWellnessProgram(
           goal: goal,
           prioritySports: selectedNames,
         );
 
-        // 5. Navigasi ke Dashboard
         if (context.mounted) {
           Navigator.pushReplacement(
             context,

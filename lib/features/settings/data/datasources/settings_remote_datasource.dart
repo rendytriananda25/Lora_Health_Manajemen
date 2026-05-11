@@ -26,7 +26,6 @@ class SettingsRemoteDataSource {
       "age": "--",
     };
 
-    // Get Data from Realtime DB
     final snapshot = await db.ref("users/${user.uid}").get();
     if (snapshot.exists) {
       final data = snapshot.value as Map;

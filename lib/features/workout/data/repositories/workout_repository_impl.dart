@@ -6,7 +6,6 @@ import 'package:lora_1/features/workout/domain/entities/workout_session_entity.d
 import 'package:lora_1/features/workout/domain/repositories/workout_repository.dart';
 import 'package:lora_1/features/workout/data/datasources/workout_remote_datasource.dart';
 
-/// Implementasi WorkoutRepository.
 class WorkoutRepositoryImpl implements WorkoutRepository {
   final WorkoutRemoteDataSource dataSource;
 

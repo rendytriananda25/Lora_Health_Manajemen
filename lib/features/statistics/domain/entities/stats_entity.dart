@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Entity untuk data statistik yang sudah diproses.
 class StatsSummaryEntity {
   final int totalSessions;
   final int totalCalories;
@@ -34,7 +33,6 @@ class StatsSummaryEntity {
   );
 }
 
-/// Entity untuk feedback performa.
 class PerformanceFeedback {
   final String title;
   final String message;

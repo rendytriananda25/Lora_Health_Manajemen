@@ -1,10 +1,9 @@
-/// Entity untuk satu gerakan latihan.
 class ExerciseEntity {
   final String name;
-  final String target;    // "15 Reps", "30 Detik"
-  final String type;      // 'time', 'reps', 'info'
+  final String target;
+  final String type;
   final String? videoUrl;
-  final int? startAt;     // Detik mulai video
+  final int? startAt;
   final String? tips;
 
   const ExerciseEntity({
@@ -16,7 +15,6 @@ class ExerciseEntity {
     this.tips,
   });
 
-  /// Konversi dari Map (format WorkoutData.generateRoutine).
   factory ExerciseEntity.fromMap(Map<String, dynamic> map) => ExerciseEntity(
     name: map['name'] ?? '',
     target: map['target'] ?? '',

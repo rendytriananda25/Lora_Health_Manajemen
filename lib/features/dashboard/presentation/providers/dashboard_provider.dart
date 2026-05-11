@@ -11,7 +11,7 @@ import 'package:lora_1/features/gamification/rank_system.dart';
 import 'package:lora_1/core/usecases/usecase.dart';
 
 class DashboardProvider extends ChangeNotifier {
-  // ─── USECASES ──────────────────────────────────────────────
+
   final GetWeatherData _getWeatherData;
   final GetUserProfile _getUserProfile;
   final GenerateRecommendations _generateRecommendations;
@@ -30,7 +30,6 @@ class DashboardProvider extends ChangeNotifier {
        _generateDailyPlan = GenerateDailyPlan(),
        _getEnvironmentDetail = GetEnvironmentDetail();
 
-  // ─── STATE ─────────────────────────────────────────────────
   WeatherEntity weather = WeatherEntity.empty();
   UserProfileEntity userProfile = UserProfileEntity.empty();
   Map<String, dynamic>? nutritionData;
@@ -42,13 +41,10 @@ class DashboardProvider extends ChangeNotifier {
   bool isLoading = true;
   String? errorMessage;
 
-  // ─── SUBSCRIPTIONS ─────────────────────────────────────────
   Timer? _rotationTimer;
   StreamSubscription<int>? _expSubscription;
   StreamSubscription<String>? _nameSubscription;
 
-  // ─── INIT ──────────────────────────────────────────────────
-  /// Panggil sekali saat Dashboard pertama kali dibuat.
   Future<void> init() async {
     isLoading = true;
     notifyListeners();
@@ -64,14 +60,12 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Panggil saat pull-to-refresh.
   Future<void> refresh() async {
     await loadUserProfile();
     await loadWeather();
     await loadNutritionData();
   }
 
-  // ─── LOAD FUNCTIONS ────────────────────────────────────────
   Future<void> loadWeather({String langCode = 'id'}) async {
     final result = await _getWeatherData(WeatherParams(langCode: langCode));
     result.fold(
@@ -107,19 +101,16 @@ class DashboardProvider extends ChangeNotifier {
       (failure) => debugPrint('Nutrition Error: ${failure.message}'),
       (data) {
         nutritionData = data;
-        // Daily plan akan di-generate saat widget memanggil generateDailyPlan()
       },
     );
     notifyListeners();
   }
 
-  /// Check daily login dan kembalikan jumlah EXP didapat.
   Future<int> checkDailyLogin() async {
     final result = await _repository.checkDailyLogin();
     return result.fold((failure) => 0, (gained) => gained);
   }
 
-  // ─── BUSINESS LOGIC (delegasi ke UseCase) ──────────────────
   List<String> getRecommendations({required TranslateFunction translate}) {
     double temp = double.tryParse(weather.temperature) ?? 25.0;
     return _generateRecommendations(
@@ -146,7 +137,6 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Buat daftar makanan dari data nutrisi mentah.
   List<FoodEntity> getFoodList({
     required TranslateFunction translateName,
     required TranslateFunction translateGoalReason,
@@ -192,7 +182,6 @@ class DashboardProvider extends ChangeNotifier {
     return Icons.restaurant;
   }
 
-  // ─── LISTENERS ─────────────────────────────────────────────
   void _startRecommendationRotation() {
     _rotationTimer?.cancel();
     _rotationTimer = Timer.periodic(const Duration(seconds: 5), (_) {
@@ -239,7 +228,6 @@ class DashboardProvider extends ChangeNotifier {
     );
   }
 
-  /// Panggil setelah navigasi dari halaman Setting (update foto).
   void updateLocalPhoto(String? path) {
     userProfile = UserProfileEntity(
       name: userProfile.name,

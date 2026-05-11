@@ -13,7 +13,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  // Data Slide Discover
   final List<Map<String, String>> _onboardingData = [
     {
       "title": "Discover Real-time Weather",
@@ -46,7 +45,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 1. BACKGROUND IMAGE DENGAN GRADIENT DARK
           ScrollConfiguration(
             behavior: const ScrollBehavior().copyWith(overscroll: false),
             child: PageView.builder(
@@ -62,14 +60,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
 
-          // 2. OVERLAY CONTENT (Text & Button)
           Positioned(
             bottom: 50,
             left: 30,
             right: 30,
             child: Column(
               children: [
-                // Indikator Titik
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -90,12 +86,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // TOMBOL LANJUT
                 SizedBox(
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    // ✅ FIX: Matikan suara/getaran bawaan OS Android/iOS
                     onPressed: () {
                       if (_currentPage == _onboardingData.length - 1) {
                         Navigator.pushReplacement(
@@ -140,7 +134,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildSlideContent(Map<String, String> data) {
     return Stack(
       children: [
-        // Gambar Background Full
         Container(
           width: double.infinity,
           height: double.infinity,
@@ -155,7 +148,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
         ),
-        // Gradient Hitam Bawah ke Atas
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
@@ -165,7 +157,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
         ),
-        // Text Content
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 150),
           child: Column(

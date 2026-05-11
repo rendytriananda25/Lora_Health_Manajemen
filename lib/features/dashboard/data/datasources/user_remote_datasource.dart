@@ -4,11 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lora_1/core/errors/exceptions.dart';
 import 'package:lora_1/features/gamification/badge_service.dart';
 
-/// DataSource untuk data user dari Firebase + SharedPreferences.
-/// HANYA bertugas: ambil data mentah → kembalikan Map/primitif.
 class UserRemoteDataSource {
-  /// Ambil profil user lengkap.
-  /// Throws [ServerException] jika user belum login.
   Future<Map<String, dynamic>> fetchUserProfile() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) throw const ServerException('User belum login');
@@ -18,7 +14,6 @@ class UserRemoteDataSource {
     final goal = prefs.getString('user_fitness_goal') ?? 'KEEP_FIT';
     final savedPhoto = prefs.getString('user_local_photo');
 
-    // Ambil data dari Firebase
     final profileSnap = await FirebaseDatabase.instance
         .ref('users/${user.uid}')
         .get();
@@ -31,7 +26,6 @@ class UserRemoteDataSource {
           ?? resolvedName;
     }
 
-    // Ambil favorite sports
     List<String> favorites = [];
     final sportsSnap = await FirebaseDatabase.instance
         .ref('users/${user.uid}/favorite_sports')
@@ -50,7 +44,6 @@ class UserRemoteDataSource {
     };
   }
 
-  /// Stream perubahan nama user secara realtime.
   Stream<String> watchUserName() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return const Stream.empty();
@@ -68,7 +61,6 @@ class UserRemoteDataSource {
     });
   }
 
-  /// Stream perubahan EXP secara realtime.
   Stream<int> watchUserExp() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return const Stream.empty();
@@ -82,7 +74,6 @@ class UserRemoteDataSource {
     });
   }
 
-  /// Cek daily login dan kembalikan EXP yang didapat.
   Future<int> checkDailyLogin() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return 0;

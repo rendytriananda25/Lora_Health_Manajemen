@@ -57,7 +57,6 @@ class BadgeService {
       totalSessions += 1;
     }
 
-    // 4. Calculate Streak & Bonus Exp
     DateTime now = DateTime.now();
     String todayStr =
         "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
@@ -70,7 +69,6 @@ class BadgeService {
       isDailyBonus = true;
       bonusExp += 100;
 
-      // Check continuation
       bool continued = false;
       if (lastDateStr != null) {
         DateTime last = _parseDate(lastDateStr!);
@@ -89,17 +87,14 @@ class BadgeService {
       }
     }
 
-    // 5. Calculate Session Exp
-    int baseExp = _calculateBaseExp(sessionData); // Helper method
+    int baseExp = _calculateBaseExp(sessionData);
     int totalGained = baseExp + bonusExp;
     int newExp = currentExp + totalGained;
 
-    // 6. Check Rank Up
     RankData oldRank = RankSystem.getRank(currentExp);
     RankData newRankInfo = RankSystem.getRank(newExp);
     bool isRankUp = newRankInfo.id > oldRank.id;
 
-    // 7. Check Badges
     List<String> unlockedIds = [];
     if (badgeSnap.exists) {
       if (badgeSnap.value is List) {
@@ -155,7 +150,6 @@ class BadgeService {
       }
     }
 
-    // 8. Save Everything
     Map<String, dynamic> updates = {
       "gamification/exp": newExp,
       "gamification/streak": currentStreak,
@@ -179,7 +173,6 @@ class BadgeService {
     );
   }
 
-  // Helpers
   static int _calculateBaseExp(Map<String, dynamic> sessionData) {
     if (sessionData['workout_details'] != null &&
         sessionData['workout_details'] is List) {
@@ -199,12 +192,10 @@ class BadgeService {
     }
   }
 
-  // Check Daily Login Bonus (+20 EXP)
   static Future<int> checkDailyLogin(String userId) async {
     final dbRef = FirebaseDatabase.instance.ref("users/$userId/gamification");
 
     try {
-      // 1. Get Gamification Data
       final snapshot = await dbRef.child("last_login_date").get();
 
       DateTime now = DateTime.now();
@@ -216,7 +207,6 @@ class BadgeService {
       debugPrint("🔍 Daily Login Check: Last=$lastLoginStr, Today=$todayStr");
 
       if (lastLoginStr != todayStr) {
-        // New Day OR First Time -> Add Exp
         final expSnap = await dbRef.child("exp").get();
         int currentExp = expSnap.exists
             ? (int.tryParse(expSnap.value.toString()) ?? 0)
@@ -229,12 +219,12 @@ class BadgeService {
 
         await dbRef.update({"exp": newExp, "last_login_date": todayStr});
 
-        return bonusExp; // Return amount to show animation
+        return bonusExp;
       } else {
         debugPrint("✅ Already claimed daily login today.");
       }
 
-      return 0; // Already claimed today
+      return 0;
     } catch (e) {
       debugPrint("❌ Error in checkDailyLogin: $e");
       return 0;
@@ -242,14 +232,11 @@ class BadgeService {
   }
 
   static DateTime _parseDate(String s) {
-    // YYYY-MM-DD
     List<String> p = s.split('-');
     return DateTime(int.parse(p[0]), int.parse(p[1]), int.parse(p[2]));
   }
 
-  // Legacy support getter
   static Future<List<String>> getUnlockedBadges() async {
-    // ... keep existing impl just in case or redirect ...
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
     final snap = await FirebaseDatabase.instance

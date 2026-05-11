@@ -6,7 +6,6 @@ import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/history/presentation/providers/history_provider.dart';
 import 'package:lora_1/features/history/widgets/history_card.dart';
 
-// Import halaman detail
 import 'package:lora_1/screen/riwayat/lari.dart';
 import 'package:lora_1/screen/riwayat/sepeda.dart';
 import 'package:lora_1/screen/riwayat/bmi.dart';
@@ -84,7 +83,6 @@ class HistoryPage extends StatelessWidget {
     );
   }
 
-  // Fungsi Navigasi
   void _navigateToDetail(BuildContext context, Map data) {
     final String activity = (data['activity'] ?? '').toString().toUpperCase();
     final String type = (data['type'] ?? '').toString().toUpperCase();
@@ -109,7 +107,6 @@ class HistoryPage extends StatelessWidget {
     Navigator.push(context, MaterialPageRoute(builder: (context) => page));
   }
 
-  // Widget Header & Delete Background tetap di sini karena sederhana
   Widget _buildDeleteBackground() {
     return Container(
       alignment: Alignment.centerRight,
@@ -131,7 +128,7 @@ class HistoryPage extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(20, 50, 20, 15),
         decoration: BoxDecoration(
-          color: theme.bgColor.withOpacity(0.95), // Adaptive Background
+          color: theme.bgColor.withOpacity(0.95),
           border: Border(
             bottom: BorderSide(color: theme.textColor.withOpacity(0.05)),
           ),

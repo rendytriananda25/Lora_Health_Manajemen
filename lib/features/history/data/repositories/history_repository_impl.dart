@@ -25,7 +25,6 @@ class HistoryRepositoryImpl implements HistoryRepository {
         historyList.add(item);
       });
 
-      // Urutkan berdasarkan waktu (terbaru di atas)
       historyList.sort(
         (a, b) => (b['time'] ?? "").compareTo(a['time'] ?? ""),
       );

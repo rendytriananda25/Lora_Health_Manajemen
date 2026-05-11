@@ -18,14 +18,12 @@ class HistoryCard extends StatelessWidget {
     final String timeStr = data['time'] ?? '';
     final String type = (data['type'] ?? '').toString().toUpperCase();
 
-    // Format Tanggal
     String formattedDate = "N/A";
     if (timeStr.isNotEmpty) {
       DateTime dt = DateTime.parse(timeStr);
       formattedDate = DateFormat('dd MMM yyyy, HH:mm').format(dt);
     }
 
-    // Tentukan Icon
     IconData activityIcon = Icons.fitness_center;
     if (type == 'TRACKING' ||
         activity.contains('LARI') ||
@@ -50,7 +48,6 @@ class HistoryCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Sisi Kiri: Icon & Info Utama
             Expanded(
               flex: 4,
               child: Row(
@@ -82,7 +79,6 @@ class HistoryCard extends StatelessWidget {
                 ],
               ),
             ),
-            // Sisi Kanan: Statistik (Panggil Widget Kecil di bawah)
             Expanded(
               flex: 5,
               child: (type == 'BMI' || activity.contains('BMI'))
@@ -102,7 +98,6 @@ class HistoryCard extends StatelessWidget {
     );
   }
 
-  // Widget Statistik Tracking (Dgn Perbaikan Overflow)
   Widget _buildTrackingStats(Map data, ThemeProvider theme) {
     String distance = "0";
     if (data['distance_km'] != null) {
@@ -123,7 +118,6 @@ class HistoryCard extends StatelessWidget {
     );
   }
 
-  // ✅ Cek apakah olahraga ini berbasis jarak tempuh
   bool _isDistanceSport(String activity) {
     return activity.contains('LARI') ||
            activity.contains('SEPEDA') ||
@@ -133,7 +127,6 @@ class HistoryCard extends StatelessWidget {
            activity.contains('WALK');
   }
 
-  // ✅ Widget statistik untuk olahraga non-jarak (Home Workout, Basket, Bola)
   Widget _buildWorkoutStats(Map data, ThemeProvider theme) {
     int durationSec = (data['duration_sec'] as num? ?? 0).toInt();
     int durationMin = (durationSec / 60).ceil();

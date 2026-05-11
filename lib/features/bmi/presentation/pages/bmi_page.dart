@@ -4,7 +4,6 @@ import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/bmi/presentation/providers/bmi_provider.dart';
 
-// Clean Code: Import Widgets Terpisah
 import '../../widgets/glass_card.dart';
 import '../../widgets/human_painter.dart';
 import '../../widgets/gauge_painter.dart';
@@ -14,11 +13,9 @@ class BMIPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Agar halaman ikut rebuild saat bahasa berubah
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
     
-    // Gunakan Consumer untuk listen perubahan BMI State
     return Consumer<BmiProvider>(
       builder: (context, bmiProvider, child) {
         return Scaffold(
@@ -74,7 +71,6 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  // --- HALAMAN 1: TINGGI BADAN ---
   Widget _buildHeightPage(
       BuildContext context, LanguageProvider lang, ThemeProvider theme, BmiProvider bmiProvider) {
     double normalizedHeight = (bmiProvider.height - 100) / 150;
@@ -186,7 +182,6 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  // --- HALAMAN 2: BERAT BADAN ---
   Widget _buildWeightPage(
       BuildContext context, LanguageProvider lang, ThemeProvider theme, BmiProvider bmiProvider) {
     return Column(
@@ -253,7 +248,6 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  // --- HALAMAN 3: RESULT ---
   Widget _buildResultPage(
       BuildContext context, LanguageProvider lang, ThemeProvider theme, BmiProvider bmiProvider) {
     return Column(

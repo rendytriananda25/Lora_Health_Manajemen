@@ -1,9 +1,8 @@
-// lib/features/notification/workout_time_engine.dart
 
 class WorkoutTimeSlot {
   final String timeRange;
   final String intensity;
-  final int rating; // 1..5
+  final int rating;
   final String reason;
   final String benefit;
 
@@ -57,7 +56,7 @@ class WorkoutTimeEngine {
     required String sport,
     required bool isIndoor,
     required double temperature,
-    required String goal, // "FAT_LOSS", "PERFORMANCE", "CASUAL"
+    required String goal,
   }) {
     final normalizedSport = sport.toUpperCase().trim();
     final normalizedGoal = goal.toUpperCase().trim();
@@ -147,7 +146,6 @@ class WorkoutTimeEngine {
       );
     }
 
-    // Contoh adaptasi kecil berdasar jenis olahraga.
     final morningRatingBoostSports = {"LARI", "SEPEDA"};
     final rating = morningRatingBoostSports.contains(sport) ? 5 : 4;
 
@@ -178,7 +176,6 @@ class WorkoutTimeEngine {
       benefit = "Cocok untuk sesi olahraga rutin setelah aktivitas harian.";
     }
 
-    // Jika outdoor dan panas ekstrem, turunkan sedikit rekomendasi sore.
     if (!isIndoor && temperature >= 33) {
       rating = 4;
       intensity = "SEDANG";
@@ -220,7 +217,6 @@ class WorkoutTimeEngine {
     );
   }
 
-  // Utility opsional untuk ranking slot terbaik.
   static WorkoutTimeSlot? bestSlot(WorkoutTimeRecommendation recommendation) {
     if (recommendation.recommendedSlots.isEmpty) return null;
     final sorted = [...recommendation.recommendedSlots]
@@ -228,7 +224,6 @@ class WorkoutTimeEngine {
     return sorted.first;
   }
 
-  // Utility opsional: target sederhana berdasarkan sport + level + cuaca.
   static String suggestedTarget({
     required String sport,
     required String level,

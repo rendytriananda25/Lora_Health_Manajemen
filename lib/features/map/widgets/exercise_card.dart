@@ -24,28 +24,23 @@ class ExerciseCard extends StatefulWidget {
 }
 
 class _ExerciseCardState extends State<ExerciseCard> {
-  // Timer State
   Timer? _timer;
   int _secondsLeft = 0;
   bool _isTimerRunning = false;
 
-  // Reps State
   int _repsCount = 0;
   int _targetReps = 0;
 
   bool _isCompleted = false;
 
-  // Video Player
   YoutubePlayerController? _videoController;
 
-  // Init Timer (Video Delay)
   Timer? _videoInitTimer;
 
   @override
   void initState() {
     super.initState();
     _parseTarget();
-    // ✅ OPTIMISASI: Video TIDAK auto-play. Hanya tampilkan thumbnail.
   }
 
   @override
@@ -53,7 +48,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (!widget.isActive) {
-        // ✅ Card tidak aktif → langsung dispose video (hemat memory)
         _disposeVideoPlayer();
       }
     }
@@ -62,8 +56,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
   void _parseTarget() {
     String t = widget.data['target'].toString().toLowerCase();
 
-    // Parse Waktu — ✅ FIX: Ambil angka TERAKHIR sebelum satuan (bukan pertama!)
-    // Contoh: "3x20 Detik" → harus ambil 20, bukan 3
     if (t.contains("menit") || t.contains("min")) {
       final match = RegExp(r'(\d+)\s*(?:menit|min)').firstMatch(t);
       if (match != null) {
@@ -76,7 +68,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
       }
     }
 
-    // Parse Reps
     if (t.contains("reps") || t.contains("x")) {
       final match = RegExp(r'(\d+)').firstMatch(t);
       if (match != null) {
@@ -86,7 +77,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     }
   }
 
-  // ✅ Helper getters
   bool get _hasVideoUrl =>
       widget.data['video_url'] != null &&
       widget.data['video_url'].toString().isNotEmpty;
@@ -97,7 +87,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
   }
 
-  /// ✅ OPTIMISASI: Video hanya di-load saat user tekan tombol Play.
   void _loadVideoOnDemand() {
     if (_videoController != null) return;
 
@@ -114,11 +103,11 @@ class _ExerciseCardState extends State<ExerciseCard> {
           initialVideoId: videoId,
           flags: YoutubePlayerFlags(
             autoPlay: true,
-            mute: true,        // ✅ Mute by default (hemat audio processing)
+            mute: true,
             startAt: startSeconds,
             disableDragSeek: true,
-            loop: false,       // ✅ Tidak loop (hemat CPU)
-            forceHD: false,    // ✅ Kualitas rendah (hemat bandwidth)
+            loop: false,
+            forceHD: false,
             hideControls: false,
           ),
         );
@@ -144,7 +133,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     super.dispose();
   }
 
-  // --- LOGIKA TIMER ---
   void _toggleTimer() {
     if (_isTimerRunning) {
       _timer?.cancel();
@@ -173,12 +161,10 @@ class _ExerciseCardState extends State<ExerciseCard> {
       _isCompleted = true;
     });
 
-    // Panggil callback parent
     String result = isTimer
         ? "Done ($_secondsLeft s left)"
         : "${widget.data['target']} selesai";
 
-    // ✅ FIX: Kasih delay 1.5 detik agar user sempat lihat "Centang Hijau" sebelum pindah/tutup
     if (isTimer) {
       Future.delayed(const Duration(milliseconds: 1500), () {
         if (mounted) {
@@ -193,28 +179,16 @@ class _ExerciseCardState extends State<ExerciseCard> {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context); // Get user theme
+    final theme = Provider.of<ThemeProvider>(context);
 
-    // Integrated Theme Colors
-    // DARK MODE: Color(0xFF1C1C1E) (Dark Grey)
-    // LIGHT MODE: Colors.white (Clean White)
     final cardColor = theme.isDarkMode ? const Color(0xFF1C1C1E) : Colors.white;
 
-    // DARK MODE: Text White
-    // LIGHT MODE: Text Black
     final textColor = theme.isDarkMode ? Colors.white : Colors.black;
     final subTextColor = theme.isDarkMode ? Colors.white54 : Colors.black54;
 
-    // Button Logic
-    // DARK MODE: Button White, Text Black (as per Modern Dark design)
-    // LIGHT MODE: Button Black, Text White (Classy contrast)
     final buttonColor = theme.isDarkMode ? Colors.white : Colors.black;
     final buttonTextColor = theme.isDarkMode ? Colors.black : Colors.white;
 
-    // Icon Arrow
-    // Dark Mode: White button -> Black Circle -> White Arrow inside?
-    // Wait, preivous was DarkCircle on White Button.
-    // Light Mode: Black button -> White Circle?
     final iconCircleColor = theme.isDarkMode
         ? const Color(0xFF141416)
         : Colors.white;
@@ -224,11 +198,11 @@ class _ExerciseCardState extends State<ExerciseCard> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // 🔥 Responsive sizing berdasarkan screen height device (bukan card)
+
         final screenH = MediaQuery.of(context).size.height;
         final bottomInset = MediaQuery.of(context).padding.bottom;
-        final isCompact = screenH < 700; // Device kecil (< 700dp)
-        final isVeryCompact = screenH < 600; // Device sangat kecil
+        final isCompact = screenH < 700;
+        final isVeryCompact = screenH < 600;
 
         final titleSize = isVeryCompact ? 17.0 : isCompact ? 20.0 : 26.0;
         final subtitleSize = isVeryCompact ? 11.0 : isCompact ? 13.0 : 16.0;
@@ -260,14 +234,12 @@ class _ExerciseCardState extends State<ExerciseCard> {
             borderRadius: BorderRadius.circular(30),
             child: Column(
               children: [
-                // 1. VIDEO AREA — ✅ OPTIMISASI: Thumbnail first, load on tap
                 if (_hasVideoUrl)
                   Expanded(
                     flex: isCompact ? 2 : 3,
                     child: Container(
                       color: Colors.black,
                       child: _videoController != null
-                          // ✅ Video sudah dimuat — tampilkan player
                           ? Stack(
                               alignment: Alignment.center,
                               children: [
@@ -293,13 +265,11 @@ class _ExerciseCardState extends State<ExerciseCard> {
                                   ),
                               ],
                             )
-                          // ✅ Video belum dimuat — tampilkan thumbnail + play button (RINGAN)
                           : GestureDetector(
                               onTap: () => _loadVideoOnDemand(),
                               child: Stack(
                                 alignment: Alignment.center,
                                 children: [
-                                  // Thumbnail dari YouTube
                                   Image.network(
                                     _thumbnailUrl,
                                     fit: BoxFit.cover,
@@ -312,9 +282,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
                                       ),
                                     ),
                                   ),
-                                  // Dark overlay
                                   Container(color: Colors.black38),
-                                  // Play button
                                   Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
@@ -323,7 +291,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
                                     ),
                                     child: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
                                   ),
-                                  // Label
                                   const Positioned(
                                     bottom: 10,
                                     child: Text(
@@ -337,7 +304,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
                     ),
                   ),
 
-                // 2. INFO AREA — Layout tanpa Stack untuk hindari overflow
                 Expanded(
                   flex: isCompact ? 5 : 5,
                   child: LayoutBuilder(
@@ -357,7 +323,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Title Area
                                     Row(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
@@ -391,7 +356,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
 
                                     SizedBox(height: isCompact ? 3 : 5),
 
-                                    // Subtitle hanya tampil untuk timer/info, bukan reps
                                     if (type != 'reps')
                                       Text(
                                         widget.data['target'] ?? "Target",
@@ -402,7 +366,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
 
                                 const SizedBox(height: 10),
 
-                                // Center Control (Timer or Reps)
                                 Center(
                                   child: type == 'time'
                                       ? _buildTimerDisplay(
@@ -422,7 +385,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
 
                                 const SizedBox(height: 10),
 
-                                // Bottom Button (Swipe to Action)
                                 if (!_isCompleted)
                                   SwipeButton(
                                     text: type == 'time'
@@ -444,7 +406,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
                                     },
                                   )
                                 else
-                                  const SizedBox(height: 60), // Placeholder agar layout tetap rapi jika tombol hilang
+                                  const SizedBox(height: 60),
                               ],
                             ),
                           ),
@@ -461,7 +423,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     );
   }
 
-  // Helper widget for Icon
   Widget errorAwareIcon(IconData icon, Color color) {
     return Icon(icon, color: color, size: 20);
   }
@@ -485,7 +446,6 @@ class _ExerciseCardState extends State<ExerciseCard> {
     );
   }
 
-  // Tampilan statis target repetisi (tidak bisa diubah user)
   Widget _buildRepsDisplay(
     Color textColor,
     Color subColor,
@@ -507,9 +467,7 @@ class _ExerciseCardState extends State<ExerciseCard> {
   }
 }
 
-// ----------------------------------------------------
-// 🔥 CUSTOM SWIPE BUTTON (SLIDER) — PREMIUM ANIMATED 🔥
-// ----------------------------------------------------
+
 class SwipeButton extends StatefulWidget {
   final String text;
   final VoidCallback onAction;
@@ -542,12 +500,9 @@ class _SwipeButtonState extends State<SwipeButton>
   final double _padding = 6.0;
   final double _knobSize = 48.0;
 
-  // ✅ OPTIMISASI: Hanya 2 controller (dulu 4)
-  // Spring-back animation
   late AnimationController _springController;
   late Animation<double> _springAnimation;
 
-  // Success scale bounce
   late AnimationController _successController;
   late Animation<double> _successScale;
 
@@ -555,7 +510,6 @@ class _SwipeButtonState extends State<SwipeButton>
   void initState() {
     super.initState();
 
-    // Spring-back (hanya saat user lepas drag sebelum threshold)
     _springController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 400),
@@ -567,7 +521,6 @@ class _SwipeButtonState extends State<SwipeButton>
       if (mounted) setState(() => _dragValue = _springAnimation.value);
     });
 
-    // Success bounce (hanya saat swipe berhasil)
     _successController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -628,7 +581,6 @@ class _SwipeButtonState extends State<SwipeButton>
             ),
             child: Stack(
               children: [
-                // 1. Background + Progress Trail
                 Container(
                   decoration: BoxDecoration(
                     color: widget.backgroundColor,
@@ -636,7 +588,6 @@ class _SwipeButtonState extends State<SwipeButton>
                   ),
                 ),
 
-                // 1b. Progress fill trail
                 AnimatedContainer(
                   duration: _isDragging
                       ? Duration.zero
@@ -656,7 +607,6 @@ class _SwipeButtonState extends State<SwipeButton>
                   ),
                 ),
 
-                // 2. Text + shimmer arrows
                 Positioned.fill(
                   child: Center(
                     child: Padding(
@@ -668,7 +618,6 @@ class _SwipeButtonState extends State<SwipeButton>
                         mainAxisAlignment: MainAxisAlignment.center,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          // Animated text opacity (fades as you drag)
                           Flexible(
                             child: Opacity(
                               opacity: (1.0 - _dragValue * 1.5).clamp(0.0, 1.0),
@@ -685,7 +634,6 @@ class _SwipeButtonState extends State<SwipeButton>
                               ),
                             ),
                           ),
-                          // ✅ OPTIMISASI: Static chevrons (dulu AnimationController.repeat)
                           if (!_isDragging && _dragValue == 0.0)
                             Row(
                               mainAxisSize: MainAxisSize.min,
@@ -704,7 +652,6 @@ class _SwipeButtonState extends State<SwipeButton>
                   ),
                 ),
 
-                // 3. Sliding Knob with glow
                 Positioned(
                   left: knobLeft,
                   top: _padding,
@@ -722,7 +669,6 @@ class _SwipeButtonState extends State<SwipeButton>
                     },
                     onHorizontalDragEnd: (_) {
                       if (_dragValue > 0.6) {
-                        // Snap to end then trigger
                         setState(() {
                           _dragValue = 1.0;
                           _isDragging = false;
@@ -734,7 +680,6 @@ class _SwipeButtonState extends State<SwipeButton>
                       }
                     },
                     onTap: () => widget.onAction(),
-                    // ✅ OPTIMISASI: Knob statis (dulu pakai AnimatedBuilder+repeat)
                     child: Transform.scale(
                       scale: _isDragging ? 1.08 : 1.0,
                       child: Container(

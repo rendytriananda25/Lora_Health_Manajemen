@@ -1,10 +1,4 @@
-/// ═══════════════════════════════════════════════════════════════
-/// Exceptions — Digunakan HANYA di Data Layer (DataSource).
-/// DataSource boleh throw Exception.
-/// Repository akan menangkap Exception dan mengubahnya jadi Failure.
-/// ═══════════════════════════════════════════════════════════════
 
-/// Exception saat server mengembalikan response error.
 class ServerException implements Exception {
   final String message;
   const ServerException([this.message = 'Server error']);
@@ -12,7 +6,6 @@ class ServerException implements Exception {
   String toString() => 'ServerException: $message';
 }
 
-/// Exception saat data lokal tidak ditemukan.
 class CacheException implements Exception {
   final String message;
   const CacheException([this.message = 'Cache not found']);
@@ -20,7 +13,6 @@ class CacheException implements Exception {
   String toString() => 'CacheException: $message';
 }
 
-/// Exception saat lokasi tidak bisa diambil.
 class LocationException implements Exception {
   final String message;
   const LocationException([this.message = 'Location unavailable']);

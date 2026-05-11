@@ -15,12 +15,10 @@ class SetupPage extends StatefulWidget {
 }
 
 class _SetupPageState extends State<SetupPage> {
-  // --- STATE ---
   final PageController _pageController = PageController();
   int _currentStep = 0;
   bool _isSaving = false;
 
-  // Data
   final Set<int> _selectedIndices = {};
   String _level = "NEVER";
   String _goal = "KEEP_FIT";
@@ -71,35 +69,25 @@ class _SetupPageState extends State<SetupPage> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
 
-    // List of title/steps here for dynamic rendering
-    // But since logic is separated in build methods, we just pass theme down.
 
     return Scaffold(
-      backgroundColor: theme.bgColor, // Adaptive Background
+      backgroundColor: theme.bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // PROGRESS BAR
             _buildProgressBar(theme),
 
-            // CONTENT
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (idx) => setState(() => _currentStep = idx),
                 children: [
-                  // STEP 0: OLAHRAGA
                   _buildSportSelectionStep(theme),
-                  // STEP 1: LEVEL
                   _buildLevelStep(theme),
-                  // STEP 2: GOAL
                   _buildGoalStep(theme),
-                  // STEP 3: BODY DATA
                   _buildBodyDataStep(theme),
-                  // STEP 4: FREQUENCY
                   _buildFrequencyStep(theme),
-                  // STEP 5: TARGET WEIGHT
                   _buildTargetWeightStep(theme),
                 ],
               ),
@@ -134,7 +122,6 @@ class _SetupPageState extends State<SetupPage> {
     );
   }
 
-  // --- STEP BUILDERS ---
 
   Widget _buildStepContainer({
     required String step,
@@ -161,7 +148,7 @@ class _SetupPageState extends State<SetupPage> {
           Text(
             title,
             style: TextStyle(
-              color: theme.textColor, // Adaptive Title
+              color: theme.textColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -198,7 +185,7 @@ class _SetupPageState extends State<SetupPage> {
                   : Text(
                       isLast ? "MULAI SEKARANG ->" : "LANJUT",
                       style: const TextStyle(
-                        color: Colors.white, // Button text always white
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -212,7 +199,6 @@ class _SetupPageState extends State<SetupPage> {
   Widget _buildSportSelectionStep(ThemeProvider theme) {
     return Column(
       children: [
-        // Title handled inside View
         Expanded(
           child: SportSelectionView(
             selectedIndices: _selectedIndices,

@@ -13,17 +13,6 @@ import 'package:lora_1/features/dashboard/data/food_translator.dart';
 import 'package:lora_1/features/settings/presentation/pages/setting_page.dart';
 import 'package:lora_1/features/statistics/presentation/pages/statistics_page.dart';
 
-/// ═══════════════════════════════════════════════════════════════
-/// DashboardPage (Clean Architecture)
-///
-/// Widget ini HANYA menampilkan UI. Semua logika bisnis ada di:
-///   - DashboardProvider (state management)
-///   - UseCases (logika saran, AQI, daily plan)
-///   - DataSources (API call, Firebase)
-///
-/// SEBELUM: ~1100 baris (logika + UI campur)
-/// SESUDAH: ~400 baris (UI murni)
-/// ═══════════════════════════════════════════════════════════════
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
 
@@ -37,7 +26,6 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    // ✅ Tunda init sampai frame pertama selesai (hindari notifyListeners saat build)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<DashboardProvider>(context, listen: false);
       provider.init().then((_) {
@@ -54,12 +42,11 @@ class _DashboardPageState extends State<DashboardPage> {
     final langService = Provider.of<LanguageProvider>(context);
     if (_lastLangCode != langService.currentLanguage) {
       if (_lastLangCode.isNotEmpty) {
-        // Re-fetch cuaca saat bahasa berubah
         final provider = Provider.of<DashboardProvider>(context, listen: false);
         final langCode = langService.currentLanguage;
         Future.microtask(() {
           provider.loadWeather(langCode: langCode);
-          provider.clearDailyPlan(); // Force regenerate meal plan with new language
+          provider.clearDailyPlan();
         });
       }
       _lastLangCode = langService.currentLanguage;
@@ -75,7 +62,6 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
-  // 🔥 FLYING EXP ANIMATION (tetap di Widget karena butuh Overlay)
   void _showFlyingExp(int amount) {
     Offset targetPos = Offset(
       MediaQuery.of(context).size.width - 50,
@@ -108,25 +94,20 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   Widget build(BuildContext context) {
     AppSize.init(context);
-    // ✅ Widget hanya MEMBACA data dari Provider
     final dashboard = Provider.of<DashboardProvider>(context);
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
 
-    // ✅ Logika detail AQI/UV sekarang ada di UseCase, bukan di sini
     var aqiInfo = dashboard.getAQIDetail(lang.translate);
     var uvInfo = dashboard.getUVDetail(lang.translate);
 
-    // ✅ Rekomendasi diambil dari UseCase
     final recommendations = dashboard.getRecommendations(translate: lang.translate);
 
-    // ✅ Food list diambil via Provider
     final foodList = dashboard.getFoodList(
       translateName: (name) => FoodTranslator.translateName(name, lang),
       translateGoalReason: (reason) => FoodTranslator.translateGoalReason(reason, lang),
     );
 
-    // ✅ Trigger generate daily plan jika belum ada
     if (dashboard.dailyPlan.isEmpty && foodList.isNotEmpty) {
       Future.microtask(() {
         dashboard.generateDailyPlanFromFoods(foodList);
@@ -137,7 +118,6 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor: theme.bgColor,
       body: Stack(
         children: [
-          // KONTEN UTAMA
           Positioned.fill(
             child: ScrollConfiguration(
               behavior: const ScrollBehavior().copyWith(overscroll: false),
@@ -203,7 +183,6 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
 
-          // HEADER
           Positioned(
             top: 0, left: 0, right: 0,
             child: DashboardHeader(
@@ -226,7 +205,6 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  // ─── UI WIDGET METHODS (tetap di sini, murni UI) ───────────
 
   Widget _buildWeatherCard(
     DashboardProvider dashboard,
@@ -484,9 +462,6 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════
-// DAILY LOGIN OVERLAY (tetap terpisah karena butuh AnimationController)
-// ═══════════════════════════════════════════════════════════════
 class _DailyLoginOverlay extends StatefulWidget {
   final Offset endPos;
   final int amount;

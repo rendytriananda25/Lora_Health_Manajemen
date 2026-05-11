@@ -9,11 +9,6 @@ import 'package:lora_1/features/dashboard/data/datasources/weather_remote_dataso
 import 'package:lora_1/features/dashboard/data/datasources/user_remote_datasource.dart';
 import 'package:lora_1/features/dashboard/data/nutrition_data.dart';
 
-/// Implementasi DashboardRepository.
-/// Tugasnya:
-///   1. Panggil DataSource untuk ambil data mentah
-///   2. Tangkap exception → ubah jadi Failure
-///   3. Konversi data mentah → Entity
 class DashboardRepositoryImpl implements DashboardRepository {
   final WeatherRemoteDataSource weatherDataSource;
   final UserRemoteDataSource userDataSource;
@@ -58,7 +53,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         fitnessLevel: raw['fitnessLevel'] ?? 'NEVER',
         fitnessGoal: raw['fitnessGoal'] ?? 'KEEP_FIT',
         favoriteSports: List<String>.from(raw['favoriteSports'] ?? []),
-        exp: 0, // EXP dihandle oleh stream terpisah
+        exp: 0,
       );
 
       return Result.right(entity);
@@ -73,12 +68,10 @@ class DashboardRepositoryImpl implements DashboardRepository {
   @override
   Future<Result<Map<String, dynamic>>> getNutritionData() async {
     try {
-      // Online-first, fallback ke lokal
       var data = await NutritionData.fetchFromFirebase();
       data ??= NutritionData.foodRecommendations;
       return Result.right(data);
     } catch (e) {
-      // Fallback ke data lokal jika error
       return Result.right(NutritionData.foodRecommendations);
     }
   }
