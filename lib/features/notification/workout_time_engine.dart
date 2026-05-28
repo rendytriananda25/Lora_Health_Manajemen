@@ -1,4 +1,3 @@
-
 class WorkoutTimeSlot {
   final String timeRange;
   final String intensity;
@@ -234,58 +233,35 @@ class WorkoutTimeEngine {
     final l = level.toUpperCase();
 
     if (s == "LARI") {
-      final base = {
-        "NEVER": 2.0,
-        "SOMETIMES": 4.0,
-        "OFTEN": 7.0,
-        "DAILY": 10.0,
-      }[l] ??
+      final base =
+          {"NEVER": 2.0, "SOMETIMES": 4.0, "OFTEN": 7.0, "DAILY": 10.0}[l] ??
           4.0;
       final adjusted = _weatherAdjustment(base, temperature, weather);
       return "${adjusted.toStringAsFixed(1)} KM";
     }
 
     if (s == "SEPEDA") {
-      final base = {
-        "NEVER": 5.0,
-        "SOMETIMES": 12.0,
-        "OFTEN": 25.0,
-        "DAILY": 40.0,
-      }[l] ??
+      final base =
+          {"NEVER": 5.0, "SOMETIMES": 12.0, "OFTEN": 25.0, "DAILY": 40.0}[l] ??
           12.0;
       final adjusted = _weatherAdjustment(base, temperature, weather);
       return "${adjusted.toStringAsFixed(1)} KM";
     }
 
     if (s == "BASKET" || s == "BASKETBALL") {
-      final minutes = {
-        "NEVER": 20,
-        "SOMETIMES": 35,
-        "OFTEN": 60,
-        "DAILY": 90,
-      }[l] ??
-          35;
+      final minutes =
+          {"NEVER": 20, "SOMETIMES": 35, "OFTEN": 60, "DAILY": 90}[l] ?? 35;
       return "$minutes Menit";
     }
 
     if (s == "BOLA" || s == "FOOTBALL" || s == "SEPAK BOLA") {
-      final minutes = {
-        "NEVER": 30,
-        "SOMETIMES": 50,
-        "OFTEN": 75,
-        "DAILY": 100,
-      }[l] ??
-          50;
+      final minutes =
+          {"NEVER": 30, "SOMETIMES": 50, "OFTEN": 75, "DAILY": 100}[l] ?? 50;
       return "$minutes Menit";
     }
 
-    final fallback = {
-      "NEVER": 15,
-      "SOMETIMES": 25,
-      "OFTEN": 35,
-      "DAILY": 45,
-    }[l] ??
-        25;
+    final fallback =
+        {"NEVER": 15, "SOMETIMES": 25, "OFTEN": 35, "DAILY": 45}[l] ?? 25;
     return "$fallback Menit";
   }
 }

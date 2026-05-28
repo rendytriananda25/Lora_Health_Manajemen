@@ -281,6 +281,13 @@
     "databaseUpdated": "Nutrition & Workout Database Updated Successfully!",
     "confirmLogoutBody": "Are you sure you want to log out?"
   },
+  "sportManagement": {
+    "title": "Manage Sports",
+    "subtitle": "Add or remove sports you participate in. Changes will be saved to your account immediately.",
+    "saveChanges": "SAVE CHANGES",
+    "saved": "✅ Sport preferences updated successfully!",
+    "minOneRequired": "Select at least one sport!"
+  },
   "personalInfo": {
     "title": "Personal Information",
     "height": "Height",

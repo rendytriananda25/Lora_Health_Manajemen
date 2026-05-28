@@ -11,6 +11,8 @@ abstract class DashboardRepository {
 
   Future<Result<int>> checkDailyLogin();
 
+  Future<Result<Map<String, dynamic>?>> getLatestBmiFromHistory();
+
   Stream<int> watchUserExp();
 
   Stream<String> watchUserName();

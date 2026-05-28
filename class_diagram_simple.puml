@@ -1,0 +1,245 @@
+@startuml LORA_1_App
+
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam classArrowColor #000000
+skinparam backgroundColor #FFFFFF
+skinparam arrowThickness 2
+
+' ============== PRESENTATION LAYER ==============
+package "📱 PRESENTATION LAYER" {
+    class WorkoutPage
+    class DashboardPage
+    class BmiPage
+    class SettingsPage
+    class HistoryPage
+    class StatisticsPage
+}
+
+' ============== STATE MANAGEMENT (PROVIDERS) ==============
+package "⚙️ STATE MANAGEMENT" {
+    class WorkoutProvider {
+        -repository: WorkoutRepository
+        --
+        +loadWorkoutData()
+        +saveWorkout()
+    }
+
+    class DashboardProvider {
+        -repository: DashboardRepository
+        --
+        +loadDashboard()
+        +watchUserExp()
+    }
+
+    class BmiProvider {
+        -calculateBmi: CalculateBmi
+        -saveBmi: SaveBmiHistory
+        --
+        +calculateAndSave()
+    }
+
+    class SettingsProvider {
+        -useCase: GetUserProfile
+        --
+        +loadProfile()
+        +updateName()
+    }
+
+    class StatsProvider {
+        -repository: StatsRepository
+        --
+        +loadStatistics()
+    }
+}
+
+' ============== USE CASES ==============
+package "🎯 USE CASES" {
+    class CalculateBmi
+    class SaveBmiHistory
+    class GetUserProfile
+    class UpdateUserName
+    class GetWeatherData
+    class ProcessStatistics
+    class DeleteHistoryItem
+}
+
+' ============== REPOSITORIES (ABSTRACT) ==============
+package "📚 REPOSITORIES" {
+    interface WorkoutRepository {
+        +getUserSports()
+        +saveWorkoutSession()
+        +getWeather()
+    }
+
+    interface SettingsRepository {
+        +getUserProfile()
+        +updateUserName()
+        +logout()
+    }
+
+    interface DashboardRepository {
+        +getWeatherData()
+        +getUserProfile()
+        +getNutritionData()
+        +watchUserExp()
+    }
+
+    interface StatsRepository {
+        +getStatistics()
+    }
+
+    interface HistoryRepository {
+        +getHistoryStream()
+        +deleteHistoryItem()
+    }
+}
+
+' ============== REPOSITORY IMPLEMENTATIONS ==============
+package "📦 REPOSITORY IMPL" {
+    class WorkoutRepositoryImpl implements WorkoutRepository {
+        -remoteDataSource: WorkoutRemoteDataSource
+    }
+
+    class SettingsRepositoryImpl implements SettingsRepository {
+        -localDataSource: SettingsLocalDataSource
+        -remoteDataSource: SettingsRemoteDataSource
+    }
+
+    class DashboardRepositoryImpl implements DashboardRepository {
+        -userDataSource: UserRemoteDataSource
+        -weatherDataSource: WeatherRemoteDataSource
+    }
+
+    class StatsRepositoryImpl implements StatsRepository {
+        -remoteDataSource: StatsRemoteDataSource
+    }
+
+    class HistoryRepositoryImpl implements HistoryRepository {
+        -remoteDataSource: HistoryRemoteDataSource
+    }
+}
+
+' ============== DATA SOURCES ==============
+package "🔌 DATA SOURCES" {
+    interface WorkoutRemoteDataSource
+    interface SettingsLocalDataSource
+    interface SettingsRemoteDataSource
+    interface WeatherRemoteDataSource
+    interface UserRemoteDataSource
+    interface HistoryRemoteDataSource
+    interface StatsRemoteDataSource
+}
+
+' ============== ENTITIES ==============
+package "📊 ENTITIES" {
+    class UserProfileEntity {
+        -uid: String
+        -fullName: String
+        -email: String
+        -height: String
+        -weight: String
+    }
+
+    class WorkoutSessionEntity {
+        -activity: String
+        -durationSec: int
+        -distanceKm: double
+        -calories: int
+        -time: DateTime
+    }
+
+    class BmiResultEntity {
+        -score: double
+        -status: String
+        -colorHex: int
+    }
+
+    class WeatherEntity {
+        -city: String
+        -temperature: String
+        -condition: String
+        -aqi: int
+    }
+
+    class StatsSummaryEntity {
+        -totalSessions: int
+        -totalCalories: int
+        -totalDistance: double
+    }
+}
+
+' ============== SERVICES ==============
+package "🛠️ SERVICES" {
+    class BadgeService {
+        +{static}processSession()
+        +{static}checkDailyLogin()
+    }
+
+    class RankSystem {
+        +{static}getRank()
+        +{static}getProgressValue()
+    }
+
+    class NotificationService {
+        +init()
+        +showInstant()
+        +scheduleDaily()
+    }
+
+    class LocationService {
+        +getLocation()
+        +startTracking()
+    }
+}
+
+' ============== RELATIONSHIPS ==============
+
+' Pages to Providers
+WorkoutPage --> WorkoutProvider
+DashboardPage --> DashboardProvider
+BmiPage --> BmiProvider
+SettingsPage --> SettingsProvider
+HistoryPage --> SettingsProvider
+StatisticsPage --> StatsProvider
+
+' Providers to UseCase/Repository
+WorkoutProvider --> WorkoutRepository
+DashboardProvider --> DashboardRepository
+BmiProvider --> CalculateBmi
+BmiProvider --> SaveBmiHistory
+SettingsProvider --> GetUserProfile
+StatsProvider --> StatsRepository
+
+' UseCase to Repository
+CalculateBmi --> WorkoutRepository
+SaveBmiHistory --> WorkoutRepository
+GetUserProfile --> SettingsRepository
+UpdateUserName --> SettingsRepository
+GetWeatherData --> DashboardRepository
+ProcessStatistics --> StatsRepository
+DeleteHistoryItem --> HistoryRepository
+
+' Repository Implementations
+WorkoutRepositoryImpl --> WorkoutRemoteDataSource
+SettingsRepositoryImpl --> SettingsLocalDataSource
+SettingsRepositoryImpl --> SettingsRemoteDataSource
+DashboardRepositoryImpl --> UserRemoteDataSource
+DashboardRepositoryImpl --> WeatherRemoteDataSource
+StatsRepositoryImpl --> StatsRemoteDataSource
+HistoryRepositoryImpl --> HistoryRemoteDataSource
+
+' Services
+BadgeService --> RankSystem
+NotificationService --> LocationService
+WorkoutProvider --> NotificationService
+WorkoutProvider --> LocationService
+
+' Entities
+WorkoutRepositoryImpl ..> WorkoutSessionEntity : returns
+SettingsRepositoryImpl ..> UserProfileEntity : returns
+DashboardRepositoryImpl ..> WeatherEntity : returns
+StatsRepositoryImpl ..> StatsSummaryEntity : returns
+CalculateBmi ..> BmiResultEntity : returns
+
+@enduml

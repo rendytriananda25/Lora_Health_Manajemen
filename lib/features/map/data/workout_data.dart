@@ -7,6 +7,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutData {
 
+  /// Public access for JSON export tools
+  static Map<String, dynamic> get defaultWorkoutLibrary => _defaultWorkoutLibrary;
+  static Map<String, dynamic> get progressionData => _progressionData;
+
   static Map<String, dynamic>? _onlineWorkoutData;
 
 

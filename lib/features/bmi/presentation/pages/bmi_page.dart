@@ -338,34 +338,46 @@ class BMIPage extends StatelessWidget {
   }
 
   Widget _buildNextButton(String text, {required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 30),
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(
-          color: const Color(0xFF008BFF),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF008BFF).withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+    return Consumer<BmiProvider>(
+      builder: (context, bmiProvider, _) {
+        final isEnabled = bmiProvider.currentPage < 2;
+
+        return GestureDetector(
+          onTap: isEnabled ? onTap : null,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 30),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              color: isEnabled
+                  ? const Color(0xFF008BFF)
+                  : const Color(0xFF008BFF).withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: isEnabled
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF008BFF).withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : null,
             ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            child: Center(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isEnabled
+                      ? Colors.white
+                      : Colors.white.withOpacity(0.6),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

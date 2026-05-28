@@ -1,0 +1,793 @@
+{
+  "running": {
+    "title": "RUNNING MISSION",
+    "weather_advice": {
+      "danger": "Bahaya! Suhu {temp}°C bisa bikin pingsan. Pindah ke treadmill indoor sekarang!",
+      "hot": "Cuaca panas ({temp}°C). Kurangi target jarak 20% dan minum air tiap 10 menit!",
+      "ideal": "Cuaca mantap! Kondisi paling ideal buat kejar target jarak hari ini.",
+      "cold": "Suhu sejuk ({temp}°C). Pemanasan wajib 15 menit agar otot tidak cedera kaku!"
+    },
+    "levels": {
+      "NEVER": {
+        "male_target": "1.5 - 2.0 KM",
+        "female_base_km": 1.5,
+        "focus": "Jogging ringan + jalan cepat"
+      },
+      "SOMETIMES": {
+        "male_target": "3.0 - 4.0 KM",
+        "female_base_km": 3.0,
+        "focus": "Jogging stabil kontrol napas"
+      },
+      "OFTEN": {
+        "male_target": "5.0 - 7.5 KM",
+        "female_base_km": 5.5,
+        "focus": "Tempo run (Lari ritme cepat)"
+      },
+      "DAILY": {
+        "male_target": "10.0 - 15.0 KM",
+        "female_base_km": 10.0,
+        "focus": "Long endurance run (Lari jarak jauh)"
+      }
+    },
+    "template": [
+      {
+        "name": "Pemanasan",
+        "target": "10 Menit",
+        "type": "time",
+        "icon_code": 58788
+      },
+      {
+        "name": "{focus}",
+        "target": "{target}",
+        "type": "dist",
+        "icon_code": 59382
+      },
+      {
+        "name": "Cooling Down",
+        "target": "5 Menit",
+        "type": "time",
+        "icon_code": 60235
+      }
+    ],
+    "female_extra": {
+      "name": "Injury Prevention",
+      "target": "Tambahkan glute activation untuk stabilitas ACL.",
+      "type": "info",
+      "icon_code": 61279
+    }
+  },
+  "cycling": {
+    "title": "CYCLING ENDURANCE",
+    "weather_advice": {
+      "danger": "Panas ekstrem! Gunakan sepeda statis di dalam ruangan saja.",
+      "cold": "Terlalu dingin/berangin. Mending latihan di dalam ruangan demi keamanan.",
+      "ideal": "Cuaca mendukung untuk gowes outdoor."
+    },
+    "levels": {
+      "NEVER": {
+        "male_target": "3.0 - 5.0 KM",
+        "female_base_km": 3.5,
+        "focus": "Kayuhan santai tempo ringan"
+      },
+      "SOMETIMES": {
+        "male_target": "7.5 - 12.0 KM",
+        "female_base_km": 8.0,
+        "focus": "Endurance sedang"
+      },
+      "OFTEN": {
+        "male_target": "15.0 - 25.0 KM",
+        "female_base_km": 18.0,
+        "focus": "Interval + tanjakan"
+      },
+      "DAILY": {
+        "male_target": "30.0 - 50.0 KM",
+        "female_base_km": 35.0,
+        "focus": "Endurance jarak jauh"
+      }
+    },
+    "template": [
+      {
+        "name": "Preparation",
+        "target": "5 Menit",
+        "type": "time",
+        "icon_code": 59846
+      },
+      {
+        "name": "{focus}",
+        "target": "{target}",
+        "type": "dist",
+        "icon_code": 59361
+      }
+    ],
+    "female_extra": {
+      "name": "Sport Note",
+      "target": "Perhatikan kekuatan core & pinggul untuk efisiensi kayuhan.",
+      "type": "info",
+      "icon_code": 61279
+    }
+  },
+  "basketball": {
+    "title": "BASKETBALL ELITE SYSTEM",
+    "levels": {
+      "NEVER": {
+        "duration": 30
+      },
+      "SOMETIMES": {
+        "duration": 45
+      },
+      "OFTEN": {
+        "duration": 75
+      },
+      "DAILY": {
+        "duration": 90
+      }
+    },
+    "male_template": [
+      {
+        "name": "Dynamic Stretching",
+        "target": "10 Menit",
+        "type": "time",
+        "icon_code": 58788,
+        "video_url": "https://youtube.com/shorts/nPCPhqEJ3r4?si=MFQEnVj9dQDnhtTH",
+        "start_at": 6
+      },
+      {
+        "name": "Ball Slaps & Handling",
+        "target": "50 Reps",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Mikan Drill + Form Shooting",
+        "target": "{duration} Menit",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Zig-Zag Defensive Slides",
+        "target": "4 Full Court",
+        "type": "reps",
+        "icon_code": 59382,
+        "video_url": ""
+      },
+      {
+        "name": "Physical: Push Ups",
+        "target": "3 Sets x 15",
+        "type": "reps",
+        "icon_code": 59405,
+        "video_url": ""
+      },
+      {
+        "name": "Crossover Dribble Drill",
+        "target": "3 Menit",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Pull-Up Jumper (Mid-Range)",
+        "target": "20 Reps",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Suicide Sprints",
+        "target": "5 Sets",
+        "type": "reps",
+        "icon_code": 59382,
+        "video_url": ""
+      },
+      {
+        "name": "Box Out & Rebound Drill",
+        "target": "15 Reps",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Free Throw Routine",
+        "target": "20 Reps",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      }
+    ],
+    "female_template": [
+      {
+        "name": "Dynamic Mobility",
+        "target": "10 Menit",
+        "type": "time",
+        "icon_code": 58788,
+        "video_url": ""
+      },
+      {
+        "name": "Finger Tip Taps",
+        "target": "2 Menit",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Pocket Dribble Focus",
+        "target": "2 Menit/Tangan",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Catch & Shoot Midrange",
+        "target": "{duration} Menit",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Free Throw Pressure",
+        "target": "10 Reps (Miss=Sprint)",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Injury Prevention",
+        "target": "Latihan Glute & Hamstring (3x12 Squat)",
+        "type": "info",
+        "icon_code": 61279,
+        "video_url": ""
+      },
+      {
+        "name": "Behind-the-Back Dribble",
+        "target": "2 Menit/Tangan",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Layup Drill (Both Hands)",
+        "target": "10 Reps/Tangan",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Defensive Shuffle & Sprint",
+        "target": "5 Full Court",
+        "type": "reps",
+        "icon_code": 59382,
+        "video_url": ""
+      },
+      {
+        "name": "V-Cut & Catch Shoot",
+        "target": "15 Reps",
+        "type": "reps",
+        "icon_code": 60230,
+        "video_url": ""
+      },
+      {
+        "name": "Passing Accuracy Drill",
+        "target": "3 Menit",
+        "type": "time",
+        "icon_code": 60230,
+        "video_url": ""
+      }
+    ]
+  },
+  "football": {
+    "title": "PRO FOOTBALL TRAINING",
+    "levels": {
+      "NEVER": {
+        "duration": 30
+      },
+      "SOMETIMES": {
+        "duration": 45
+      },
+      "OFTEN": {
+        "duration": 70
+      },
+      "DAILY": {
+        "duration": 90
+      }
+    },
+    "male_template": [
+      {
+        "name": "Toe Taps (Ball Feel)",
+        "target": "100 Reps",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Inside-Outside Dribbling",
+        "target": "20 Meters x 5",
+        "type": "dist",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Wall Pass (First Touch)",
+        "target": "50 Reps/Kaki",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Rondo Simulation / High Press",
+        "target": "{duration} Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Long Ball Accuracy",
+        "target": "20 Reps (30m)",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Agility Ladder Runs",
+        "target": "5 Sets",
+        "type": "reps",
+        "icon_code": 59382,
+        "video_url": ""
+      },
+      {
+        "name": "Cone Weave Dribbling",
+        "target": "10 Cones x 4",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Heading Accuracy",
+        "target": "15 Reps",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "1v1 Attacking Moves",
+        "target": "10 Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Crossing & Finishing",
+        "target": "15 Reps/Sisi",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Short Passing Combinations",
+        "target": "5 Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      }
+    ],
+    "female_template": [
+      {
+        "name": "Slalom Dribble",
+        "target": "10 Cones (1m gap)",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Passing Triangle",
+        "target": "10 Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Possession Control / 5v5 Sim",
+        "target": "{duration} Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Shooting from Distance",
+        "target": "20 Shots",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Counter Attack Sprint",
+        "target": "60m Sprint to Finish",
+        "type": "dist",
+        "icon_code": 59382,
+        "video_url": ""
+      },
+      {
+        "name": "FIFA 11+ Prevention",
+        "target": "Ligament Strength (ACL Focus)",
+        "type": "info",
+        "icon_code": 61279,
+        "video_url": ""
+      },
+      {
+        "name": "Juggling (Ball Control)",
+        "target": "3 Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Through Ball Drill",
+        "target": "10 Reps",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Quick Turn & Shoot",
+        "target": "12 Reps",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Defensive Positioning Drill",
+        "target": "5 Menit",
+        "type": "time",
+        "icon_code": 60231,
+        "video_url": ""
+      },
+      {
+        "name": "Set Piece Practice",
+        "target": "10 Free Kicks",
+        "type": "reps",
+        "icon_code": 60231,
+        "video_url": ""
+      }
+    ]
+  },
+  "home": {
+    "title": "HOME WORKOUT",
+    "weather_advice": {
+      "danger": "Panas banget ({temp}°C)! Pastikan AC/kipas menyala & minum banyak air sebelum mulai.",
+      "warm": "Agak panas ({temp}°C). Buka jendela, siapkan air minum & handuk.",
+      "ideal": "Suhu ideal ({temp}°C) untuk workout di rumah. Gas!",
+      "cold": "Udara dingin ({temp}°C). Pemanasan lebih lama 10-15 menit sebelum mulai."
+    },
+    "goals": {
+      "WEIGHT_LOSS": [
+        {
+          "name": "Jumping Jacks",
+          "target": "50 Reps",
+          "type": "reps",
+          "icon_code": 58788,
+          "video_url": "https://youtu.be/uLVt6u15L98?si=uC5vLHkj2D3_kJv0"
+        },
+        {
+          "name": "High Knees",
+          "target": "40 Reps",
+          "type": "reps",
+          "icon_code": 59382,
+          "video_url": "https://youtu.be/DfjpR6dzLVg?si=-v45UmeEg8XQEkR9"
+        },
+        {
+          "name": "Burpees",
+          "target": "15 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/TU8QYVW0gDU?si=ITmFLNROw4lppAUf"
+        },
+        {
+          "name": "Mountain Climber",
+          "target": "30 Reps",
+          "type": "reps",
+          "icon_code": 59375,
+          "video_url": "https://youtu.be/hq_0YlyfqGM?si=3mBtIbVOFduKekyb"
+        },
+        {
+          "name": "Squat Jump",
+          "target": "20 Reps",
+          "type": "reps",
+          "icon_code": 59132,
+          "video_url": "https://youtu.be/YGGq0AE5Uyc?si=1qJPDMWhFRkPYlNs"
+        },
+        {
+          "name": "Plank Jacks",
+          "target": "30 Detik",
+          "type": "time",
+          "icon_code": 61460,
+          "video_url": "https://youtu.be/VasEy9dNzZM?si=ivIuI1ST_3bvoJHv"
+        },
+        {
+          "name": "Skaters",
+          "target": "20 Reps",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": "https://youtu.be/JkacHtlPYds?si=L_mf21x2A4aVReSR"
+        },
+        {
+          "name": "Tuck Jumps",
+          "target": "10 Reps",
+          "type": "reps",
+          "icon_code": 59375,
+          "video_url": "https://youtu.be/Yl7tEmpzknY?si=vM68iQu1FCysddO2"
+        },
+        {
+          "name": "Flutter Kicks",
+          "target": "30 Reps",
+          "type": "reps",
+          "icon_code": 59375,
+          "video_url": ""
+        },
+        {
+          "name": "Bicycle Crunches",
+          "target": "24 Reps",
+          "type": "reps",
+          "icon_code": 59375,
+          "video_url": ""
+        },
+        {
+          "name": "Lateral Lunges",
+          "target": "16 Reps",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": ""
+        },
+        {
+          "name": "Star Jumps",
+          "target": "15 Reps",
+          "type": "reps",
+          "icon_code": 58788,
+          "video_url": ""
+        },
+        {
+          "name": "Bear Crawl",
+          "target": "30 Detik",
+          "type": "time",
+          "icon_code": 59405,
+          "video_url": ""
+        },
+        {
+          "name": "Inchworm",
+          "target": "8 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": ""
+        },
+        {
+          "name": "Shadow Boxing",
+          "target": "2 Menit",
+          "type": "time",
+          "icon_code": 59405,
+          "video_url": ""
+        }
+      ],
+      "MUSCLE_GAIN": [
+        {
+          "name": "Push Up",
+          "target": "20 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/WDIpL0pjun0?si=zDuCBirrmOOE_VbB"
+        },
+        {
+          "name": "Diamond Push Up",
+          "target": "12 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/XtU2VQVuLYs?si=6Nypxn60TdpwpeM1"
+        },
+        {
+          "name": "Pike Push Up",
+          "target": "10 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/XckEEwa1BPI?si=HeLqwG3Zrw03qoN_"
+        },
+        {
+          "name": "Squat",
+          "target": "25 Reps",
+          "type": "reps",
+          "icon_code": 58788,
+          "video_url": "https://youtu.be/l83R5PblSMA?si=QK87lhXiavi22BQO"
+        },
+        {
+          "name": "Bulgarian Split Squat",
+          "target": "12 Reps/Kaki",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": "https://youtu.be/Fmjj7wFJWRE?si=KPE2vbZhj_Pxy-Jy"
+        },
+        {
+          "name": "Plank",
+          "target": "60 Detik",
+          "type": "time",
+          "icon_code": 61460,
+          "video_url": "https://youtu.be/pvIjsG5Svck?si=DzxiyLessznNw-Bw"
+        },
+        {
+          "name": "Lunges",
+          "target": "15 Reps/Kaki",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": "https://youtu.be/tQNktxPkSeE?si=MAMAAu2MHfjHkP7Q"
+        },
+        {
+          "name": "Tricep Dips",
+          "target": "15 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/HCf97NPYeGY?si=X23VkYQuYKAoXt_r"
+        },
+        {
+          "name": "Handstand Push-Up (Wall)",
+          "target": "5 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/WxgJS48wf1M?si=Y_HZ_TeanzPWAODh"
+        },
+        {
+          "name": "Close Grip Push Up",
+          "target": "12 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": ""
+        },
+        {
+          "name": "Archer Push Up",
+          "target": "8 Reps/Sisi",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": ""
+        },
+        {
+          "name": "Glute Bridge",
+          "target": "20 Reps",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": ""
+        },
+        {
+          "name": "Side Plank",
+          "target": "30 Detik/Sisi",
+          "type": "time",
+          "icon_code": 61460,
+          "video_url": ""
+        },
+        {
+          "name": "Calf Raises",
+          "target": "25 Reps",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": ""
+        },
+        {
+          "name": "Superman Pull",
+          "target": "12 Reps",
+          "type": "reps",
+          "icon_code": 60235,
+          "video_url": ""
+        },
+        {
+          "name": "Decline Push Up",
+          "target": "10 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": ""
+        }
+      ],
+      "KEEP_FIT": [
+        {
+          "name": "Pemanasan Dinamis",
+          "target": "5 Menit",
+          "type": "time",
+          "icon_code": 58788,
+          "video_url": "https://youtu.be/3qyWpJ34dWw?si=QSAYITuJMp3E5zYB"
+        },
+        {
+          "name": "Bird Dog",
+          "target": "12 Reps",
+          "type": "reps",
+          "icon_code": 58788,
+          "video_url": "https://youtu.be/k2azbhhuKuM?si=jKZCpYDMGyNaJ_pn"
+        },
+        {
+          "name": "Superman",
+          "target": "15 Reps",
+          "type": "reps",
+          "icon_code": 60235,
+          "video_url": "https://youtu.be/tYMHYWVvFjs?si=Ja47xW1te-hEigqA"
+        },
+        {
+          "name": "Cat-Cow Stretch",
+          "target": "2 Menit",
+          "type": "time",
+          "icon_code": 60235,
+          "video_url": "https://youtu.be/LIVJZZyZ2qM?si=T5CjHWfI5YRjBvQt"
+        },
+        {
+          "name": "Push Up",
+          "target": "10 Reps",
+          "type": "reps",
+          "icon_code": 59405,
+          "video_url": "https://youtu.be/WDIpL0pjun0?si=zDuCBirrmOOE_VbB"
+        },
+        {
+          "name": "Squat",
+          "target": "15 Reps",
+          "type": "reps",
+          "icon_code": 58788,
+          "video_url": "https://youtu.be/l83R5PblSMA?si=QK87lhXiavi22BQO"
+        },
+        {
+          "name": "Plank",
+          "target": "30 Detik",
+          "type": "time",
+          "icon_code": 61460,
+          "video_url": "https://youtu.be/pvIjsG5Svck?si=DzxiyLessznNw-Bw"
+        },
+        {
+          "name": "Cooling Down",
+          "target": "5 Menit",
+          "type": "time",
+          "icon_code": 60235,
+          "video_url": "https://youtu.be/ciqL41ffHTI?si=OEwGELIw1eja-ewJ",
+          "start_at": "41"
+        },
+        {
+          "name": "Glute Bridge",
+          "target": "15 Reps",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": ""
+        },
+        {
+          "name": "Dead Bug",
+          "target": "12 Reps",
+          "type": "reps",
+          "icon_code": 59375,
+          "video_url": ""
+        },
+        {
+          "name": "Wall Sit",
+          "target": "30 Detik",
+          "type": "time",
+          "icon_code": 59132,
+          "video_url": ""
+        },
+        {
+          "name": "Standing Calf Raises",
+          "target": "20 Reps",
+          "type": "reps",
+          "icon_code": 59387,
+          "video_url": ""
+        },
+        {
+          "name": "Shoulder Tap Plank",
+          "target": "16 Reps",
+          "type": "reps",
+          "icon_code": 61460,
+          "video_url": ""
+        },
+        {
+          "name": "Hip Circles",
+          "target": "1 Menit",
+          "type": "time",
+          "icon_code": 58788,
+          "video_url": ""
+        },
+        {
+          "name": "World's Greatest Stretch",
+          "target": "8 Reps/Sisi",
+          "type": "reps",
+          "icon_code": 60235,
+          "video_url": ""
+        }
+      ]
+    }
+  }
+}

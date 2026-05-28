@@ -5,6 +5,7 @@ import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/settings/presentation/providers/settings_provider.dart';
 import '../widgets/setting_widgets.dart';
+import 'sport_management_page.dart';
 
 class PersonalInfoPage extends StatefulWidget {
   const PersonalInfoPage({super.key});
@@ -192,6 +193,8 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
                               "Malang, Indonesia",
                               theme,
                             ),
+                            const SizedBox(height: 20),
+                            _buildSportManagementButton(lang, theme),
                           ],
                         );
                       },
@@ -351,6 +354,101 @@ class _PersonalInfoPageState extends State<PersonalInfoPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSportManagementButton(
+    LanguageProvider lang,
+    ThemeProvider theme,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          PageRouteBuilder(
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 250),
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const SportManagementPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              final curvedAnimation = CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutBack,
+                reverseCurve: Curves.easeIn,
+              );
+              return ScaleTransition(
+                scale: Tween<double>(begin: 0.85, end: 1.0)
+                    .animate(curvedAnimation),
+                child: FadeTransition(opacity: animation, child: child),
+              );
+            },
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: theme.boxColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: theme.borderColor),
+          boxShadow: theme.isDarkMode
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF008BFF).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.sports_soccer,
+                color: Color(0xFF008BFF),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lang.translate('sportManagement.title'),
+                    style: TextStyle(
+                      color: theme.textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    lang.translate('sportManagement.subtitle'),
+                    style: TextStyle(
+                      color: theme.subTextColor,
+                      fontSize: 11,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: theme.isDarkMode ? Colors.white24 : Colors.black26,
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }

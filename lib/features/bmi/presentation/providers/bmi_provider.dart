@@ -73,19 +73,25 @@ class BmiProvider extends ChangeNotifier {
   }
 
   void nextPage() {
+    if (currentPage >= 2) return;
+
     HapticFeedback.mediumImpact();
     _audioPlayer.stop();
-    _audioPlayer.play(AssetSource('sounds/click.wav'));
 
-    if (currentPage < 2) {
-      pageController.nextPage(
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOutQuart,
-      );
-      if (currentPage == 1) calculateBMI();
-      currentPage++;
-      notifyListeners();
+    try {
+      _audioPlayer.play(AssetSource('sounds/click.wav'));
+    } catch (e) {
+      debugPrint("Audio play error: $e");
     }
+
+    pageController.nextPage(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOutQuart,
+    );
+
+    if (currentPage == 1) calculateBMI();
+    currentPage++;
+    notifyListeners();
   }
 
   void prevPage() {

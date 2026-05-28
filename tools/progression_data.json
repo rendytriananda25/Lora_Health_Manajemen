@@ -1,0 +1,658 @@
+{
+  "WEIGHT_LOSS": {
+    "Jumping Jacks": {
+      "NEVER": {
+        "W1": "30 Reps",
+        "W2": "35 Reps",
+        "W3": "40 Reps",
+        "W4": "25 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "45 Reps",
+        "W2": "50 Reps",
+        "W3": "55 Reps",
+        "W4": "35 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "55 Reps",
+        "W2": "62 Reps",
+        "W3": "70 Reps",
+        "W4": "45 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "70 Reps",
+        "W2": "80 Reps",
+        "W3": "90 Reps",
+        "W4": "60 Reps (Deload)"
+      }
+    },
+    "High Knees": {
+      "NEVER": {
+        "W1": "20 Reps",
+        "W2": "25 Reps",
+        "W3": "30 Reps",
+        "W4": "15 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "35 Reps",
+        "W2": "40 Reps",
+        "W3": "45 Reps",
+        "W4": "25 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "45 Reps",
+        "W2": "52 Reps",
+        "W3": "60 Reps",
+        "W4": "35 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "60 Reps",
+        "W2": "70 Reps",
+        "W3": "80 Reps",
+        "W4": "50 Reps (Deload)"
+      }
+    },
+    "Burpees": {
+      "NEVER": {
+        "W1": "5 Reps",
+        "W2": "6 Reps",
+        "W3": "7 Reps",
+        "W4": "4 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "10 Reps",
+        "W2": "12 Reps",
+        "W3": "13 Reps",
+        "W4": "8 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "15 Reps",
+        "W2": "17 Reps",
+        "W3": "19 Reps",
+        "W4": "12 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "20 Reps",
+        "W2": "22 Reps",
+        "W3": "25 Reps",
+        "W4": "15 Reps (Deload)"
+      }
+    },
+    "Mountain Climber": {
+      "NEVER": {
+        "W1": "16 Reps",
+        "W2": "20 Reps",
+        "W3": "24 Reps",
+        "W4": "12 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "24 Reps",
+        "W2": "28 Reps",
+        "W3": "32 Reps",
+        "W4": "18 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "32 Reps",
+        "W2": "36 Reps",
+        "W3": "40 Reps",
+        "W4": "24 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "40 Reps",
+        "W2": "46 Reps",
+        "W3": "52 Reps",
+        "W4": "32 Reps (Deload)"
+      }
+    },
+    "Squat Jump": {
+      "NEVER": {
+        "W1": "8 Reps",
+        "W2": "10 Reps",
+        "W3": "12 Reps",
+        "W4": "6 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "15 Reps",
+        "W2": "17 Reps",
+        "W3": "20 Reps",
+        "W4": "10 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "20 Reps",
+        "W2": "23 Reps",
+        "W3": "26 Reps",
+        "W4": "15 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "25 Reps",
+        "W2": "28 Reps",
+        "W3": "32 Reps",
+        "W4": "20 Reps (Deload)"
+      }
+    },
+    "Plank Jacks": {
+      "NEVER": {
+        "W1": "20 Detik",
+        "W2": "25 Detik",
+        "W3": "30 Detik",
+        "W4": "15 Detik (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "30 Detik",
+        "W2": "35 Detik",
+        "W3": "40 Detik",
+        "W4": "25 Detik (Deload)"
+      },
+      "OFTEN": {
+        "W1": "40 Detik",
+        "W2": "47 Detik",
+        "W3": "55 Detik",
+        "W4": "30 Detik (Deload)"
+      },
+      "DAILY": {
+        "W1": "55 Detik",
+        "W2": "65 Detik",
+        "W3": "75 Detik",
+        "W4": "45 Detik (Deload)"
+      }
+    },
+    "Skaters": {
+      "NEVER": {
+        "W1": "10 Reps",
+        "W2": "12 Reps",
+        "W3": "14 Reps",
+        "W4": "8 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "16 Reps",
+        "W2": "18 Reps",
+        "W3": "20 Reps",
+        "W4": "12 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "20 Reps",
+        "W2": "23 Reps",
+        "W3": "26 Reps",
+        "W4": "16 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "26 Reps",
+        "W2": "30 Reps",
+        "W3": "34 Reps",
+        "W4": "22 Reps (Deload)"
+      }
+    },
+    "Tuck Jumps": {
+      "NEVER": {
+        "W1": "5 Reps",
+        "W2": "6 Reps",
+        "W3": "7 Reps",
+        "W4": "4 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "8 Reps",
+        "W2": "9 Reps",
+        "W3": "11 Reps",
+        "W4": "6 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "12 Reps",
+        "W2": "14 Reps",
+        "W3": "16 Reps",
+        "W4": "9 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "16 Reps",
+        "W2": "18 Reps",
+        "W3": "20 Reps",
+        "W4": "12 Reps (Deload)"
+      }
+    }
+  },
+  "MUSCLE_GAIN": {
+    "Push Up": {
+      "NEVER": {
+        "W1": "3x8 Reps",
+        "W2": "3x10 Reps",
+        "W3": "3x12 Reps",
+        "W4": "2x8 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x12 Reps",
+        "W2": "3x15 Reps",
+        "W3": "4x12 Reps",
+        "W4": "3x8 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "4x12 Reps",
+        "W2": "4x15 Reps",
+        "W3": "4x17 Reps",
+        "W4": "3x10 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x15 Reps",
+        "W2": "4x18 Reps",
+        "W3": "5x15 Reps",
+        "W4": "3x12 Reps (Deload)"
+      }
+    },
+    "Diamond Push Up": {
+      "NEVER": {
+        "W1": "3x5 Reps",
+        "W2": "3x6 Reps",
+        "W3": "3x8 Reps",
+        "W4": "2x5 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x8 Reps",
+        "W2": "3x10 Reps",
+        "W3": "3x12 Reps",
+        "W4": "2x6 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x10 Reps",
+        "W2": "3x12 Reps",
+        "W3": "4x10 Reps",
+        "W4": "3x7 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x10 Reps",
+        "W2": "4x12 Reps",
+        "W3": "4x14 Reps",
+        "W4": "3x8 Reps (Deload)"
+      }
+    },
+    "Pike Push Up": {
+      "NEVER": {
+        "W1": "3x5 Reps",
+        "W2": "3x6 Reps",
+        "W3": "3x8 Reps",
+        "W4": "2x4 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x8 Reps",
+        "W2": "3x10 Reps",
+        "W3": "3x12 Reps",
+        "W4": "2x6 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x10 Reps",
+        "W2": "3x12 Reps",
+        "W3": "4x10 Reps",
+        "W4": "3x7 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x10 Reps",
+        "W2": "4x12 Reps",
+        "W3": "4x14 Reps",
+        "W4": "3x8 Reps (Deload)"
+      }
+    },
+    "Squat": {
+      "NEVER": {
+        "W1": "3x12 Reps",
+        "W2": "3x15 Reps",
+        "W3": "3x18 Reps",
+        "W4": "2x10 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x15 Reps",
+        "W2": "3x18 Reps",
+        "W3": "4x15 Reps",
+        "W4": "3x10 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "4x15 Reps",
+        "W2": "4x18 Reps",
+        "W3": "4x20 Reps",
+        "W4": "3x12 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x20 Reps",
+        "W2": "4x23 Reps",
+        "W3": "5x20 Reps",
+        "W4": "3x15 Reps (Deload)"
+      }
+    },
+    "Bulgarian Split Squat": {
+      "NEVER": {
+        "W1": "3x6/Kaki",
+        "W2": "3x8/Kaki",
+        "W3": "3x10/Kaki",
+        "W4": "2x5/Kaki (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x8/Kaki",
+        "W2": "3x10/Kaki",
+        "W3": "3x12/Kaki",
+        "W4": "2x6/Kaki (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x10/Kaki",
+        "W2": "3x12/Kaki",
+        "W3": "4x10/Kaki",
+        "W4": "3x7/Kaki (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x10/Kaki",
+        "W2": "4x12/Kaki",
+        "W3": "4x14/Kaki",
+        "W4": "3x8/Kaki (Deload)"
+      }
+    },
+    "Plank": {
+      "NEVER": {
+        "W1": "3x20 Detik",
+        "W2": "3x25 Detik",
+        "W3": "3x30 Detik",
+        "W4": "2x15 Detik (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x30 Detik",
+        "W2": "3x40 Detik",
+        "W3": "3x50 Detik",
+        "W4": "2x25 Detik (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x45 Detik",
+        "W2": "3x55 Detik",
+        "W3": "3x65 Detik",
+        "W4": "3x30 Detik (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x60 Detik",
+        "W2": "3x75 Detik",
+        "W3": "3x90 Detik",
+        "W4": "3x45 Detik (Deload)"
+      }
+    },
+    "Lunges": {
+      "NEVER": {
+        "W1": "3x8/Kaki",
+        "W2": "3x10/Kaki",
+        "W3": "3x12/Kaki",
+        "W4": "2x6/Kaki (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x10/Kaki",
+        "W2": "3x12/Kaki",
+        "W3": "3x14/Kaki",
+        "W4": "2x8/Kaki (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x12/Kaki",
+        "W2": "3x15/Kaki",
+        "W3": "4x12/Kaki",
+        "W4": "3x8/Kaki (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x12/Kaki",
+        "W2": "4x14/Kaki",
+        "W3": "4x16/Kaki",
+        "W4": "3x10/Kaki (Deload)"
+      }
+    },
+    "Tricep Dips": {
+      "NEVER": {
+        "W1": "3x8 Reps",
+        "W2": "3x10 Reps",
+        "W3": "3x12 Reps",
+        "W4": "2x6 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x10 Reps",
+        "W2": "3x12 Reps",
+        "W3": "3x15 Reps",
+        "W4": "2x8 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x12 Reps",
+        "W2": "3x15 Reps",
+        "W3": "4x12 Reps",
+        "W4": "3x8 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "4x12 Reps",
+        "W2": "4x15 Reps",
+        "W3": "4x18 Reps",
+        "W4": "3x10 Reps (Deload)"
+      }
+    },
+    "Handstand Push-Up (Wall)": {
+      "NEVER": {
+        "W1": "SKIP - Kuasai Pike Push Up dulu",
+        "W2": "SKIP",
+        "W3": "SKIP",
+        "W4": "SKIP"
+      },
+      "SOMETIMES": {
+        "W1": "2x3 Reps",
+        "W2": "2x4 Reps",
+        "W3": "2x5 Reps",
+        "W4": "2x3 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x5 Reps",
+        "W2": "3x6 Reps",
+        "W3": "3x7 Reps",
+        "W4": "2x4 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x6 Reps",
+        "W2": "3x8 Reps",
+        "W3": "4x6 Reps",
+        "W4": "2x5 Reps (Deload)"
+      }
+    }
+  },
+  "KEEP_FIT": {
+    "Pemanasan Dinamis": {
+      "NEVER": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      },
+      "SOMETIMES": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      },
+      "OFTEN": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      },
+      "DAILY": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      }
+    },
+    "Bird Dog": {
+      "NEVER": {
+        "W1": "2x8 Reps",
+        "W2": "2x10 Reps",
+        "W3": "2x12 Reps",
+        "W4": "2x6 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "3x10 Reps",
+        "W2": "3x12 Reps",
+        "W3": "3x14 Reps",
+        "W4": "2x8 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x12 Reps",
+        "W2": "3x14 Reps",
+        "W3": "3x16 Reps",
+        "W4": "2x10 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x14 Reps",
+        "W2": "3x16 Reps",
+        "W3": "4x14 Reps",
+        "W4": "3x10 Reps (Deload)"
+      }
+    },
+    "Superman": {
+      "NEVER": {
+        "W1": "2x8 Reps",
+        "W2": "2x10 Reps",
+        "W3": "2x12 Reps",
+        "W4": "2x6 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "2x12 Reps",
+        "W2": "2x14 Reps",
+        "W3": "3x12 Reps",
+        "W4": "2x8 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x12 Reps",
+        "W2": "3x14 Reps",
+        "W3": "3x16 Reps",
+        "W4": "2x10 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x15 Reps",
+        "W2": "3x17 Reps",
+        "W3": "4x15 Reps",
+        "W4": "3x10 Reps (Deload)"
+      }
+    },
+    "Cat-Cow Stretch": {
+      "NEVER": {
+        "W1": "1 Menit",
+        "W2": "1.5 Menit",
+        "W3": "2 Menit",
+        "W4": "1 Menit (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "2 Menit",
+        "W2": "2 Menit",
+        "W3": "2 Menit",
+        "W4": "1.5 Menit (Deload)"
+      },
+      "OFTEN": {
+        "W1": "2 Menit",
+        "W2": "2 Menit",
+        "W3": "2 Menit",
+        "W4": "2 Menit"
+      },
+      "DAILY": {
+        "W1": "2 Menit",
+        "W2": "2 Menit",
+        "W3": "2 Menit",
+        "W4": "2 Menit"
+      }
+    },
+    "Push Up": {
+      "NEVER": {
+        "W1": "2x6 Reps",
+        "W2": "2x8 Reps",
+        "W3": "2x10 Reps",
+        "W4": "2x5 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "2x10 Reps",
+        "W2": "2x12 Reps",
+        "W3": "3x10 Reps",
+        "W4": "2x7 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x10 Reps",
+        "W2": "3x12 Reps",
+        "W3": "3x14 Reps",
+        "W4": "2x8 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x12 Reps",
+        "W2": "3x15 Reps",
+        "W3": "4x12 Reps",
+        "W4": "3x8 Reps (Deload)"
+      }
+    },
+    "Squat": {
+      "NEVER": {
+        "W1": "2x10 Reps",
+        "W2": "2x12 Reps",
+        "W3": "2x15 Reps",
+        "W4": "2x8 Reps (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "2x15 Reps",
+        "W2": "3x12 Reps",
+        "W3": "3x14 Reps",
+        "W4": "2x10 Reps (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x14 Reps",
+        "W2": "3x16 Reps",
+        "W3": "3x18 Reps",
+        "W4": "2x12 Reps (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x18 Reps",
+        "W2": "3x20 Reps",
+        "W3": "4x18 Reps",
+        "W4": "3x12 Reps (Deload)"
+      }
+    },
+    "Plank": {
+      "NEVER": {
+        "W1": "2x15 Detik",
+        "W2": "2x20 Detik",
+        "W3": "2x25 Detik",
+        "W4": "2x12 Detik (Deload)"
+      },
+      "SOMETIMES": {
+        "W1": "2x25 Detik",
+        "W2": "2x30 Detik",
+        "W3": "3x25 Detik",
+        "W4": "2x18 Detik (Deload)"
+      },
+      "OFTEN": {
+        "W1": "3x30 Detik",
+        "W2": "3x35 Detik",
+        "W3": "3x40 Detik",
+        "W4": "2x25 Detik (Deload)"
+      },
+      "DAILY": {
+        "W1": "3x40 Detik",
+        "W2": "3x50 Detik",
+        "W3": "3x60 Detik",
+        "W4": "3x30 Detik (Deload)"
+      }
+    },
+    "Cooling Down": {
+      "NEVER": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      },
+      "SOMETIMES": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      },
+      "OFTEN": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      },
+      "DAILY": {
+        "W1": "5 Menit",
+        "W2": "5 Menit",
+        "W3": "5 Menit",
+        "W4": "5 Menit"
+      }
+    }
+  }
+}

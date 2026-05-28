@@ -77,7 +77,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   Future<void> _executeStop(
-      WorkoutProvider workout, LanguageProvider lang) async {
+    WorkoutProvider workout,
+    LanguageProvider lang,
+  ) async {
     final gameResult = await workout.executeStop();
     if (!mounted) return;
 
@@ -87,8 +89,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
       await showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) =>
-            BadgeUnlockDialog(badges: gameResult.newBadges),
+        builder: (context) => BadgeUnlockDialog(badges: gameResult.newBadges),
       );
     }
 
@@ -162,8 +163,10 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final workout = Provider.of<WorkoutProvider>(context);
 
     final bool isMapSport = workout.isGpsSport;
-    final String translatedSport =
-        workout.translateSportName(workout.selectedSport, lang.currentLanguage);
+    final String translatedSport = workout.translateSportName(
+      workout.selectedSport,
+      lang.currentLanguage,
+    );
     final String dailyTarget = workout.getTarget();
     final String weatherGreeting = workout.getWeatherGreeting(lang);
     final String flexibleAdvice =
@@ -179,7 +182,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
       backgroundColor: theme.bgColor,
       body: Stack(
         children: [
-
           if (isMapSport)
             FlutterMap(
               mapController: _mapController,
@@ -247,8 +249,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   decoration: BoxDecoration(
                     color: theme.boxColor.withOpacity(0.8),
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: theme.textColor.withOpacity(0.1)),
+                    border: Border.all(color: theme.textColor.withOpacity(0.1)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -280,8 +281,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 decoration: BoxDecoration(
                   color: theme.boxColor.withOpacity(0.8),
                   shape: BoxShape.circle,
-                  border:
-                      Border.all(color: theme.textColor.withOpacity(0.1)),
+                  border: Border.all(color: theme.textColor.withOpacity(0.1)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -312,17 +312,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 selectedSport: translatedSport,
                 currentTemp: workout.currentTemp,
                 isRecording: workout.isRecording,
-                onToggleRecord:
-                    workout.isRecording ? _onStopTracking : _onStartTracking,
+                onToggleRecord: workout.isRecording
+                    ? _onStopTracking
+                    : _onStartTracking,
                 secondsNotifier: workout.secondsNotifier,
                 distanceNotifier: workout.distanceNotifier,
               ),
             ),
 
           if (workout.isSaving)
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
         ],
       ),
     );

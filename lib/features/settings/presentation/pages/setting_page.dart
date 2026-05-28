@@ -6,6 +6,7 @@ import 'package:lora_1/features/settings/presentation/providers/settings_provide
 import 'personal_info_page.dart';
 import 'security_page.dart';
 import 'notification_page.dart';
+
 import 'language_page.dart';
 import '../widgets/setting_widgets.dart';
 import 'package:lora_1/auth/login_page.dart';

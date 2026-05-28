@@ -483,4 +483,68 @@ class NutritionData {
     }
     return null;
   }
+
+  static List<String> getFoodsForBmiCategory(
+    String bmiCategory,
+    Map<String, dynamic> foodRecommendations, {
+    bool goodFoodsOnly = false,
+  }) {
+    final goal = bmiCategory == 'FAT_LOSS'
+        ? 'WEIGHT_LOSS'
+        : bmiCategory == 'MUSCLE_GAIN'
+            ? 'MUSCLE_GAIN'
+            : 'KEEP_FIT';
+
+    if (!foodRecommendations.containsKey(goal)) {
+      return [];
+    }
+
+    final goalData = foodRecommendations[goal] as Map<String, dynamic>;
+    final foods = (goalData['foods'] as List<dynamic>?) ?? [];
+
+    if (goodFoodsOnly) {
+      return foods
+          .where((f) => (f as Map)['type'] == 'good')
+          .map((f) => (f as Map)['name'] as String)
+          .toList();
+    }
+
+    return foods
+        .map((f) => (f as Map)['name'] as String)
+        .toList();
+  }
+
+  static List<String> getGoodFoods(
+    String bmiCategory,
+    Map<String, dynamic> foodRecommendations,
+  ) {
+    return getFoodsForBmiCategory(
+      bmiCategory,
+      foodRecommendations,
+      goodFoodsOnly: true,
+    );
+  }
+
+  static List<String> getFoodsToAvoid(
+    String bmiCategory,
+    Map<String, dynamic> foodRecommendations,
+  ) {
+    final goal = bmiCategory == 'FAT_LOSS'
+        ? 'WEIGHT_LOSS'
+        : bmiCategory == 'MUSCLE_GAIN'
+            ? 'MUSCLE_GAIN'
+            : 'KEEP_FIT';
+
+    if (!foodRecommendations.containsKey(goal)) {
+      return [];
+    }
+
+    final goalData = foodRecommendations[goal] as Map<String, dynamic>;
+    final foods = (goalData['foods'] as List<dynamic>?) ?? [];
+
+    return foods
+        .where((f) => (f as Map)['type'] == 'bad')
+        .map((f) => (f as Map)['name'] as String)
+        .toList();
+  }
 }

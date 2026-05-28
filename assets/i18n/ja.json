@@ -281,6 +281,13 @@
     "photoUpdated": "📸 プロフィール写真を更新しました（ローカル）",
     "confirmLogoutBody": "ログアウトしてもよろしいですか？"
   },
+  "sportManagement": {
+    "title": "スポーツ管理",
+    "subtitle": "参加するスポーツを追加・削除できます。変更はアカウントに即時保存されます。",
+    "saveChanges": "変更を保存",
+    "saved": "✅ スポーツの設定が更新されました！",
+    "minOneRequired": "少なくとも1つのスポーツを選択してください！"
+  },
   "personalInfo": {
     "title": "個人情報",
     "height": "身長",

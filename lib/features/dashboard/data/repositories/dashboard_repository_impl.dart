@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:lora_1/core/errors/either.dart';
 import 'package:lora_1/core/errors/failures.dart';
 import 'package:lora_1/core/errors/exceptions.dart';
@@ -83,6 +85,44 @@ class DashboardRepositoryImpl implements DashboardRepository {
       return Result.right(gained);
     } catch (e) {
       return Result.left(ServerFailure('Gagal cek daily login'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>?>> getLatestBmiFromHistory() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return Result.right(null);
+      }
+
+      final ref = FirebaseDatabase.instance.ref("users/${user.uid}/history");
+      final snapshot = await ref.orderByChild('time').limitToLast(10).get();
+
+      if (!snapshot.exists) {
+        return Result.right(null);
+      }
+
+      final historyList = snapshot.value as Map<dynamic, dynamic>;
+      Map<String, dynamic>? latestBmi;
+
+      for (var entry in historyList.entries) {
+        final item = Map<String, dynamic>.from(entry.value as Map);
+        if (item['type'] == 'BMI') {
+          latestBmi = {
+            'score': double.tryParse(item['bmi_score']?.toString() ?? '0') ?? 0.0,
+            'status': item['status'] ?? '',
+            'weight': item['weight'],
+            'height': item['height'],
+            'time': item['time'],
+          };
+        }
+      }
+
+      return Result.right(latestBmi);
+    } catch (e) {
+      debugPrint('Error getting latest BMI: $e');
+      return Result.right(null);
     }
   }
 

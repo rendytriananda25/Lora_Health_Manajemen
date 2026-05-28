@@ -7,6 +7,7 @@ import 'package:lora_1/features/dashboard/domain/usecases/get_weather_data.dart'
 import 'package:lora_1/features/dashboard/domain/usecases/get_user_profile.dart';
 import 'package:lora_1/features/dashboard/domain/usecases/generate_recommendations.dart';
 import 'package:lora_1/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:lora_1/features/dashboard/domain/usecases/personalized_recommendation_engine.dart';
 import 'package:lora_1/features/gamification/rank_system.dart';
 import 'package:lora_1/core/usecases/usecase.dart';
 
@@ -40,6 +41,8 @@ class DashboardProvider extends ChangeNotifier {
   int currentExp = 0;
   bool isLoading = true;
   String? errorMessage;
+  double? latestBmiScore;
+  String? latestBmiStatus;
 
   Timer? _rotationTimer;
   StreamSubscription<int>? _expSubscription;
@@ -49,9 +52,13 @@ class DashboardProvider extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
 
-    await loadUserProfile();
-    await loadWeather();
-    await loadNutritionData();
+    // Run all independent network calls in parallel instead of sequentially
+    await Future.wait([
+      loadUserProfile(),
+      loadWeather(),
+      loadNutritionData(),
+      loadLatestBmi(),
+    ]);
 
     _startExpListener();
     _startNameListener();
@@ -61,9 +68,30 @@ class DashboardProvider extends ChangeNotifier {
   }
 
   Future<void> refresh() async {
-    await loadUserProfile();
-    await loadWeather();
-    await loadNutritionData();
+    await Future.wait([
+      loadUserProfile(),
+      loadWeather(),
+      loadNutritionData(),
+      loadLatestBmi(),
+    ]);
+  }
+
+  Future<void> loadLatestBmi() async {
+    try {
+      final result = await _repository.getLatestBmiFromHistory();
+      result.fold(
+        (failure) => debugPrint('BMI Load Error: ${failure.message}'),
+        (bmiData) {
+          if (bmiData != null) {
+            latestBmiScore = bmiData['score'];
+            latestBmiStatus = bmiData['status'];
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('Error loading latest BMI: $e');
+    }
+    notifyListeners();
   }
 
   Future<void> loadWeather({String langCode = 'id'}) async {
@@ -113,12 +141,32 @@ class DashboardProvider extends ChangeNotifier {
 
   List<String> getRecommendations({required TranslateFunction translate}) {
     double temp = double.tryParse(weather.temperature) ?? 25.0;
+
+    BmiStatus? bmiStatus;
+    if (latestBmiScore != null && latestBmiStatus != null) {
+      bmiStatus = BmiStatus(
+        score: latestBmiScore!,
+        status: latestBmiStatus!.toLowerCase(),
+        category: _determineBmiCategory(latestBmiStatus!),
+      );
+    }
+
     return _generateRecommendations(
       temperature: temp,
       userGoal: userProfile.fitnessGoal,
       userFavorites: userProfile.favoriteSports,
+      bmiStatus: bmiStatus,
+      weatherCondition: weather.condition,
+      fitnessLevel: userProfile.fitnessLevel,
       translate: translate,
     );
+  }
+
+  String _determineBmiCategory(String status) {
+    final norm = status.toLowerCase();
+    if (norm.contains('underweight')) return 'MUSCLE_GAIN';
+    if (norm.contains('overweight') || norm.contains('obesity')) return 'FAT_LOSS';
+    return 'MAINTAIN';
   }
 
   Map<String, dynamic> getAQIDetail(TranslateFunction translate) =>
@@ -128,7 +176,19 @@ class DashboardProvider extends ChangeNotifier {
       _getEnvironmentDetail.getUVDetail(weather.uvIndex, translate);
 
   void generateDailyPlanFromFoods(List<FoodEntity> allFoods) {
-    dailyPlan = _generateDailyPlan(allFoods);
+    String? bmiCategory;
+    if (latestBmiStatus != null) {
+      bmiCategory = _determineBmiCategory(latestBmiStatus!);
+    }
+
+    double temp = double.tryParse(weather.temperature) ?? 25.0;
+
+    dailyPlan = _generateDailyPlan(
+      allFoods,
+      bmiCategory: bmiCategory,
+      temperature: temp,
+      weatherCondition: weather.condition,
+    );
     notifyListeners();
   }
 

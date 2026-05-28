@@ -1,0 +1,463 @@
+@startuml LORA_1_ClassDiagram
+
+!define ABSTRACT_CLASS abstract class
+!define INTERFACE interface
+
+skinparam classBackgroundColor #FFFFFF
+skinparam classBorderColor #000000
+skinparam classArrowColor #000000
+skinparam backgroundColor #FFFFFF
+
+' ============================================
+' ENTITIES - DOMAIN LAYER
+' ============================================
+
+class UserProfileEntity {
+    -uid: String
+    -fullName: String
+    -email: String
+    -photoUrl: String
+    -localPhotoPath: String
+    -height: String
+    -weight: String
+    -gender: String
+    -age: String
+    --
+    +copyWith(): UserProfileEntity
+}
+
+class WorkoutSessionEntity {
+    -activity: String
+    -durationSec: int
+    -distanceKm: double
+    -calories: int
+    -time: DateTime
+    -workoutDetails: List<Map>
+    -details: String
+    -path: List<Map>
+    -type: String
+    --
+    +toFirebaseMap(): Map
+}
+
+class ExerciseEntity {
+    -name: String
+    -target: String
+    -type: String
+    -videoUrl: String
+    -startAt: int
+    -tips: String
+    --
+    +fromMap(map): ExerciseEntity
+    +toMap(): Map
+}
+
+class BmiResultEntity {
+    -score: double
+    -status: String
+    -colorHex: int
+}
+
+class FoodEntity {
+    -rawName: String
+    -displayName: String
+    -rating: int
+    -description: String
+    -icon: IconData
+    -type: String
+    -mealTime: String
+}
+
+class WeatherEntity {
+    -city: String
+    -temperature: String
+    -condition: String
+    -aqi: int
+    -uvIndex: double
+    --
+    +empty(): WeatherEntity
+}
+
+class StatsSummaryEntity {
+    -totalSessions: int
+    -totalCalories: int
+    -totalDistance: double
+    -totalDurationMin: int
+    -maxDistanceRecord: double
+    -maxRepsRecord: Map
+    -chartData: List<Map>
+    -bmiWeightData: List<Map>
+    --
+    +empty(): StatsSummaryEntity
+}
+
+class RankData {
+    -id: int
+    -name: String
+    -minExp: int
+    -maxExp: int
+    -assetPath: String
+}
+
+class BadgeItem {
+    -id: String
+    -name: String
+    -icon: IconData
+}
+
+class GamificationResult {
+    -gainedExp: int
+    -newTotalExp: int
+    -isRankUp: bool
+    -newRank: RankData
+    -newBadges: List<BadgeItem>
+}
+
+' ============================================
+' REPOSITORIES - ABSTRACT
+' ============================================
+
+INTERFACE WorkoutRepository {
+    +getUserSports(): Future<Result>
+    +getUserPreferences(): Future<Result>
+    +getUserName(): Future<Result>
+    +saveWorkoutSession(session): Future<Result>
+    +getWeather(lat, lon): Future<Result>
+}
+
+INTERFACE SettingsRepository {
+    +getUserProfile(): Future<Result>
+    +updateUserName(name): Future<Result>
+    +saveLocalPhoto(path): Future<Result>
+    +logout(): Future<Result>
+}
+
+INTERFACE DashboardRepository {
+    +getWeatherData(): Future<Result>
+    +getUserProfile(): Future<Result>
+    +getNutritionData(): Future<Result>
+    +checkDailyLogin(): Future<Result>
+    +getLatestBmiFromHistory(): Future<Result>
+    +watchUserExp(): Stream<int>
+    +watchUserName(): Stream<String>
+}
+
+INTERFACE HistoryRepository {
+    +getHistoryStream(): Stream
+    +deleteHistoryItem(id): Future<Result>
+}
+
+INTERFACE StatsRepository {
+    +getStatistics(): Future<Result>
+    +processStatistics(): Future<Result>
+}
+
+INTERFACE BMIRepository {
+    +calculateBmi(weight, height): BmiResultEntity
+    +saveBmiHistory(bmi): Future<Result>
+}
+
+' ============================================
+' REPOSITORY IMPLEMENTATIONS
+' ============================================
+
+class WorkoutRepositoryImpl {
+    -remoteDataSource: WorkoutRemoteDataSource
+    --
+    +getUserSports(): Future<Result>
+    +saveWorkoutSession(session): Future<Result>
+}
+
+class SettingsRepositoryImpl {
+    -localDataSource: SettingsLocalDataSource
+    -remoteDataSource: SettingsRemoteDataSource
+    --
+    +getUserProfile(): Future<Result>
+    +updateUserName(name): Future<Result>
+    +saveLocalPhoto(path): Future<Result>
+    +logout(): Future<Result>
+}
+
+class DashboardRepositoryImpl {
+    -userDataSource: UserRemoteDataSource
+    -weatherDataSource: WeatherRemoteDataSource
+    --
+    +getWeatherData(): Future<Result>
+    +getUserProfile(): Future<Result>
+    +getNutritionData(): Future<Result>
+}
+
+class HistoryRepositoryImpl {
+    -remoteDataSource: HistoryRemoteDataSource
+    --
+    +getHistoryStream(): Stream
+    +deleteHistoryItem(id): Future<Result>
+}
+
+class StatsRepositoryImpl {
+    -remoteDataSource: StatsRemoteDataSource
+    --
+    +getStatistics(): Future<Result>
+}
+
+class BMIRepositoryImpl {
+    -remoteDataSource: WorkoutRemoteDataSource
+    --
+    +calculateBmi(weight, height): BmiResultEntity
+    +saveBmiHistory(bmi): Future<Result>
+}
+
+' ============================================
+' DATA SOURCES
+' ============================================
+
+INTERFACE WorkoutRemoteDataSource {
+    +getUserSports(): Future<List>
+    +saveWorkoutSession(session): Future<void>
+}
+
+INTERFACE SettingsLocalDataSource {
+    +savePhoto(path): Future<void>
+}
+
+INTERFACE SettingsRemoteDataSource {
+    +getUserProfile(): Future<Map>
+}
+
+INTERFACE WeatherRemoteDataSource {
+    +getWeatherData(): Future<Map>
+}
+
+INTERFACE UserRemoteDataSource {
+    +getUserProfile(): Future<Map>
+}
+
+INTERFACE HistoryRemoteDataSource {
+    +getHistoryStream(): Stream
+}
+
+INTERFACE StatsRemoteDataSource {
+    +getStatistics(): Future<Map>
+}
+
+' ============================================
+' USE CASES
+' ============================================
+
+class CalculateBmi {
+    -repository: BMIRepository
+    --
+    +call(weight, height): Future<Result<BmiResultEntity>>
+}
+
+class SaveBmiHistory {
+    -repository: BMIRepository
+    --
+    +call(bmi): Future<Result<void>>
+}
+
+class GetUserProfile {
+    -repository: SettingsRepository
+    --
+    +call(): Future<Result<UserProfileEntity>>
+}
+
+class UpdateUserName {
+    -repository: SettingsRepository
+    --
+    +call(name): Future<Result<void>>
+}
+
+class LogoutUser {
+    -repository: SettingsRepository
+    --
+    +call(): Future<Result<void>>
+}
+
+class GetWeatherData {
+    -repository: DashboardRepository
+    --
+    +call(): Future<Result<WeatherEntity>>
+}
+
+class GenerateRecommendations {
+    -repository: DashboardRepository
+    --
+    +call(): Future<Result<Map>>
+}
+
+class ProcessStatistics {
+    -repository: StatsRepository
+    --
+    +call(): Future<Result<StatsSummaryEntity>>
+}
+
+class GetHistoryStream {
+    -repository: HistoryRepository
+    --
+    +call(): Stream
+}
+
+class DeleteHistoryItem {
+    -repository: HistoryRepository
+    --
+    +call(id): Future<Result<void>>
+}
+
+' ============================================
+' SERVICES
+' ============================================
+
+class BadgeService {
+    +{static}processSession(userId, sessionData): GamificationResult
+    +{static}checkDailyLogin(userId): Future<int>
+    +{static}getUnlockedBadges(): Future<List<String>>
+}
+
+class RankSystem {
+    +{static}getRank(exp): RankData
+    +{static}getNextRankExp(exp): int
+    +{static}getProgressValue(exp): double
+}
+
+class NotificationService {
+    -_plugin: FlutterLocalNotificationsPlugin
+    --
+    +init(): Future<void>
+    +showInstant(id, title, body): Future<void>
+    +scheduleDaily(id, title, body, hour, minute): Future<void>
+    +cancel(id): Future<void>
+    +cancelAll(): Future<void>
+}
+
+class LocationService {
+    +getLocation(): Future<Map>
+    +startTracking(): void
+    +stopTracking(): void
+}
+
+class SessionCompletionService {
+    +completeSession(): Future<void>
+    +saveSessionMetrics(session): Future<void>
+}
+
+class WorkoutTimeEngine {
+    +scheduleWorkout(): Future<void>
+    +calculateNextTime(): DateTime
+}
+
+' ============================================
+' PROVIDERS - STATE MANAGEMENT
+' ============================================
+
+class WorkoutProvider {
+    -repository: WorkoutRepository
+    -state: AsyncValue<List>
+    --
+    +loadWorkoutData(): Future<void>
+    +saveWorkout(session): Future<void>
+}
+
+class DashboardProvider {
+    -repository: DashboardRepository
+    -weather: AsyncValue<WeatherEntity>
+    -profile: AsyncValue<UserProfileEntity>
+    --
+    +loadDashboard(): Future<void>
+    +watchUserExp(): Stream<int>
+}
+
+class SettingsProvider {
+    -useCase: GetUserProfile
+    -profile: AsyncValue<UserProfileEntity>
+    --
+    +loadProfile(): Future<void>
+    +updateName(name): Future<void>
+}
+
+class StatsProvider {
+    -useCase: ProcessStatistics
+    -stats: AsyncValue<StatsSummaryEntity>
+    --
+    +loadStatistics(): Future<void>
+}
+
+class HistoryProvider {
+    -useCase: GetHistoryStream
+    -history: Stream<List>
+    --
+    +deleteItem(id): Future<void>
+}
+
+class BmiProvider {
+    -calculateBmi: CalculateBmi
+    -saveBmi: SaveBmiHistory
+    --
+    +calculateAndSave(weight, height): Future<void>
+}
+
+' ============================================
+' RELATIONSHIPS
+' ============================================
+
+' Repository Implementations
+WorkoutRepositoryImpl ..|> WorkoutRepository
+SettingsRepositoryImpl ..|> SettingsRepository
+DashboardRepositoryImpl ..|> DashboardRepository
+HistoryRepositoryImpl ..|> HistoryRepository
+StatsRepositoryImpl ..|> StatsRepository
+BMIRepositoryImpl ..|> BMIRepository
+
+' Repository to DataSource
+WorkoutRepositoryImpl --> WorkoutRemoteDataSource
+SettingsRepositoryImpl --> SettingsLocalDataSource
+SettingsRepositoryImpl --> SettingsRemoteDataSource
+DashboardRepositoryImpl --> UserRemoteDataSource
+DashboardRepositoryImpl --> WeatherRemoteDataSource
+HistoryRepositoryImpl --> HistoryRemoteDataSource
+StatsRepositoryImpl --> StatsRemoteDataSource
+
+' Use Cases to Repositories
+CalculateBmi --> BMIRepository
+SaveBmiHistory --> BMIRepository
+GetUserProfile --> SettingsRepository
+UpdateUserName --> SettingsRepository
+LogoutUser --> SettingsRepository
+GetWeatherData --> DashboardRepository
+GenerateRecommendations --> DashboardRepository
+ProcessStatistics --> StatsRepository
+GetHistoryStream --> HistoryRepository
+DeleteHistoryItem --> HistoryRepository
+
+' Providers to UseCase/Repository
+BmiProvider --> CalculateBmi
+BmiProvider --> SaveBmiHistory
+SettingsProvider --> GetUserProfile
+WorkoutProvider --> WorkoutRepository
+DashboardProvider --> DashboardRepository
+StatsProvider --> ProcessStatistics
+HistoryProvider --> GetHistoryStream
+HistoryProvider --> DeleteHistoryItem
+
+' Services
+BadgeService --> RankSystem
+BadgeService --> RankData
+BadgeService --> BadgeItem
+BadgeService --> GamificationResult
+
+NotificationService --> WorkoutTimeEngine
+LocationService --> SessionCompletionService
+SessionCompletionService --> WorkoutSessionEntity
+
+' Entity Relationships
+WorkoutSessionEntity --> ExerciseEntity
+StatsSummaryEntity --> BmiResultEntity
+GamificationResult --> RankData
+GamificationResult --> BadgeItem
+
+' Provider to Services
+WorkoutProvider --> NotificationService
+WorkoutProvider --> LocationService
+DashboardProvider --> LocationService
+
+@enduml

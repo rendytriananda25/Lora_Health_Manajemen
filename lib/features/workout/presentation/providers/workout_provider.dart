@@ -200,10 +200,18 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
+    // Adjust intensity based on goal and fitness level
+    String adjustedLevel = userLevel;
+    if (userGoal == 'WEIGHT_LOSS' && userLevel == 'NEVER') {
+      adjustedLevel = 'SOMETIMES';
+    } else if (userGoal == 'MUSCLE_GAIN' && userLevel == 'DAILY') {
+      adjustedLevel = 'DAILY';
+    }
+
     final result = WorkoutData.generateRoutine(
       sportType: selectedSport,
       goal: userGoal,
-      level: userLevel,
+      level: adjustedLevel,
       gender: userGender,
       weather: weatherCondition,
       temp: tempValue,

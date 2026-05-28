@@ -47,12 +47,17 @@ import 'features/settings/data/datasources/settings_local_datasource.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final languageProvider = LanguageProvider();
-  await languageProvider.initialize();
 
+  // --- Phase 1: Local-only init (run in parallel) ---
+  final languageProvider = LanguageProvider();
   final themeProvider = ThemeProvider();
-  await themeProvider.initialize();
-  debugPrint("🚀 Main: Theme Initialized");
+  await Future.wait([
+    languageProvider.initialize(),
+    themeProvider.initialize(),
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
+  ]);
+  debugPrint("🚀 Main: Theme & Language Initialized");
+
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -61,10 +66,14 @@ void main() async {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+
+  // --- Phase 2: Firebase must init before anything uses it ---
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await NotificationService.instance.init();
-  await WorkoutReminderService.instance.initDefault();
+
+  // --- Phase 3: Fire-and-forget non-critical services so runApp() ---
+  // is reached faster, preventing ANR.
+  NotificationService.instance.init();
+  WorkoutReminderService.instance.initDefault();
   NutritionData.fetchFromFirebase();
   WorkoutData.fetchFromFirebase();
 

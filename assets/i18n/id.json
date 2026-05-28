@@ -281,6 +281,13 @@
     "photoUpdated": "📸 Foto Profil Diperbarui (Lokal)",
     "confirmLogoutBody": "Apakah Anda yakin ingin keluar?"
   },
+  "sportManagement": {
+    "title": "Kelola Olahraga",
+    "subtitle": "Tambah atau hapus jenis olahraga yang kamu ikuti. Perubahan akan langsung disimpan ke akun.",
+    "saveChanges": "SIMPAN PERUBAHAN",
+    "saved": "✅ Pilihan olahraga berhasil diperbarui!",
+    "minOneRequired": "Pilih minimal satu olahraga!"
+  },
   "personalInfo": {
     "title": "Informasi Pribadi",
     "height": "Tinggi Badan",
