@@ -10,6 +10,7 @@ import 'package:lora_1/features/dashboard/domain/repositories/dashboard_reposito
 import 'package:lora_1/features/dashboard/data/datasources/weather_remote_datasource.dart';
 import 'package:lora_1/features/dashboard/data/datasources/user_remote_datasource.dart';
 import 'package:lora_1/features/dashboard/data/nutrition_data.dart';
+import 'package:geocoding/geocoding.dart';
 
 class DashboardRepositoryImpl implements DashboardRepository {
   final WeatherRemoteDataSource weatherDataSource;
@@ -27,8 +28,25 @@ class DashboardRepositoryImpl implements DashboardRepository {
       final wData = raw['weather'];
       final aData = raw['aqi'];
 
+      String preciseLocation = wData['name'] ?? 'Unknown';
+      try {
+        final lat = (wData['coord']['lat'] as num).toDouble();
+        final lon = (wData['coord']['lon'] as num).toDouble();
+        final placemarks = await placemarkFromCoordinates(lat, lon);
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+            preciseLocation = place.subLocality!;
+          } else if (place.locality != null && place.locality!.isNotEmpty) {
+            preciseLocation = place.locality!;
+          }
+        }
+      } catch (e) {
+        debugPrint('Geocoding error: $e');
+      }
+
       final entity = WeatherEntity(
-        city: wData['name'] ?? 'Unknown',
+        city: preciseLocation,
         temperature: wData['main']['temp'].toInt().toString(),
         condition: wData['weather'][0]['description'] ?? '',
         aqi: (aData['list'][0]['main']['aqi'] as int) * 25,

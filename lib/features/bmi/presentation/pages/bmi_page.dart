@@ -92,6 +92,7 @@ class BMIPage extends StatelessWidget {
             SizedBox(
               height: 400,
               width: 100,
+              key: ValueKey('height_wheel_${bmiProvider.isLoaded}_${bmiProvider.resetCount}'),
               child: ListWheelScrollView.useDelegate(
                 itemExtent: 50,
                 perspective: 0.005,
@@ -313,6 +314,7 @@ class BMIPage extends StatelessWidget {
         _buildNextButton(
           lang.translate('bmi.recalculate'),
           onTap: bmiProvider.reset,
+          forceEnabled: true,
         ),
         const SizedBox(height: 50),
       ],
@@ -337,10 +339,10 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNextButton(String text, {required VoidCallback onTap}) {
+  Widget _buildNextButton(String text, {required VoidCallback onTap, bool forceEnabled = false}) {
     return Consumer<BmiProvider>(
       builder: (context, bmiProvider, _) {
-        final isEnabled = bmiProvider.currentPage < 2;
+        final isEnabled = forceEnabled || bmiProvider.currentPage < 2;
 
         return GestureDetector(
           onTap: isEnabled ? onTap : null,

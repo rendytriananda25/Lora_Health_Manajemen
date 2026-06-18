@@ -146,29 +146,27 @@ class _DashboardPageState extends State<DashboardPage> {
                         ),
                       ),
                       SizedBox(height: AppSize.h(15)),
-                      Row(
-                        children: [
-                          _buildStatCard(
-                            lang.translate('dashboard.airQuality'),
-                            aqiInfo['status'], Icons.air,
-                            aqiInfo['color'], theme,
-                          ),
-                          SizedBox(width: AppSize.w(15)),
-                          _buildStatCard(
-                            lang.translate('dashboard.uvIndex'),
-                            uvInfo['status'], Icons.sunny,
-                            uvInfo['color'], theme,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: AppSize.h(25)),
-                      _buildTipsCard(
+                      _buildEnvironmentCard(
+                        aqiInfo,
+                        uvInfo,
                         dashboard.weather.city == 'Memuat Lokasi...' ||
                                 dashboard.weather.city == 'Koneksi Gagal'
                             ? lang.translate('dashboard.preparingTips')
                             : "${aqiInfo['tips']} ${uvInfo['tips']}",
-                        lang, theme,
+                        lang,
+                        theme,
                       ),
+                      SizedBox(height: AppSize.h(30)),
+                      Text(
+                        lang.translate('dashboard.yourMonthlyProgress'),
+                        style: TextStyle(
+                          color: theme.textColor,
+                          fontSize: AppSize.sp(17),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: AppSize.h(15)),
+                      _buildViewProgressCard(lang, theme),
                       SizedBox(height: AppSize.h(30)),
                       _buildDailyMealPlan(dashboard, theme, lang),
                       SizedBox(height: AppSize.h(30)),
@@ -258,116 +256,168 @@ class _DashboardPageState extends State<DashboardPage> {
               ],
             ),
             const Divider(color: Colors.white10, height: 40),
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              child: Text(
-                recommendations.isNotEmpty
-                    ? recommendations[dashboard.currentRecIndex % recommendations.length]
-                    : "Memuat...",
-                key: ValueKey<int>(dashboard.currentRecIndex),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: theme.textColor,
-                  fontSize: 16, fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            if (recommendations.length > 1)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  recommendations.length,
-                  (i) => Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    width: 6, height: 6,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: dashboard.currentRecIndex == i
-                          ? const Color(0xFF008BFF)
-                          : theme.textColor.withOpacity(0.24),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragEnd: (details) {
+                if (recommendations.isEmpty) return;
+                int newIndex = dashboard.currentRecIndex;
+                if (details.primaryVelocity! > 0) {
+                  newIndex = (dashboard.currentRecIndex - 1) % recommendations.length;
+                  if (newIndex < 0) newIndex = recommendations.length - 1;
+                } else if (details.primaryVelocity! < 0) {
+                  newIndex = (dashboard.currentRecIndex + 1) % recommendations.length;
+                }
+                dashboard.setRecIndex(newIndex);
+              },
+              child: Column(
+                children: [
+                  AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    child: Text(
+                      recommendations.isNotEmpty
+                          ? recommendations[dashboard.currentRecIndex % recommendations.length]
+                          : "Memuat...",
+                      key: ValueKey<int>(dashboard.currentRecIndex),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: theme.textColor,
+                        fontSize: 16, fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 10),
+                  if (recommendations.length > 1)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(
+                        recommendations.length,
+                        (i) => GestureDetector(
+                          onTap: () => dashboard.setRecIndex(i),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
+                            width: 6, height: 6,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: dashboard.currentRecIndex == i
+                                  ? const Color(0xFF008BFF)
+                                  : theme.textColor.withOpacity(0.24),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(
-    String label, String value, IconData icon, Color color, ThemeProvider theme,
+  Widget _buildEnvironmentCard(
+    Map<String, dynamic> aqiInfo,
+    Map<String, dynamic> uvInfo,
+    String tips,
+    LanguageProvider lang,
+    ThemeProvider theme,
   ) {
-    return Expanded(
-      child: GlassCard(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(height: 12),
-              Text(label, style: TextStyle(
-                color: theme.textColor.withOpacity(0.54), fontSize: 11,
-              )),
-              Text(value, style: TextStyle(
-                color: theme.textColor, fontSize: 16, fontWeight: FontWeight.bold,
-              )),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTipsCard(String tips, LanguageProvider lang, ThemeProvider theme) {
     return GlassCard(
       child: Column(
         children: [
-          ListTile(
-            leading: const CircleAvatar(
-              backgroundColor: Color(0xFF008BFF),
-              child: Icon(Icons.lightbulb_outline, color: Colors.white),
-            ),
-            title: Text(
-              lang.translate('dashboard.healthTips'),
-              style: TextStyle(
-                color: theme.textColor, fontSize: 14, fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: Text(
-              tips,
-              style: TextStyle(
-                color: theme.textColor.withOpacity(0.7), fontSize: 12,
-              ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.air, color: aqiInfo['color'], size: 20),
+                      const SizedBox(height: 12),
+                      Text(lang.translate('dashboard.airQuality'), style: TextStyle(
+                        color: theme.textColor.withOpacity(0.54), fontSize: 11,
+                      )),
+                      Text(aqiInfo['status'], style: TextStyle(
+                        color: theme.textColor, fontSize: 16, fontWeight: FontWeight.bold,
+                      )),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.sunny, color: uvInfo['color'], size: 20),
+                        const SizedBox(height: 12),
+                        Text(lang.translate('dashboard.uvIndex'), style: TextStyle(
+                          color: theme.textColor.withOpacity(0.54), fontSize: 11,
+                        )),
+                        Text(uvInfo['status'], style: TextStyle(
+                          color: theme.textColor, fontSize: 16, fontWeight: FontWeight.bold,
+                        )),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const Divider(color: Colors.white12, height: 1),
-          InkWell(
-            onTap: () {
-              Navigator.push(context,
-                MaterialPageRoute(builder: (context) => const StatisticsPage()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    lang.translate('dashboard.viewProgress'),
-                    style: const TextStyle(
-                      color: Color(0xFF008BFF), fontWeight: FontWeight.bold, fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  const Icon(Icons.arrow_forward, color: Color(0xFF008BFF), size: 14),
-                ],
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: ListTile(
+              leading: const CircleAvatar(
+                backgroundColor: Color(0xFF008BFF),
+                child: Icon(Icons.lightbulb_outline, color: Colors.white),
+              ),
+              title: Text(
+                lang.translate('dashboard.healthTips'),
+                style: TextStyle(
+                  color: theme.textColor, fontSize: 14, fontWeight: FontWeight.bold,
+                ),
+              ),
+              subtitle: Text(
+                tips,
+                style: TextStyle(
+                  color: theme.textColor.withOpacity(0.7), fontSize: 12,
+                ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildViewProgressCard(LanguageProvider lang, ThemeProvider theme) {
+    return GlassCard(
+      child: InkWell(
+        onTap: () {
+          Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const StatisticsPage()),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.bar_chart_rounded, color: Color(0xFF008BFF), size: 18),
+              const SizedBox(width: 8),
+              Text(
+                lang.translate('dashboard.viewProgress'),
+                style: const TextStyle(
+                  color: Color(0xFF008BFF), fontWeight: FontWeight.bold, fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Icon(Icons.arrow_forward_ios, color: Color(0xFF008BFF), size: 12),
+            ],
+          ),
+        ),
       ),
     );
   }

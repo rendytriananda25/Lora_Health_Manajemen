@@ -288,6 +288,7 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     distanceNotifier.value = 0.0;
     routePoints.clear();
     showTips = false;
+    _locationService.resetFilter();
     notifyListeners();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -298,21 +299,18 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
 
     if (isGpsSport) {
       _positionStream = _locationService.getPositionStream().listen((pos) {
-
         LatLng? lastPoint = routePoints.isNotEmpty ? routePoints.last : null;
-        if (!_locationService.isValidPoint(pos, lastPoint)) {
-          return;
-        }
+        final filtered = _locationService.filterPoint(pos, lastPoint);
+        if (filtered == null) return;
 
-        LatLng newPoint = LatLng(pos.latitude, pos.longitude);
         if (routePoints.isNotEmpty) {
           distanceNotifier.value += _locationService.calculateDistance(
             routePoints.last,
-            newPoint,
+            filtered,
           );
         }
-        routePoints.add(newPoint);
-        currentLocation = newPoint;
+        routePoints.add(filtered);
+        currentLocation = filtered;
         notifyListeners();
       });
     }

@@ -26,7 +26,7 @@ class LocationService {
     final LocationSettings settings = AndroidSettings(
       accuracy: LocationAccuracy.best,
       distanceFilter: 3,
-      forceLocationManager: true,
+      forceLocationManager: false,
     );
 
     return Geolocator.getPositionStream(locationSettings: settings);

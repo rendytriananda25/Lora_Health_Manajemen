@@ -6,17 +6,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutData {
-
   /// Public access for JSON export tools
-  static Map<String, dynamic> get defaultWorkoutLibrary => _defaultWorkoutLibrary;
+  static Map<String, dynamic> get defaultWorkoutLibrary =>
+      _defaultWorkoutLibrary;
   static Map<String, dynamic> get progressionData => _progressionData;
 
   static Map<String, dynamic>? _onlineWorkoutData;
 
-
-
   static final Map<String, dynamic> _progressionData = {
-
     "WEIGHT_LOSS": {
       "Jumping Jacks": {
         "NEVER": {
@@ -227,7 +224,6 @@ class WorkoutData {
         },
       },
     },
-
 
     "MUSCLE_GAIN": {
       "Push Up": {
@@ -816,63 +812,63 @@ class WorkoutData {
           "target": "50 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/xkk7kMUZP24",
         },
         {
           "name": "Mikan Drill + Form Shooting",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/_VcY9M49JAs",
         },
         {
           "name": "Zig-Zag Defensive Slides",
           "target": "4 Full Court",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/NPBXuAd9JQs",
         },
         {
           "name": "Physical: Push Ups",
           "target": "3 Sets x 15",
           "type": "reps",
           "icon_code": 59405,
-          "video_url": "",
+          "video_url": "https://youtu.be/1g82D68N-ys",
         },
         {
           "name": "Crossover Dribble Drill",
           "target": "3 Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/7kFuB5Wc970",
         },
         {
           "name": "Pull-Up Jumper (Mid-Range)",
           "target": "20 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/glny6njDcbE",
         },
         {
           "name": "Suicide Sprints",
           "target": "5 Sets",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/6XYSqfInJFU",
         },
         {
           "name": "Box Out & Rebound Drill",
           "target": "15 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/pFRlEOeWpKY",
         },
         {
           "name": "Free Throw Routine",
           "target": "20 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/TXRGIMIFEls",
         },
       ],
       "female_template": [
@@ -881,77 +877,80 @@ class WorkoutData {
           "target": "10 Menit",
           "type": "time",
           "icon_code": 58788,
-          "video_url": "",
+          "video_url": "https://youtu.be/DAjPcYxPPBg",
         },
         {
           "name": "Finger Tip Taps",
           "target": "2 Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=finger+tip+taps+basketball+drill",
         },
         {
           "name": "Pocket Dribble Focus",
           "target": "2 Menit/Tangan",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/-N2tkn62dvg",
         },
         {
           "name": "Catch & Shoot Midrange",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/ow16151mQDE",
         },
         {
           "name": "Free Throw Pressure",
           "target": "10 Reps (Miss=Sprint)",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/hXE4PpjSnkg",
         },
         {
           "name": "Injury Prevention",
           "target": "Latihan Glute & Hamstring (3x12 Squat)",
           "type": "info",
           "icon_code": 61279,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=basketball+injury+prevention+glute+hamstring+workout",
         },
         {
           "name": "Behind-the-Back Dribble",
           "target": "2 Menit/Tangan",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/Ze9QKvjZxYQ",
         },
         {
           "name": "Layup Drill (Both Hands)",
           "target": "10 Reps/Tangan",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/HaLql0ueNpY",
         },
         {
           "name": "Defensive Shuffle & Sprint",
           "target": "5 Full Court",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/4A6KqSJX8Ek",
         },
         {
           "name": "V-Cut & Catch Shoot",
           "target": "15 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/QpSXkMuMf7Q",
         },
         {
           "name": "Passing Accuracy Drill",
           "target": "3 Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=basketball+passing+accuracy+drill",
         },
       ],
     },
@@ -970,77 +969,82 @@ class WorkoutData {
           "target": "100 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/QKmC5ixM9xk",
         },
         {
           "name": "Inside-Outside Dribbling",
           "target": "20 Meters x 5",
           "type": "dist",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/naEccnjzLxM",
         },
         {
           "name": "Wall Pass (First Touch)",
           "target": "50 Reps/Kaki",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/H4cRSKFzSKY",
         },
         {
           "name": "Rondo Simulation / High Press",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/AqnzDcnWYxU",
         },
         {
           "name": "Long Ball Accuracy",
           "target": "20 Reps (30m)",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=long+ball+accuracy+football+drill",
         },
         {
           "name": "Agility Ladder Runs",
           "target": "5 Sets",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/9ZTRUVLjGzI",
         },
         {
           "name": "Cone Weave Dribbling",
           "target": "10 Cones x 4",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/vnngDOCy9C8",
         },
         {
           "name": "Heading Accuracy",
           "target": "15 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=heading+accuracy+football+drill",
         },
         {
           "name": "1v1 Attacking Moves",
           "target": "10 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=1v1+attacking+moves+football+drill",
         },
         {
           "name": "Crossing & Finishing",
           "target": "15 Reps/Sisi",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=crossing+and+finishing+football+drill",
         },
         {
           "name": "Short Passing Combinations",
           "target": "5 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=short+passing+combinations+football+drill",
         },
       ],
       "female_template": [
@@ -1049,77 +1053,83 @@ class WorkoutData {
           "target": "10 Cones (1m gap)",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/Hgs2LOZwbC0",
         },
         {
           "name": "Passing Triangle",
           "target": "10 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/N_w6d6y4i58",
         },
         {
           "name": "Possession Control / 5v5 Sim",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=possession+control+5v5+football+drill",
         },
         {
           "name": "Shooting from Distance",
           "target": "20 Shots",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=shooting+from+distance+football+tutorial",
         },
         {
           "name": "Counter Attack Sprint",
           "target": "60m Sprint to Finish",
           "type": "dist",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=counter+attack+sprint+football+drill",
         },
         {
           "name": "FIFA 11+ Prevention",
           "target": "Ligament Strength (ACL Focus)",
           "type": "info",
           "icon_code": 61279,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=fifa+11+injury+prevention+exercises",
         },
         {
           "name": "Juggling (Ball Control)",
           "target": "3 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/dvQOcAP9LNg",
         },
         {
           "name": "Through Ball Drill",
           "target": "10 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/Wcee52kwWjg",
         },
         {
           "name": "Quick Turn & Shoot",
           "target": "12 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/_f9ZIh8ESn4",
         },
         {
           "name": "Defensive Positioning Drill",
           "target": "5 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=defensive+positioning+football+drill",
         },
         {
           "name": "Set Piece Practice",
           "target": "10 Free Kicks",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=free+kick+set+piece+practice+football",
         },
       ],
     },
@@ -1198,49 +1208,49 @@ class WorkoutData {
             "target": "30 Reps",
             "type": "reps",
             "icon_code": 59375,
-            "video_url": "",
+            "video_url": "https://youtu.be/tPmybsDX8ZY",
           },
           {
             "name": "Bicycle Crunches",
             "target": "24 Reps",
             "type": "reps",
             "icon_code": 59375,
-            "video_url": "",
+            "video_url": "https://youtu.be/NWzlS1Lp1e8",
           },
           {
             "name": "Lateral Lunges",
             "target": "16 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url": "https://youtu.be/rvqLVxYqEvo",
           },
           {
             "name": "Star Jumps",
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 58788,
-            "video_url": "",
+            "video_url": "https://youtu.be/eRMQuN34v7w",
           },
           {
             "name": "Bear Crawl",
             "target": "30 Detik",
             "type": "time",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/LCVMqEmgglo",
           },
           {
             "name": "Inchworm",
             "target": "8 Reps",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/-q1XGQ2VMUU",
           },
           {
             "name": "Shadow Boxing",
             "target": "2 Menit",
             "type": "time",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/J4j3AOVWuHE",
           },
         ],
         "MUSCLE_GAIN": [
@@ -1312,49 +1322,50 @@ class WorkoutData {
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/G2mlaEfpEIM",
           },
           {
             "name": "Archer Push Up",
             "target": "8 Reps/Sisi",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/MxVbNel13Ek",
           },
           {
             "name": "Glute Bridge",
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url":
+                "https://www.youtube.com/results?search_query=glute+bridge+exercise+tutorial",
           },
           {
             "name": "Side Plank",
             "target": "30 Detik/Sisi",
             "type": "time",
             "icon_code": 61460,
-            "video_url": "",
+            "video_url": "https://youtu.be/NXr4Fw8q60o",
           },
           {
             "name": "Calf Raises",
             "target": "25 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url": "https://youtu.be/eMTy3qylqnE",
           },
           {
             "name": "Superman Pull",
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 60235,
-            "video_url": "",
+            "video_url": "https://youtu.be/0rVIf0RpZcA",
           },
           {
             "name": "Decline Push Up",
             "target": "10 Reps",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/SKPab2YC8BE",
           },
         ],
         "KEEP_FIT": [
@@ -1420,61 +1431,60 @@ class WorkoutData {
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url":
+                "https://www.youtube.com/results?search_query=glute+bridge+exercise+tutorial",
           },
           {
             "name": "Dead Bug",
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 59375,
-            "video_url": "",
+            "video_url": "https://youtu.be/4XLEnwUr1d8",
           },
           {
             "name": "Wall Sit",
             "target": "30 Detik",
             "type": "time",
             "icon_code": 59132,
-            "video_url": "",
+            "video_url": "https://youtu.be/cWTZ8Am1Ee0",
           },
           {
             "name": "Standing Calf Raises",
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url": "https://youtu.be/eMTy3qylqnE",
           },
           {
             "name": "Shoulder Tap Plank",
             "target": "16 Reps",
             "type": "reps",
             "icon_code": 61460,
-            "video_url": "",
+            "video_url": "https://youtu.be/eyeuugrpLYA",
           },
           {
             "name": "Hip Circles",
             "target": "1 Menit",
             "type": "time",
             "icon_code": 58788,
-            "video_url": "",
+            "video_url": "https://youtu.be/x-5h_QUOem8",
           },
           {
             "name": "World's Greatest Stretch",
             "target": "8 Reps/Sisi",
             "type": "reps",
             "icon_code": 60235,
-            "video_url": "",
+            "video_url": "https://youtu.be/ExuOImbFFFY",
           },
         ],
       },
     },
   };
 
-
   static String getCurrentWeekKey(int totalSessions) {
     final weekNumber = (totalSessions ~/ 7) % 4;
     return "W${weekNumber + 1}";
   }
-
 
   static String getProgressiveTarget({
     required String exerciseName,
@@ -1528,7 +1538,6 @@ class WorkoutData {
     String weatherAdvice = "";
     List<Map<String, dynamic>> exercises = [];
 
-
     if (sportKey == "running" || sportKey == "cycling") {
       weatherAdvice = _getWeatherText(
         sportKey,
@@ -1566,8 +1575,7 @@ class WorkoutData {
       if (userGender == "FEMALE" && sportData['female_extra'] != null) {
         exercises.add(Map<String, dynamic>.from(sportData['female_extra']));
       }
-    }
-    else if (sportKey == "basketball" || sportKey == "football") {
+    } else if (sportKey == "basketball" || sportKey == "football") {
       final levelData = sportData['levels'][userLevel] ?? {"duration": 45};
       double duration = (levelData['duration'] as num).toDouble();
 
@@ -1608,9 +1616,7 @@ class WorkoutData {
         5,
         alwaysIncludeNames: [warmupName],
       );
-    }
-
-    else {
+    } else {
       weatherAdvice = _getWeatherText(
         "home",
         sportData['weather_advice'],
@@ -1727,7 +1733,6 @@ class WorkoutData {
       "weather_advice": weatherAdvice,
     };
   }
-
 
   static List<Map<String, dynamic>> _selectDailyExercises(
     List<Map<String, dynamic>> pool,

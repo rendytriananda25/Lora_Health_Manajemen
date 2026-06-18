@@ -48,7 +48,8 @@
     "highlyRecommended": "強く推奨",
     "avoidLimit": "避ける / 制限",
     "environmentStatus": "環境ステータス",
-    "viewProgress": "進捗を見る",
+    "viewProgress": "月間進捗と統計",
+    "yourMonthlyProgress": "あなたの月間進捗",
     "dailyPlan": "あなたの毎日のメニュー"
   },
   "weather": {

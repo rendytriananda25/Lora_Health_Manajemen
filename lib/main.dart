@@ -69,6 +69,7 @@ void main() async {
 
   // --- Phase 2: Firebase must init before anything uses it ---
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await WorkoutData.seedToFirebase(); // Seed updated URLs to firebase
 
   // --- Phase 3: Fire-and-forget non-critical services so runApp() ---
   // is reached faster, preventing ANR.

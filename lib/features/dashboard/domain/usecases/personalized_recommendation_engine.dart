@@ -205,7 +205,7 @@ class PersonalizedRecommendationEngine {
     final tips = <String>[];
 
     if (bmi.category == 'FAT_LOSS') {
-      tips.add(translate('engine.prioritizeProteinStay full'));
+      tips.add(translate('engine.prioritizeProteinStayFull'));
       tips.add(translate('engine.avoidProcessedFoods'));
       if (temp >= 28) {
         tips.add(translate('engine.increaseWaterIntake'));

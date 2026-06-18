@@ -252,6 +252,12 @@ class DashboardProvider extends ChangeNotifier {
     });
   }
 
+  void setRecIndex(int index) {
+    currentRecIndex = index;
+    _startRecommendationRotation(); // Reset timer on manual interaction
+    notifyListeners();
+  }
+
   void _startExpListener() {
     _expSubscription?.cancel();
     _expSubscription = _repository.watchUserExp().listen(
