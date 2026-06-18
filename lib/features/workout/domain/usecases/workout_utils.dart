@@ -1,6 +1,3 @@
-/// UseCase: Tentukan target olahraga berdasarkan level.
-///
-/// Logika ini dipindahkan dari _getTargetByLevel() di map_pages.dart.
 class GetTargetByLevel {
   String call(String sport, String level) {
     final s = sport.toUpperCase();
@@ -45,21 +42,17 @@ class GetTargetByLevel {
   }
 }
 
-/// UseCase: Cek apakah olahraga butuh GPS.
 class CheckSportType {
-  /// Return true jika olahraga ini butuh GPS tracking (Lari/Sepeda).
   bool isGpsSport(String sport) {
     final s = sport.toUpperCase();
     return s == 'LARI' || s == 'SEPEDA' || s == 'RUNNING' || s == 'CYCLING';
   }
 
-  /// Return true jika olahraga ini berbasis durasi (bukan jarak).
   bool isDurationBased(String sport) {
     return !isGpsSport(sport);
   }
 }
 
-/// UseCase: Normalize gender string.
 class NormalizeGender {
   String call(String raw) {
     final value = raw.trim().toUpperCase();
@@ -69,7 +62,6 @@ class NormalizeGender {
   }
 }
 
-/// UseCase: Translate sport name by language.
 class TranslateSport {
   String call(String sport, String langCode) {
     if (langCode == 'id') return sport;

@@ -14,7 +14,6 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
 
-    // 1. Parsing Waktu & Tanggal (Safe Mode)
     DateTime dt;
     try {
       dt = DateTime.parse(data['time']);
@@ -23,28 +22,22 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
     }
     String formattedDate = DateFormat('dd MMMM yyyy, HH:mm').format(dt);
 
-    // 2. Parsing Durasi & Kalori (Pakai num biar aman int/double)
     int durationSec = (data['duration_sec'] as num? ?? 0).toInt();
     int durationMin = (durationSec / 60).ceil();
     int calories = (data['calories'] as num? ?? 0).toInt();
 
-    // 3. Parsing Details
     List<String> exerciseList = [];
 
-    // ✅ SUPPORT FORMAT BARU (List of Maps)
     if (data['workout_details'] != null && data['workout_details'] is List) {
       final list = data['workout_details'] as List;
       for (var item in list) {
-        // Handle Map
         if (item is Map) {
           final name = item['name'] ?? 'Unknown';
           final result = item['result'] ?? '-';
           exerciseList.add("$name: $result");
         }
-        // Handle "Object" from Firebase converted to Map equivalent
         else if (item != null) {
           try {
-            // Sometimes Firebase returns List<Object?> which are effectively Maps
             final map = Map<String, dynamic>.from(item as dynamic);
             final name = map['name'] ?? 'Unknown';
             final result = map['result'] ?? '-';
@@ -55,7 +48,6 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
         }
       }
     }
-    // ✅ SUPPORT FORMAT LAMA (String)
     else if (data['details'] != null) {
       String detailsRaw = data['details'].toString();
       if (detailsRaw.isNotEmpty &&
@@ -64,10 +56,8 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
       }
     }
 
-    // 4. Hitung Total Sets
     int totalSets = exerciseList.isEmpty ? 0 : exerciseList.length;
 
-    // 5. Logic Intensitas
     double calPerMin = durationMin > 0 ? (calories / durationMin) : 0;
     String intensity = "RINGAN";
     double intensityValue = 0.3;
@@ -108,21 +98,18 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
         physics: const BouncingScrollPhysics(),
         child: Column(
           children: [
-            // Row Atas: Total Sets & Kalori/Waktu
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start, // Biar sejajar atas
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // KOLOM KIRI: TOTAL SETS
                 Expanded(
                   flex: 2,
                   child: Container(
-                    height: 200, // Fixed height biar aman
+                    height: 200,
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: const Color(0xFFC7B8F5),
                       borderRadius: BorderRadius.circular(30),
                     ),
-                    // Gunakan SpaceBetween, JANGAN Spacer() di dalam ScrollView
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -160,7 +147,6 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 15),
-                // KOLOM KANAN: KALORI & WAKTU
                 Expanded(
                   child: Column(
                     children: [
@@ -186,7 +172,6 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // Card Intensitas
             Container(
               height: 140,
               width: double.infinity,
@@ -225,7 +210,7 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const Spacer(), // Spacer di sini AMAN karena di dalam Row Horizontal
+                  const Spacer(),
                   SizedBox(
                     width: 70,
                     height: 70,
@@ -243,12 +228,11 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
             ),
             const SizedBox(height: 15),
 
-            // Card Detail Gerakan (List Real)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: theme.boxColor, // Adaptive Color
+                color: theme.boxColor,
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(color: theme.textColor.withOpacity(0.05)),
               ),
@@ -294,7 +278,6 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
     );
   }
 
-  // --- WIDGET COMPONENTS ---
 
   Widget _buildSmallCard({
     required Color color,
@@ -305,7 +288,7 @@ class HistoryWorkoutDetailPage extends StatelessWidget {
   }) {
     return Container(
       width: double.infinity,
-      height: 92.5, // (200 - 15) / 2 -> Biar pas sejajar sama card kiri
+      height: 92.5,
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: color,

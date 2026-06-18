@@ -1,17 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:lora_1/features/statistics/domain/entities/stats_entity.dart';
 
-/// UseCase: Proses data history mentah → StatsSummaryEntity.
-///
-/// Semua logika filtering, kalkulasi total, chart data, dan record
-/// dipindahkan dari _filterDataBySport() di statistic.dart.
 class ProcessStatistics {
-  /// Filter dan hitung statistik berdasarkan olahraga yang dipilih.
   StatsSummaryEntity call({
     required List<Map<String, dynamic>> allHistory,
     required String sport,
   }) {
-    // Filter data berdasarkan sport
     List<Map<String, dynamic>> filtered = allHistory.where((e) {
       String act = e['activity']?.toString().toUpperCase() ?? '';
       String searchSport = sport.toUpperCase();
@@ -47,10 +41,8 @@ class ProcessStatistics {
       });
     }
 
-    // Pad chart data ke 7 hari
     tempChart = _padChartTo7Days(tempChart);
 
-    // BMI weight data
     List<Map<String, dynamic>> bmiData = [];
     if (sport.contains('BMI')) {
       bmiData = filtered
@@ -113,9 +105,6 @@ class ProcessStatistics {
   }
 }
 
-/// UseCase: Analisa performa (bandingkan sesi terakhir vs sebelumnya).
-///
-/// Logika ini dipindahkan dari _generatePerformanceFeedback() di statistic.dart.
 class AnalyzePerformance {
   PerformanceFeedback call({
     required List<Map<String, dynamic>> filteredData,
@@ -162,7 +151,6 @@ class AnalyzePerformance {
   }
 }
 
-/// UseCase: Translate sport name.
 class TranslateStatsSport {
   String call(String sport, String Function(String) translate) {
     String s = sport.toUpperCase();

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laporan Alur Logika Aplikasi Lora</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h1 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            text-align: center;
+        }
+        h2 {
+            border-bottom: 1px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #e74c3c;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+        pre code {
+            color: #333;
+            background-color: transparent;
+            padding: 0;
+        }
+        .feature-block {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #ecf0f1;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Laporan Detail Alur Logika Aplikasi Lora</h1>
+    <p>Laporan ini menjabarkan alur logika (logic flow) antar file berdasarkan fitur-fitur utama di aplikasi Lora, dengan fokus pada keterhubungan fitur dari antarmuka (UI) hingga ke pemrosesan data (Provider/Service).</p>
+
+    <div class="feature-block">
+        <h2>1. Fitur Rolling Gerakan Tiap Hari (Daily Workout Generation)</h2>
+        <p>Fitur ini bertujuan untuk memberikan rutinitas olahraga (khususnya home workout) yang berbeda-beda setiap harinya secara otomatis agar pengguna tidak bosan, namun tetap sesuai dengan *goal* dan level mereka.</p>
+        
+        <h3>Alur Logika (Logic Flow):</h3>
+        <ol>
+            <li><strong>Pemicu (Trigger) - <code>workout_page.dart</code></strong>:
+                <br>Saat halaman workout dibuka (<code>didChangeDependencies</code>), atau saat aplikasi mendeteksi hari sudah berganti (<code>isDayChanged</code>), UI akan memanggil perintah <code>workout.generateRoutine(lang)</code> yang ada di provider.
+            </li>
+            <li><strong>Pengelola Status - <code>workout_provider.dart</code></strong>:
+                <br>Fungsi <code>generateRoutine()</code> di <code>WorkoutProvider</code> mengambil data goal (misal: Weight Loss, Muscle Gain), level, gender, dan info cuaca. Data ini dilempar ke repository data dengan memanggil <code>WorkoutData.generateRoutine(...)</code>.
+            </li>
+            <li><strong>Pusat Logika (Core Logic) - <code>workout_data.dart</code></strong>:
+                <br>Di dalam <code>WorkoutData</code>, sistem memanggil fungsi internal <code>_selectDailyExercises()</code>. 
+                <br><strong>Bagaimana gerakan bisa berubah setiap hari?</strong> Pada fungsi tersebut, sistem menggunakan logika <em>Seed Randomization</em>:
+<pre><code>final now = DateTime.now();
+final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays; 
+final uidHashCode = FirebaseAuth.instance.currentUser?.uid.hashCode ?? 0;
+final daySeed = now.year * 1000 + dayOfYear + uidHashCode;
+final random = Random(daySeed);</code></pre>
+                <strong>Penjelasan:</strong> Logika di atas membuat sebuah "Kunci Acak" (<code>daySeed</code>) berdasarkan tanggal hari ini dan ID unik pengguna. Selama masih di hari yang sama, randomizer akan selalu mengembalikan gerakan yang sama untuk pengguna tersebut. Namun, <strong>tepat saat berganti hari, angka <code>dayOfYear</code> berubah, sehingga <code>daySeed</code> berubah, dan gerakan akan di-acak ulang (rolling)</strong>.
+            </li>
+        </ol>
+    </div>
+
+    <div class="feature-block">
+        <h2>2. Fitur Tracking & Perekaman Sesi (GPS & Timer)</h2>
+        <p>Fitur ini bertugas merekam waktu, kalori, dan pergerakan di peta (jika olahraga outdoor seperti Lari/Sepeda), lalu menyimpannya sebagai riwayat.</p>
+        
+        <h3>Alur Logika (Logic Flow):</h3>
+        <ol>
+            <li><strong>Interaksi User - <code>workout_page.dart</code></strong>:
+                <br>Pengguna menekan tombol "Mulai" yang memicu fungsi <code>_onStartTracking()</code>.
+            </li>
+            <li><strong>Pemrosesan Tracking - <code>workout_provider.dart</code></strong>:
+                <br>Fungsi <code>startTracking()</code> menyalakan Timer yang berdetak setiap 1 detik. Jika olahraga menggunakan GPS, sistem menyalakan langganan posisi (<code>_positionStream</code>) melalui <code>LocationService</code>. Setiap pergerakan dideteksi, jarak (<code>distanceNotifier</code>) bertambah dan titik rute (<code>routePoints</code>) dicatat untuk digambar di Peta. Sistem juga memanggil <code>_updateTrackingNotification()</code> agar notifikasi persisten muncul.
+            </li>
+            <li><strong>Penyimpanan Sesi - <code>workout_provider.dart</code></strong>:
+                <br>Ketika "Stop" ditekan, fungsi <code>executeStop()</code> dipanggil. Sistem menghitung total kalori terbakar berdasarkan berat badan pengguna dan waktu olahraga via <code>CalculateCalories()</code>. Data dibungkus ke dalam <code>WorkoutSessionEntity</code> dan dilempar ke <code>WorkoutRepository.saveWorkoutSession()</code> untuk disimpan ke database riwayat.
+            </li>
+        </ol>
+    </div>
+
+    <div class="feature-block">
+        <h2>3. Fitur Gamifikasi (EXP, Rank, dan Badge/Pencapaian)</h2>
+        <p>Fitur ini membaca hasil olahraga pengguna yang baru saja diselesaikan, lalu mengecek apakah mereka naik level atau mendapatkan piala/badge baru.</p>
+        
+        <h3>Alur Logika (Logic Flow):</h3>
+        <ol>
+            <li><strong>Eksekusi Setelah Stop - <code>workout_provider.dart</code></strong>:
+                <br>Di bagian akhir fungsi <code>executeStop()</code>, sistem memanggil <code>BadgeService.processSession(uid, sessionData)</code>.
+            </li>
+            <li><strong>Kalkulasi di Gamifikasi - <code>badge_service.dart</code></strong>:
+                <br>Sistem membaca jumlah EXP, Streak, dan Jarak/Kalori total pengguna sebelumnya dari Firebase. Fungsi <code>_calculateBaseExp()</code> mengubah hasil kalori dan gerakan menjadi jumlah EXP (ditambah <em>Weekly Bonus</em> jika beruntun). Sistem mengecek <code>RankSystem.getRank(currentExp)</code> dengan <code>newExp</code>; jika naik, <code>isRankUp = true</code>. Terakhir, sistem me-looping daftar <em>Badge</em> (misal: jika <code>totalDist >= 10</code> km, badge <em>dist_10k</em> terbuka). Semua data diperbarui ke Firebase.
+            </li>
+            <li><strong>Tampilan Popup - <code>workout_page.dart</code></strong>:
+                <br>Hasil kembalian dari <code>BadgeService</code> dibaca oleh UI. Jika ada Badge baru, muncul popup <code>BadgeUnlockDialog</code>. Jika naik rank, muncul popup <code>AlertDialog("NAIK PANGKAT!")</code>.
+            </li>
+        </ol>
+    </div>
+
+    <div class="feature-block">
+        <h2>4. Fitur Saran Cuaca & Notifikasi Pengingat</h2>
+        <p>Fitur ini memastikan target pengguna realistis dengan menyesuaikan cuaca di lokasi sekitar pengguna.</p>
+        
+        <h3>Alur Logika (Logic Flow):</h3>
+        <ol>
+            <li><strong>Deteksi Lokasi & Cuaca - <code>workout_provider.dart</code></strong>:
+                <br>Saat aplikasi dibuka (<code>init()</code>), <code>initUserLocation()</code> mengambil latitude/longitude dan memanggil <code>fetchInitialWeather()</code> untuk menembak API cuaca.
+            </li>
+            <li><strong>Penyesuaian Target - <code>workout_data.dart</code></strong>:
+                <br>Dalam <code>generateRoutine()</code>, fungsi <code>_applyFemaleWeatherAdjustment()</code> mengevaluasi suhu. Jika cuaca sangat panas (≥33°C), target jarak diturunkan otomatis (res *= 0.85). Teks sapaan disesuaikan, misalnya: <em>"Cuaca panas (34°C). Kurangi target jarak 20% dan minum air tiap 10 menit!"</em>
+            </li>
+            <li><strong>Pengaturan Alarm - <code>workout_reminder_service.dart</code></strong>:
+                <br>Pemanggilan <code>syncWeatherReminder()</code> mendaftarkan jadwal alarm <em>FlutterLocalNotifications</em> ke sistem HP berdasarkan cuaca saat ini agar pengguna diingatkan berolahraga pada waktu yang tepat.
+            </li>
+        </ol>
+    </div>
+</body>
+</html>

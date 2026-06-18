@@ -44,7 +44,8 @@
     "airQuality": "空気の質",
     "uvIndex": "UVインデックス",
     "healthTips": "健康のヒント",
-    "viewProgress": "進捗を見る",
+    "viewProgress": "月間進捗と統計",
+    "yourMonthlyProgress": "あなたの月間進捗",
     "loadingLocation": "場所を読み込み中...",
     "loadingWeather": "読み込み中...",
     "connectionFailed": "接続に失敗しました",
@@ -280,6 +281,13 @@
     "editName": "名前を変更",
     "photoUpdated": "📸 プロフィール写真を更新しました（ローカル）",
     "confirmLogoutBody": "ログアウトしてもよろしいですか？"
+  },
+  "sportManagement": {
+    "title": "スポーツ管理",
+    "subtitle": "参加するスポーツを追加・削除できます。変更はアカウントに即時保存されます。",
+    "saveChanges": "変更を保存",
+    "saved": "✅ スポーツの設定が更新されました！",
+    "minOneRequired": "少なくとも1つのスポーツを選択してください！"
   },
   "personalInfo": {
     "title": "個人情報",

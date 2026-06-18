@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:lora_1/core/services/language_provider.dart';
-import 'package:lora_1/core/services/theme_provider.dart'; // ✅ Added
+import 'package:lora_1/core/services/theme_provider.dart';
 import '../widgets/setting_widgets.dart';
 
 class SecurityPage extends StatelessWidget {
@@ -10,16 +10,16 @@ class SecurityPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageProvider>(context);
-    final theme = Provider.of<ThemeProvider>(context); // ✅ Theme
+    final theme = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: theme.bgColor, // ✅ Adaptive
+      backgroundColor: theme.bgColor,
       body: SafeArea(
         child: Column(
           children: [
             SettingHeader(
               title: lang.translate('security.title'),
-              isDarkMode: theme.isDarkMode, // ✅ Pass Theme
+              isDarkMode: theme.isDarkMode,
             ),
             Expanded(
               child: ListView(
@@ -60,7 +60,7 @@ class SecurityPage extends StatelessWidget {
       icon: icon,
       title: title,
       onTap: () {},
-      isDarkMode: isDarkMode, // ✅ Pass Theme
+      isDarkMode: isDarkMode,
     );
   }
 }

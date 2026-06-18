@@ -1,9 +1,7 @@
-// lib/features/notification/workout_time_engine.dart
-
 class WorkoutTimeSlot {
   final String timeRange;
   final String intensity;
-  final int rating; // 1..5
+  final int rating;
   final String reason;
   final String benefit;
 
@@ -57,7 +55,7 @@ class WorkoutTimeEngine {
     required String sport,
     required bool isIndoor,
     required double temperature,
-    required String goal, // "FAT_LOSS", "PERFORMANCE", "CASUAL"
+    required String goal,
   }) {
     final normalizedSport = sport.toUpperCase().trim();
     final normalizedGoal = goal.toUpperCase().trim();
@@ -147,7 +145,6 @@ class WorkoutTimeEngine {
       );
     }
 
-    // Contoh adaptasi kecil berdasar jenis olahraga.
     final morningRatingBoostSports = {"LARI", "SEPEDA"};
     final rating = morningRatingBoostSports.contains(sport) ? 5 : 4;
 
@@ -178,7 +175,6 @@ class WorkoutTimeEngine {
       benefit = "Cocok untuk sesi olahraga rutin setelah aktivitas harian.";
     }
 
-    // Jika outdoor dan panas ekstrem, turunkan sedikit rekomendasi sore.
     if (!isIndoor && temperature >= 33) {
       rating = 4;
       intensity = "SEDANG";
@@ -220,7 +216,6 @@ class WorkoutTimeEngine {
     );
   }
 
-  // Utility opsional untuk ranking slot terbaik.
   static WorkoutTimeSlot? bestSlot(WorkoutTimeRecommendation recommendation) {
     if (recommendation.recommendedSlots.isEmpty) return null;
     final sorted = [...recommendation.recommendedSlots]
@@ -228,7 +223,6 @@ class WorkoutTimeEngine {
     return sorted.first;
   }
 
-  // Utility opsional: target sederhana berdasarkan sport + level + cuaca.
   static String suggestedTarget({
     required String sport,
     required String level,
@@ -239,58 +233,35 @@ class WorkoutTimeEngine {
     final l = level.toUpperCase();
 
     if (s == "LARI") {
-      final base = {
-        "NEVER": 2.0,
-        "SOMETIMES": 4.0,
-        "OFTEN": 7.0,
-        "DAILY": 10.0,
-      }[l] ??
+      final base =
+          {"NEVER": 2.0, "SOMETIMES": 4.0, "OFTEN": 7.0, "DAILY": 10.0}[l] ??
           4.0;
       final adjusted = _weatherAdjustment(base, temperature, weather);
       return "${adjusted.toStringAsFixed(1)} KM";
     }
 
     if (s == "SEPEDA") {
-      final base = {
-        "NEVER": 5.0,
-        "SOMETIMES": 12.0,
-        "OFTEN": 25.0,
-        "DAILY": 40.0,
-      }[l] ??
+      final base =
+          {"NEVER": 5.0, "SOMETIMES": 12.0, "OFTEN": 25.0, "DAILY": 40.0}[l] ??
           12.0;
       final adjusted = _weatherAdjustment(base, temperature, weather);
       return "${adjusted.toStringAsFixed(1)} KM";
     }
 
     if (s == "BASKET" || s == "BASKETBALL") {
-      final minutes = {
-        "NEVER": 20,
-        "SOMETIMES": 35,
-        "OFTEN": 60,
-        "DAILY": 90,
-      }[l] ??
-          35;
+      final minutes =
+          {"NEVER": 20, "SOMETIMES": 35, "OFTEN": 60, "DAILY": 90}[l] ?? 35;
       return "$minutes Menit";
     }
 
     if (s == "BOLA" || s == "FOOTBALL" || s == "SEPAK BOLA") {
-      final minutes = {
-        "NEVER": 30,
-        "SOMETIMES": 50,
-        "OFTEN": 75,
-        "DAILY": 100,
-      }[l] ??
-          50;
+      final minutes =
+          {"NEVER": 30, "SOMETIMES": 50, "OFTEN": 75, "DAILY": 100}[l] ?? 50;
       return "$minutes Menit";
     }
 
-    final fallback = {
-      "NEVER": 15,
-      "SOMETIMES": 25,
-      "OFTEN": 35,
-      "DAILY": 45,
-    }[l] ??
-        25;
+    final fallback =
+        {"NEVER": 15, "SOMETIMES": 25, "OFTEN": 35, "DAILY": 45}[l] ?? 25;
     return "$fallback Menit";
   }
 }

@@ -1,4 +1,3 @@
-/// Entity untuk satu sesi workout yang sudah selesai.
 class WorkoutSessionEntity {
   final String activity;
   final int durationSec;
@@ -7,6 +6,8 @@ class WorkoutSessionEntity {
   final DateTime time;
   final List<Map<String, dynamic>>? workoutDetails;
   final String? details;
+  final List<Map<String, double>>? path;
+  final String? type;
 
   const WorkoutSessionEntity({
     required this.activity,
@@ -16,6 +17,8 @@ class WorkoutSessionEntity {
     required this.time,
     this.workoutDetails,
     this.details,
+    this.path,
+    this.type,
   });
 
   Map<String, dynamic> toFirebaseMap() => {
@@ -26,5 +29,7 @@ class WorkoutSessionEntity {
     'time': time.toIso8601String(),
     'details': details,
     'workout_details': workoutDetails,
+    if (path != null) 'path': path,
+    if (type != null) 'type': type,
   };
 }

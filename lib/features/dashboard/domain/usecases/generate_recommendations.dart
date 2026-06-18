@@ -1,20 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:lora_1/features/dashboard/domain/entities/food_entity.dart';
+import 'package:lora_1/features/dashboard/domain/usecases/personalized_recommendation_engine.dart';
 
-/// UseCase: Generate rekomendasi olahraga berdasarkan cuaca & goal.
-/// Logika bisnis ini dipindahkan dari _generateSmartRecommendations di widget.
+typedef TranslateFunction = String Function(String key);
+
 class GenerateRecommendations {
-  /// Hasilkan daftar saran olahraga berdasarkan suhu dan tujuan user.
   List<String> call({
     required double temperature,
     required String userGoal,
     required List<String> userFavorites,
+    required BmiStatus? bmiStatus,
+    String weatherCondition = 'clear',
+    String fitnessLevel = 'SOMETIMES',
     required TranslateFunction translate,
   }) {
     if (userFavorites.isEmpty) {
       return [translate('dashboard.selectSportFirst')];
     }
 
+    if (bmiStatus == null) {
+      return _generateFallbackTips(temperature, userGoal, translate);
+    }
+
+    final recommendation = PersonalizedRecommendationEngine.generate(
+      bmiStatus: bmiStatus,
+      temperature: temperature,
+      weatherCondition: weatherCondition,
+      userGoal: userGoal,
+      fitnessLevel: fitnessLevel,
+      favoriteSports: userFavorites,
+      translate: translate,
+    );
+
+    return recommendation.workoutTips;
+  }
+
+  List<String> _generateFallbackTips(
+    double temperature,
+    String userGoal,
+    TranslateFunction translate,
+  ) {
     List<String> tips = [];
 
     if (userGoal == 'WEIGHT_LOSS') {
@@ -42,20 +67,30 @@ class GenerateRecommendations {
   }
 }
 
-/// UseCase: Generate daily meal plan dari daftar makanan.
-/// Logika bisnis ini dipindahkan dari _generateDailyPlan di widget.
 class GenerateDailyPlan {
-  /// Pilih 3 makanan acak bertipe 'good' dan beri label waktu makan.
-  List<FoodEntity> call(List<FoodEntity> allFoods) {
-    // 1. Filter hanya makanan "good"
-    final goodFoods = allFoods.where((f) => f.type == 'good').toList();
+  List<FoodEntity> call(
+    List<FoodEntity> allFoods, {
+    String? bmiCategory,
+    double? temperature,
+    String? weatherCondition,
+  }) {
+    var goodFoods = allFoods.where((f) => f.type == 'good').toList();
 
     if (goodFoods.isEmpty) return [];
 
-    // 2. Acak urutan
-    goodFoods.shuffle();
+    if (bmiCategory != null) {
+      goodFoods = _filterByBmiCategory(goodFoods, bmiCategory);
+    }
 
-    // 3. Ambil 3 pertama & kasih label waktu makan
+    if (temperature != null && temperature >= 28) {
+      goodFoods = _prioritizeLightFoods(goodFoods);
+    }
+
+    if (weatherCondition != null && weatherCondition.toLowerCase().contains('rain')) {
+      goodFoods = _prioritizeWarmingFoods(goodFoods);
+    }
+
+    goodFoods.shuffle();
     final selected = goodFoods.take(3).toList();
 
     final hour = DateTime.now().hour;
@@ -76,12 +111,73 @@ class GenerateDailyPlan {
       mealTime: mealTime,
     )).toList();
   }
+
+  List<FoodEntity> _filterByBmiCategory(
+    List<FoodEntity> foods,
+    String bmiCategory,
+  ) {
+    if (bmiCategory == 'FAT_LOSS') {
+      return foods
+          .where((f) =>
+              f.rawName.toUpperCase().contains('TELUR') ||
+              f.rawName.toUpperCase().contains('AYAM') ||
+              f.rawName.toUpperCase().contains('IKAN') ||
+              f.rawName.toUpperCase().contains('SAYUR') ||
+              f.rawName.toUpperCase().contains('BUAH'))
+          .toList();
+    } else if (bmiCategory == 'MUSCLE_GAIN') {
+      return foods
+          .where((f) =>
+              f.rawName.toUpperCase().contains('DAGING') ||
+              f.rawName.toUpperCase().contains('AYAM') ||
+              f.rawName.toUpperCase().contains('IKAN') ||
+              f.rawName.toUpperCase().contains('TELUR') ||
+              f.rawName.toUpperCase().contains('TEMPE') ||
+              f.rawName.toUpperCase().contains('NASI MERAH') ||
+              f.rawName.toUpperCase().contains('OATMEAL'))
+          .toList();
+    }
+    return foods;
+  }
+
+  List<FoodEntity> _prioritizeLightFoods(List<FoodEntity> foods) {
+    return foods
+        .where((f) =>
+            f.rawName.toUpperCase().contains('SAYUR') ||
+            f.rawName.toUpperCase().contains('BUAH') ||
+            f.rawName.toUpperCase().contains('AIR') ||
+            f.rawName.toUpperCase().contains('SMOOTHIE'))
+        .toList()
+        .isNotEmpty
+        ? foods
+            .where((f) =>
+                f.rawName.toUpperCase().contains('SAYUR') ||
+                f.rawName.toUpperCase().contains('BUAH') ||
+                f.rawName.toUpperCase().contains('AIR') ||
+                f.rawName.toUpperCase().contains('SMOOTHIE'))
+            .toList()
+        : foods;
+  }
+
+  List<FoodEntity> _prioritizeWarmingFoods(List<FoodEntity> foods) {
+    return foods
+        .where((f) =>
+            f.rawName.toUpperCase().contains('SUP') ||
+            f.rawName.toUpperCase().contains('SOTO') ||
+            f.rawName.toUpperCase().contains('AYAM'))
+        .toList()
+        .isNotEmpty
+        ? foods
+            .where((f) =>
+                f.rawName.toUpperCase().contains('SUP') ||
+                f.rawName.toUpperCase().contains('SOTO') ||
+                f.rawName.toUpperCase().contains('AYAM'))
+            .toList()
+        : foods;
+  }
 }
 
-/// UseCase: Tentukan detail AQI (status, warna, tips).
-/// Logika bisnis ini dipindahkan dari _getAQIDetail di widget.
 class GetEnvironmentDetail {
-  /// Analisis AQI dan kembalikan status + tips.
   Map<String, dynamic> getAQIDetail(int aqi, TranslateFunction translate) {
     if (aqi <= 50) {
       return {
@@ -104,7 +200,6 @@ class GetEnvironmentDetail {
     }
   }
 
-  /// Analisis UV Index dan kembalikan status + tips.
   Map<String, dynamic> getUVDetail(double uv, TranslateFunction translate) {
     if (uv <= 2) {
       return {
@@ -127,6 +222,3 @@ class GetEnvironmentDetail {
     }
   }
 }
-
-/// Alias untuk fungsi translate supaya UseCase tidak bergantung pada LanguageProvider.
-typedef TranslateFunction = String Function(String key);

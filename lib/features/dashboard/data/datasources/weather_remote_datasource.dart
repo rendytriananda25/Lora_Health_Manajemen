@@ -4,17 +4,11 @@ import 'package:geolocator/geolocator.dart';
 import 'package:lora_1/core/constants/api_constants.dart';
 import 'package:lora_1/core/errors/exceptions.dart';
 
-/// DataSource untuk data cuaca dari OpenWeatherMap API.
-/// HANYA bertugas: ambil data mentah → kembalikan Map.
-/// Tidak boleh ada logika bisnis di sini.
 class WeatherRemoteDataSource {
-  /// Ambil data cuaca + AQI dari API berdasarkan GPS.
-  /// Throws [ServerException] jika gagal.
   Future<Map<String, dynamic>> fetchWeatherAndAQI({
     String langCode = 'id',
   }) async {
-    // 1. Ambil lokasi GPS
-    double lat = -7.9666; // Default Malang
+    double lat = -7.9666;
     double lon = 112.6326;
 
     try {
@@ -24,10 +18,8 @@ class WeatherRemoteDataSource {
       lat = pos.latitude;
       lon = pos.longitude;
     } catch (_) {
-      // Pakai koordinat default jika GPS gagal
     }
 
-    // 2. Fetch cuaca + AQI secara paralel
     try {
       final results = await Future.wait([
         http.get(Uri.parse(ApiConstants.weatherUrl(lat, lon, lang: langCode))),

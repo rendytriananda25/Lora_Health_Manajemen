@@ -10,7 +10,6 @@ class WorkoutReminderService {
   static final WorkoutReminderService instance = WorkoutReminderService._();
   final TranslationService _translation = TranslationService();
 
-  // Notification IDs (jangan diubah-ubah biar update/cancel konsisten)
   static const int _morningNotifId = 4101;
   static const int _eveningNotifId = 4102;
   static const int _nightNotifId = 4103;
@@ -21,12 +20,10 @@ class WorkoutReminderService {
   static const int _workoutNotifId = 4215;
   static const int _nightHydrationNotifId = 4221;
 
-  // SharedPreferences keys
   static const String _kReminderEnabled = 'reminder_enabled';
   static const String _kLastWeatherState = 'reminder_last_weather_state';
   static const String _kLastWeatherNotifTs = 'reminder_last_weather_notif_ts';
 
-  /// Init default: reminder aktif kalau belum pernah diset user.
   Future<void> initDefault() async {
     final prefs = await SharedPreferences.getInstance();
     if (!prefs.containsKey(_kReminderEnabled)) {
@@ -56,7 +53,6 @@ class WorkoutReminderService {
       return;
     }
 
-    // Kalau diaktifkan lagi, jadwalkan ulang default sederhana.
     await scheduleDailyReminderSlots(
       sport: 'LARI',
       level: 'SOMETIMES',
@@ -66,8 +62,6 @@ class WorkoutReminderService {
     );
   }
 
-  /// Jadwalkan notif harian berdasarkan rating slot dari WorkoutTimeEngine.
-  /// Hanya slot rating >= 4 yang dijadwalkan.
   Future<void> scheduleDailyReminderSlots({
     required String sport,
     required String level,
@@ -78,7 +72,6 @@ class WorkoutReminderService {
   }) async {
     if (!await isReminderEnabled()) return;
 
-    // Bersihkan dulu jadwal lama
     await NotificationService.instance.cancel(_morningNotifId);
     await NotificationService.instance.cancel(_eveningNotifId);
     await NotificationService.instance.cancel(_nightNotifId);
@@ -97,8 +90,6 @@ class WorkoutReminderService {
       weather: weather,
     );
 
-    // Mapping slot -> jam default
-    // morning: 06:00, evening: 17:00, night: 20:00
     if (rec.recommendedSlots.isNotEmpty) {
       final morning = rec.recommendedSlots[0];
       if (morning.rating >= 4) {
@@ -429,9 +420,6 @@ class WorkoutReminderService {
         : raw;
   }
 
-  /// Trigger notifikasi fleksibel berbasis perubahan cuaca.
-  /// Contoh: dari "hot/rain" -> "clear" lalu kasih notif.
-  /// Ada cooldown anti-spam 3 jam.
   Future<void> maybeNotifyWeatherImproved({
     required String currentWeather,
     required double currentTemp,
@@ -450,7 +438,6 @@ class WorkoutReminderService {
 
     final newState = _classifyWeather(currentWeather, currentTemp);
 
-    // Update state terakhir setiap cek
     await prefs.setString(
       _kLastWeatherState,
       jsonEncode({
@@ -461,7 +448,6 @@ class WorkoutReminderService {
       }),
     );
 
-    // Butuh histori state lama untuk deteksi "membaik"
     if (lastState == null) return;
 
     final decoded = jsonDecode(lastState) as Map<String, dynamic>;
@@ -470,7 +456,6 @@ class WorkoutReminderService {
     final improved = _isImprovedTransition(oldState, newState);
     if (!improved) return;
 
-    // Cooldown 3 jam
     const cooldownMs = 3 * 60 * 60 * 1000;
     if (nowMs - lastNotifTs < cooldownMs) return;
 
@@ -525,7 +510,6 @@ class WorkoutReminderService {
   }
 
   bool _isImprovedTransition(String oldState, String newState) {
-    // Perubahan yang dianggap membaik
     if ((oldState == 'bad' || oldState == 'hot' || oldState == 'cold') &&
         (newState == 'normal' || newState == 'good')) {
       return true;

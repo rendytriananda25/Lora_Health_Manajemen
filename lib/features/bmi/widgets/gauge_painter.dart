@@ -19,7 +19,6 @@ class GaugePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height * 0.7);
     final radius = size.width * 0.45;
 
-    // Background Arc
     final bgPaint = Paint()
       ..color = bgColor
       ..style = PaintingStyle.stroke
@@ -34,7 +33,6 @@ class GaugePainter extends CustomPainter {
       bgPaint,
     );
 
-    // Needle Logic (Jarum)
     final progress = (value.clamp(min, max) - min) / (max - min);
     final needleAngle = pi + (progress * pi);
     final needleEnd = Offset(
@@ -42,7 +40,6 @@ class GaugePainter extends CustomPainter {
       center.dy + (radius - 10) * sin(needleAngle),
     );
 
-    // Draw Jarum
     canvas.drawLine(
       center,
       needleEnd,

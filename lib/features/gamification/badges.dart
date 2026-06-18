@@ -48,7 +48,7 @@ class BadgeList {
     ),
     BadgeItem(
       id: 'cals_1000',
-      icon: Icons.bakery_dining_rounded, // Burn calories
+      icon: Icons.bakery_dining_rounded,
       color: Colors.redAccent,
       title: "Calorie Burner",
       description: "Bakar total 1000 kalori.",

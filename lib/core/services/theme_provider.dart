@@ -2,50 +2,49 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider with ChangeNotifier {
-  bool _isDarkMode = true; // Default Dark
+  bool _isDarkMode = true;
 
   bool get isDarkMode => _isDarkMode;
 
-  // 🔥 CUSTOM COLORS
-  // Dark Mode
+
   static const Color darkBg = Colors.black;
   static const Color darkBox = Color(0xFF141416);
   static const Color darkText = Colors.white;
   static const Color darkSubText = Colors.white54;
   static const Color darkBorder = Colors.white10;
 
-  // Light Mode (Sesuai Request: Putih Butek & Putih Bersih)
-  static const Color lightBg = Color(0xFFF5F5F5); // Putih Butek
-  static const Color lightBox = Colors.white; // Putih Bersih
+
+  static const Color lightBg = Color(0xFFF5F5F5);
+  static const Color lightBox = Colors.white;
   static const Color lightText = Colors.black;
   static const Color lightSubText = Colors.black54;
   static const Color lightBorder = Colors.black12;
 
-  // Colors Accessor
+
   Color get bgColor => _isDarkMode ? darkBg : lightBg;
   Color get boxColor => _isDarkMode ? darkBox : lightBox;
   Color get textColor => _isDarkMode ? darkText : lightText;
   Color get subTextColor => _isDarkMode ? darkSubText : lightSubText;
   Color get borderColor => _isDarkMode ? darkBorder : lightBorder;
 
-  // Specific for Logout Button
+
   Color get logoutBtnBg => _isDarkMode
       ? const Color.fromARGB(255, 255, 0, 0).withOpacity(0.1)
-      : Colors.red; // Solid Red for Light Mode
+      : Colors.red;
 
   Color get logoutBtnText => _isDarkMode
       ? const Color.fromARGB(255, 255, 0, 0)
-      : Colors.white; // White for Light Mode
+      : Colors.white;
 
-  // Initialize (Load from Prefs)
+
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
-    _isDarkMode = prefs.getBool('isDarkMode') ?? true; // Default Dark
+    _isDarkMode = prefs.getBool('isDarkMode') ?? true;
     debugPrint("🎨 Theme Loaded: ${_isDarkMode ? 'Dark' : 'Light'}");
     notifyListeners();
   }
 
-  // Toggle Theme
+
   Future<void> toggleTheme() async {
     _isDarkMode = !_isDarkMode;
     final prefs = await SharedPreferences.getInstance();
@@ -54,7 +53,7 @@ class ThemeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // ThemeData (If using Material Theme)
+
   ThemeData get themeData => ThemeData(
     useMaterial3: true,
     brightness: _isDarkMode ? Brightness.dark : Brightness.light,

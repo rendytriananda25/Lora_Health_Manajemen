@@ -12,12 +12,6 @@ import 'package:lora_1/features/map/widgets/tips_popup.dart';
 import 'package:lora_1/features/map/widgets/map_dialogs.dart';
 import 'package:lora_1/features/gamification/badges_page.dart';
 
-/// ═══════════════════════════════════════════════════════════════
-/// WorkoutPage — Halaman utama Map/Workout (Clean Architecture).
-///
-/// Menggantikan map_pages.dart yang lama.
-/// Semua state dikelola oleh WorkoutProvider via Provider.
-/// ═══════════════════════════════════════════════════════════════
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
 
@@ -66,7 +60,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final workout = Provider.of<WorkoutProvider>(context, listen: false);
     final lang = Provider.of<LanguageProvider>(context, listen: false);
 
-    // 🔥 Non-GPS: langsung stop tanpa konfirmasi
     if (!workout.isGpsSport) {
       await _executeStop(workout, lang);
     } else {
@@ -84,23 +77,22 @@ class _WorkoutPageState extends State<WorkoutPage> {
   }
 
   Future<void> _executeStop(
-      WorkoutProvider workout, LanguageProvider lang) async {
+    WorkoutProvider workout,
+    LanguageProvider lang,
+  ) async {
     final gameResult = await workout.executeStop();
     if (!mounted) return;
 
     final theme = Provider.of<ThemeProvider>(context, listen: false);
 
-    // 1. Show Badge Unlock
     if (gameResult != null && gameResult.newBadges.isNotEmpty) {
       await showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) =>
-            BadgeUnlockDialog(badges: gameResult.newBadges),
+        builder: (context) => BadgeUnlockDialog(badges: gameResult.newBadges),
       );
     }
 
-    // 2. Show Rank Up
     if (gameResult != null && gameResult.isRankUp && mounted) {
       await showDialog(
         context: context,
@@ -151,7 +143,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
       );
     }
 
-    // 3. Show Success & regenerate (agar sessionCompleted = true)
     if (mounted) {
       showDialog(
         context: context,
@@ -160,8 +151,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
           onClose: () => Navigator.pop(context),
         ),
       );
-      // 🔄 Re-generate: sekarang SessionCompletionService menandai sesi selesai,
-      // jadi generateRoutine akan set sessionCompleted = true → tampil "Sesi Selesai"
+
       workout.generateRoutine(lang);
     }
   }
@@ -173,14 +163,15 @@ class _WorkoutPageState extends State<WorkoutPage> {
     final workout = Provider.of<WorkoutProvider>(context);
 
     final bool isMapSport = workout.isGpsSport;
-    final String translatedSport =
-        workout.translateSportName(workout.selectedSport, lang.currentLanguage);
+    final String translatedSport = workout.translateSportName(
+      workout.selectedSport,
+      lang.currentLanguage,
+    );
     final String dailyTarget = workout.getTarget();
     final String weatherGreeting = workout.getWeatherGreeting(lang);
     final String flexibleAdvice =
         "$weatherGreeting ${lang.translate('map.letsGo').replaceAll('{sport}', translatedSport).replaceAll('{target}', dailyTarget)}";
 
-    // 🔄 Cek daily rolling: jika hari berganti, regenerate
     if (workout.isDayChanged && !workout.isRecording) {
       Future.microtask(() {
         workout.generateRoutine(lang);
@@ -191,7 +182,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
       backgroundColor: theme.bgColor,
       body: Stack(
         children: [
-          // ─── MAP / TIMER BACKGROUND ───────────────────
           if (isMapSport)
             FlutterMap(
               mapController: _mapController,
@@ -244,7 +234,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
               onCompleteExercise: (n, r) => workout.addWorkoutResult(n, r),
             ),
 
-          // ─── MY LOCATION BUTTON (MAP ONLY) ─────────────
           if (isMapSport)
             Positioned(
               top: 50,
@@ -260,8 +249,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                   decoration: BoxDecoration(
                     color: theme.boxColor.withOpacity(0.8),
                     shape: BoxShape.circle,
-                    border:
-                        Border.all(color: theme.textColor.withOpacity(0.1)),
+                    border: Border.all(color: theme.textColor.withOpacity(0.1)),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.1),
@@ -274,7 +262,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
               ),
             ),
 
-          // ─── TIPS POPUP ────────────────────────────────
           if (!workout.isRecording)
             TipsPopup(
               showTips: workout.showTips,
@@ -284,7 +271,6 @@ class _WorkoutPageState extends State<WorkoutPage> {
               onToggle: () => workout.toggleTips(),
             ),
 
-          // ─── SPORT MENU BUTTON ─────────────────────────
           Positioned(
             top: 50,
             left: 20,
@@ -295,8 +281,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 decoration: BoxDecoration(
                   color: theme.boxColor.withOpacity(0.8),
                   shape: BoxShape.circle,
-                  border:
-                      Border.all(color: theme.textColor.withOpacity(0.1)),
+                  border: Border.all(color: theme.textColor.withOpacity(0.1)),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -312,14 +297,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
             ),
           ),
 
-          // ─── SPORT SELECTION MENU ──────────────────────
           if (workout.showSportMenu)
             SportSelectionMenu(
               mySports: workout.mySports,
               onSelect: (s) => workout.selectSport(s, lang),
             ),
 
-          // ─── CONTROL PANEL (MAP ONLY) ──────────────────
           if (workout.showControlPanel && isMapSport)
             Positioned(
               bottom: 110,
@@ -329,18 +312,16 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 selectedSport: translatedSport,
                 currentTemp: workout.currentTemp,
                 isRecording: workout.isRecording,
-                onToggleRecord:
-                    workout.isRecording ? _onStopTracking : _onStartTracking,
+                onToggleRecord: workout.isRecording
+                    ? _onStopTracking
+                    : _onStartTracking,
                 secondsNotifier: workout.secondsNotifier,
                 distanceNotifier: workout.distanceNotifier,
               ),
             ),
 
-          // ─── SAVING INDICATOR ──────────────────────────
           if (workout.isSaving)
-            const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ),
+            const Center(child: CircularProgressIndicator(color: Colors.white)),
         ],
       ),
     );

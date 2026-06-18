@@ -9,8 +9,8 @@ class SetupConstants {
 
   static const List<Map<String, String>> fitnessLevels = [
     {"label": "Tidak Pernah", "value": "NEVER"},
-    {"label": "Lumayan Sering", "value": "SOMETIMES"},
-    {"label": "Sering", "value": "OFTEN"},
+    {"label": "1 - 2 kali seminggu", "value": "SOMETIMES"},
+    {"label": "3 - 4 kali seminggu", "value": "OFTEN"},
     {"label": "Setiap Hari", "value": "DAILY"},
   ];
 

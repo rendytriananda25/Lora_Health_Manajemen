@@ -2,9 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
-/// DataSource untuk data statistik dari Firebase.
 class StatsRemoteDataSource {
-  /// Ambil daftar olahraga user.
   Future<List<String>> fetchUserSports() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];
@@ -38,7 +36,6 @@ class StatsRemoteDataSource {
     return sports;
   }
 
-  /// Ambil seluruh history latihan.
   Future<List<Map<String, dynamic>>> fetchWorkoutHistory() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return [];

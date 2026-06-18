@@ -1,7 +1,6 @@
 import 'package:firebase_database/firebase_database.dart';
 
 class NutritionData {
-  // Database dasar berdasarkan level aktivitas (Guidelines)
   static const Map<String, dynamic> guidelines = {
     "NEVER": {
       "daily_focus": "Adaptasi metabolisme",
@@ -33,14 +32,11 @@ class NutritionData {
     },
   };
 
-  // 🔥 DATABASE MAKANAN + KALORI + ALASAN INDEPENDEN
-  // Updated: 2026-02-14 with detailed nutritionist data
   static const Map<String, Map<String, dynamic>> foodRecommendations = {
     "WEIGHT_LOSS": {
       "reason_good": "Rendah kalori, tinggi serat & protein.",
       "reason_bad": "Tinggi gula, tepung olahan & lemak jenuh.",
       "foods": [
-        // GOOD
         {
           "name": "Putih Telur",
           "cal": 52,
@@ -162,7 +158,6 @@ class NutritionData {
           "reason": "Elektrolit alami tanpa gula tambahan.",
         },
 
-        // BAD
         {
           "name": "Nasi Putih Besar",
           "cal": 260,
@@ -230,7 +225,6 @@ class NutritionData {
       "reason_good": "Protein tinggi & kalori berkualitas untuk otot.",
       "reason_bad": "Menghambat recovery & sintesis protein.",
       "foods": [
-        // GOOD
         {
           "name": "Daging Sapi",
           "cal": 250,
@@ -328,7 +322,6 @@ class NutritionData {
           "reason": "Kalori sehat yang enak untuk bulking.",
         },
 
-        // BAD
         {
           "name": "Alkohol",
           "cal": 200,
@@ -367,7 +360,6 @@ class NutritionData {
           "Nutrisi seimbang untuk stamina & kesehatan jangka panjang.",
       "reason_bad": "Memicu penyakit metabolik & inflamasi.",
       "foods": [
-        // GOOD
         {
           "name": "Buah Campur",
           "cal": 60,
@@ -429,7 +421,6 @@ class NutritionData {
           "reason": "Cara enak konsumsi buah & sayur sekaligus.",
         },
 
-        // BAD
         {
           "name": "Asin Berlebih",
           "cal": 0,
@@ -470,7 +461,6 @@ class NutritionData {
     },
   };
 
-  // 🔥 FUNGSI ADMIN: Update Data ke Firebase (Full Replace)
   static Future<void> seedToFirebase() async {
     try {
       final ref = FirebaseDatabase.instance.ref("data/nutrition_data");
@@ -481,7 +471,6 @@ class NutritionData {
     }
   }
 
-  // 🔥 FUNGSI BARU: Ambil Data dari Firebase
   static Future<Map<String, dynamic>?> fetchFromFirebase() async {
     try {
       final ref = FirebaseDatabase.instance.ref("data/nutrition_data");
@@ -493,5 +482,69 @@ class NutritionData {
       print("Gagal ambil data nutrisi: $e");
     }
     return null;
+  }
+
+  static List<String> getFoodsForBmiCategory(
+    String bmiCategory,
+    Map<String, dynamic> foodRecommendations, {
+    bool goodFoodsOnly = false,
+  }) {
+    final goal = bmiCategory == 'FAT_LOSS'
+        ? 'WEIGHT_LOSS'
+        : bmiCategory == 'MUSCLE_GAIN'
+            ? 'MUSCLE_GAIN'
+            : 'KEEP_FIT';
+
+    if (!foodRecommendations.containsKey(goal)) {
+      return [];
+    }
+
+    final goalData = foodRecommendations[goal] as Map<String, dynamic>;
+    final foods = (goalData['foods'] as List<dynamic>?) ?? [];
+
+    if (goodFoodsOnly) {
+      return foods
+          .where((f) => (f as Map)['type'] == 'good')
+          .map((f) => (f as Map)['name'] as String)
+          .toList();
+    }
+
+    return foods
+        .map((f) => (f as Map)['name'] as String)
+        .toList();
+  }
+
+  static List<String> getGoodFoods(
+    String bmiCategory,
+    Map<String, dynamic> foodRecommendations,
+  ) {
+    return getFoodsForBmiCategory(
+      bmiCategory,
+      foodRecommendations,
+      goodFoodsOnly: true,
+    );
+  }
+
+  static List<String> getFoodsToAvoid(
+    String bmiCategory,
+    Map<String, dynamic> foodRecommendations,
+  ) {
+    final goal = bmiCategory == 'FAT_LOSS'
+        ? 'WEIGHT_LOSS'
+        : bmiCategory == 'MUSCLE_GAIN'
+            ? 'MUSCLE_GAIN'
+            : 'KEEP_FIT';
+
+    if (!foodRecommendations.containsKey(goal)) {
+      return [];
+    }
+
+    final goalData = foodRecommendations[goal] as Map<String, dynamic>;
+    final foods = (goalData['foods'] as List<dynamic>?) ?? [];
+
+    return foods
+        .where((f) => (f as Map)['type'] == 'bad')
+        .map((f) => (f as Map)['name'] as String)
+        .toList();
   }
 }

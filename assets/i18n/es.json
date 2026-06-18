@@ -88,7 +88,8 @@
     "airQuality": "Calidad del Aire",
     "uvIndex": "Índice UV",
     "healthTips": "Consejos de Salud",
-    "viewProgress": "Ver Progreso",
+    "viewProgress": "Progreso y Estadísticas Mensuales",
+    "yourMonthlyProgress": "Tu Progreso Mensual",
     "loadingLocation": "Cargando Ubicación...",
     "loadingWeather": "Cargando...",
     "connectionFailed": "Conexión Fallida",
@@ -345,6 +346,13 @@
     "update": "ACTUALIZAR",
     "dbUpdated": "¡Base de datos de Nutrición y Entrenamiento actualizada con éxito!",
     "confirmLogoutBody": "¿Estás seguro de que quieres cerrar sesión?"
+  },
+  "sportManagement": {
+    "title": "Gestionar Deportes",
+    "subtitle": "Agrega o elimina deportes en los que participas. Los cambios se guardarán en tu cuenta.",
+    "saveChanges": "GUARDAR CAMBIOS",
+    "saved": "✅ ¡Preferencias deportivas actualizadas!",
+    "minOneRequired": "¡Selecciona al menos un deporte!"
   },
   "personalInfo": {
     "title": "Información Personal",

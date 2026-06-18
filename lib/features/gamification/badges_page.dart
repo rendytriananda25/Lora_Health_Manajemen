@@ -59,7 +59,7 @@ class _BadgesPageState extends State<BadgesPage> {
                 crossAxisCount: 3,
                 crossAxisSpacing: 15,
                 mainAxisSpacing: 15,
-                childAspectRatio: 0.75, // Taller cards
+                childAspectRatio: 0.75,
               ),
               itemCount: BadgeList.allBadges.length,
               itemBuilder: (context, index) {
@@ -240,7 +240,7 @@ class BadgeUnlockDialog extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: theme.boxColor, // Adaptive
+              color: theme.boxColor,
               borderRadius: BorderRadius.circular(25),
               border: Border.all(color: Colors.amber, width: 2),
               boxShadow: [
@@ -253,7 +253,7 @@ class BadgeUnlockDialog extends StatelessWidget {
                 Text(
                   BadgeTranslator.translateUi("BADGE UNLOCKED! 🏆", lang),
                   style: TextStyle(
-                    color: theme.textColor, // Adaptive
+                    color: theme.textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.5,
@@ -273,7 +273,7 @@ class BadgeUnlockDialog extends StatelessWidget {
                           Text(
                             BadgeTranslator.translateTitle(b.title, lang),
                             style: TextStyle(
-                              color: theme.textColor, // Adaptive
+                              color: theme.textColor,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -284,7 +284,7 @@ class BadgeUnlockDialog extends StatelessWidget {
                             style: TextStyle(
                               color: theme.textColor.withOpacity(
                                 0.7,
-                              ), // Adaptive
+                              ),
                               fontSize: 12,
                             ),
                           ),
@@ -303,7 +303,7 @@ class BadgeUnlockDialog extends StatelessWidget {
                     BadgeTranslator.translateUi("KEREN!", lang),
                     style: const TextStyle(
                       color:
-                          Colors.black, // Tetap hitam agar kontras dengan Amber
+                          Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

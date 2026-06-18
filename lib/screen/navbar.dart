@@ -1,4 +1,4 @@
-import 'dart:ui'; // For BackdropFilter
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -41,8 +41,8 @@ class _NavbarState extends State<Navbar> {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      backgroundColor: themeProvider.bgColor, // Adaptive Background
-      extendBody: true, // Allow body to extend behind navbar
+      backgroundColor: themeProvider.bgColor,
+      extendBody: true,
       body: Stack(
         children: [
           Positioned.fill(
@@ -55,7 +55,6 @@ class _NavbarState extends State<Navbar> {
             ),
           ),
 
-          // Custom Glassmorphism Navbar
           Positioned(
             bottom: 30,
             left: 20,
@@ -71,11 +70,10 @@ class _NavbarState extends State<Navbar> {
     return ClipRRect(
       borderRadius: BorderRadius.circular(35),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10), // Blur Effect
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           height: 70,
           decoration: BoxDecoration(
-            // Glass Color: Semi-transparent based on theme
             color: (theme.isDarkMode ? const Color(0xFF1C1C1E) : Colors.white)
                 .withOpacity(0.75),
             borderRadius: BorderRadius.circular(35),
@@ -97,15 +95,15 @@ class _NavbarState extends State<Navbar> {
               double itemWidth = constraints.maxWidth / 4;
               return Stack(
                 children: [
-                  // 🔵 MOVING INDICATOR (Blue Circle)
+
                   AnimatedPositioned(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.fastOutSlowIn,
                     left:
                         _selectedIndex * itemWidth +
                         (itemWidth / 2 -
-                            25), // Center it: (ItemWidth/2) - (CircleWidth/2)
-                    top: 10, // (70 - 50) / 2 = 10 vertical centering
+                            25),
+                    top: 10,
                     height: 50,
                     width: 50,
                     child: Container(
@@ -123,7 +121,6 @@ class _NavbarState extends State<Navbar> {
                     ),
                   ),
 
-                  // 🔘 ICONS ROW
                   Row(
                     children: [
                       _buildNavItem(Icons.home_rounded, 0, itemWidth, theme),
@@ -133,7 +130,7 @@ class _NavbarState extends State<Navbar> {
                         itemWidth,
                         theme,
                         isRec: true,
-                      ), // Changed icon to verify it's not the REC text circle
+                      ),
                       _buildNavItem(Icons.history_rounded, 2, itemWidth, theme),
                       _buildNavItem(
                         Icons.monitor_weight_rounded,
@@ -161,10 +158,6 @@ class _NavbarState extends State<Navbar> {
   }) {
     bool isActive = _selectedIndex == index;
 
-    // Logic for REC button special appearance?
-    // User's previous code had a specific _buildRecordNavItem with "REC" text.
-    // Let's preserve the Text "REC" if it's index 1, or use Icon.
-    // Screenshot shows "REC" text inside a circle.
 
     return SizedBox(
       width: width,
@@ -179,11 +172,10 @@ class _NavbarState extends State<Navbar> {
           child: isRec
               ? _buildRecContent(isActive, theme)
               : AnimatedScale(
-                  scale: isActive ? 1.0 : 0.9, // Slight zoom effect
+                  scale: isActive ? 1.0 : 0.9,
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
                     icon,
-                    // Active: White (on blue circle). Inactive: Theme text color (faded)
                     color: isActive
                         ? Colors.white
                         : theme.textColor.withOpacity(0.5),
@@ -196,13 +188,6 @@ class _NavbarState extends State<Navbar> {
   }
 
   Widget _buildRecContent(bool isActive, ThemeProvider theme) {
-    // If active: White text on Blue circle (Background circle handled by AnimatedPositioned)
-    // If inactive: "REC" text without circle? Or grey circle?
-    // Previous implementation had a grey circle for inactive.
-    // But now we have a moving blue indicator.
-    // If we use the moving blue indicator for ALL items, then:
-    // When Index 1 is active, Blue Circle is behind it. Text should be white.
-    // When Index 1 is inactive, No Circle behind it. Text should be Grey.
 
     return AnimatedScale(
       scale: isActive ? 1.0 : 0.9,

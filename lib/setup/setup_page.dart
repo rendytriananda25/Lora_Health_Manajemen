@@ -15,12 +15,10 @@ class SetupPage extends StatefulWidget {
 }
 
 class _SetupPageState extends State<SetupPage> {
-  // --- STATE ---
   final PageController _pageController = PageController();
   int _currentStep = 0;
   bool _isSaving = false;
 
-  // Data
   final Set<int> _selectedIndices = {};
   String _level = "NEVER";
   String _goal = "KEEP_FIT";
@@ -40,7 +38,7 @@ class _SetupPageState extends State<SetupPage> {
   void _nextStep() {
     if (_currentStep == 0 && _selectedIndices.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Pilih minimal satu olahraga ya Wak!")),
+        const SnackBar(content: Text("Pilih minimal satu olahraga!")),
       );
       return;
     }
@@ -71,36 +69,25 @@ class _SetupPageState extends State<SetupPage> {
   Widget build(BuildContext context) {
     final theme = Provider.of<ThemeProvider>(context);
 
-    // List of title/steps here for dynamic rendering
-    // But since logic is separated in build methods, we just pass theme down.
-
     return Scaffold(
-      backgroundColor: theme.bgColor, // Adaptive Background
+      backgroundColor: theme.bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            // PROGRESS BAR
             _buildProgressBar(theme),
 
-            // CONTENT
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (idx) => setState(() => _currentStep = idx),
                 children: [
-                  // STEP 0: OLAHRAGA
                   _buildSportSelectionStep(theme),
-                  // STEP 1: LEVEL
                   _buildLevelStep(theme),
-                  // STEP 2: GOAL
                   _buildGoalStep(theme),
-                  // STEP 3: BODY DATA
                   _buildBodyDataStep(theme),
-                  // STEP 4: FREQUENCY
                   _buildFrequencyStep(theme),
-                  // STEP 5: TARGET WEIGHT
-                  _buildTargetWeightStep(theme),
+                  if (_goal != "KEEP_FIT") _buildTargetWeightStep(theme),
                 ],
               ),
             ),
@@ -111,10 +98,11 @@ class _SetupPageState extends State<SetupPage> {
   }
 
   Widget _buildProgressBar(ThemeProvider theme) {
+    final int totalSteps = _goal == "KEEP_FIT" ? 5 : 6;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
       child: Row(
-        children: List.generate(6, (index) {
+        children: List.generate(totalSteps, (index) {
           final isActive = index <= _currentStep;
           return Expanded(
             child: AnimatedContainer(
@@ -134,8 +122,6 @@ class _SetupPageState extends State<SetupPage> {
     );
   }
 
-  // --- STEP BUILDERS ---
-
   Widget _buildStepContainer({
     required String step,
     required String title,
@@ -152,7 +138,7 @@ class _SetupPageState extends State<SetupPage> {
           Text(
             step,
             style: const TextStyle(
-              color: Color(0xFF5EEAD4),
+              color: Color.fromARGB(255, 255, 255, 255),
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -161,7 +147,7 @@ class _SetupPageState extends State<SetupPage> {
           Text(
             title,
             style: TextStyle(
-              color: theme.textColor, // Adaptive Title
+              color: theme.textColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -198,7 +184,7 @@ class _SetupPageState extends State<SetupPage> {
                   : Text(
                       isLast ? "MULAI SEKARANG ->" : "LANJUT",
                       style: const TextStyle(
-                        color: Colors.white, // Button text always white
+                        color: Colors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -212,7 +198,6 @@ class _SetupPageState extends State<SetupPage> {
   Widget _buildSportSelectionStep(ThemeProvider theme) {
     return Column(
       children: [
-        // Title handled inside View
         Expanded(
           child: SportSelectionView(
             selectedIndices: _selectedIndices,
@@ -256,8 +241,9 @@ class _SetupPageState extends State<SetupPage> {
   }
 
   Widget _buildLevelStep(ThemeProvider theme) {
+    final int total = _goal == "KEEP_FIT" ? 4 : 5;
     return _buildStepContainer(
-      step: "Langkah 1/5",
+      step: "Langkah 1/$total",
       title: "Seberapa sering kamu olahraga?",
       onNext: _nextStep,
       theme: theme,
@@ -275,8 +261,9 @@ class _SetupPageState extends State<SetupPage> {
   }
 
   Widget _buildGoalStep(ThemeProvider theme) {
+    final int total = _goal == "KEEP_FIT" ? 4 : 5;
     return _buildStepContainer(
-      step: "Langkah 2/5",
+      step: "Langkah 2/$total",
       title: "Apa tujuan utamamu?",
       onNext: _nextStep,
       theme: theme,
@@ -295,8 +282,9 @@ class _SetupPageState extends State<SetupPage> {
   }
 
   Widget _buildBodyDataStep(ThemeProvider theme) {
+    final int total = _goal == "KEEP_FIT" ? 4 : 5;
     return _buildStepContainer(
-      step: "Langkah 3/5",
+      step: "Langkah 3/$total",
       title: "Data Tubuh Kamu",
       onNext: _nextStep,
       theme: theme,
@@ -371,10 +359,13 @@ class _SetupPageState extends State<SetupPage> {
   }
 
   Widget _buildFrequencyStep(ThemeProvider theme) {
+    final bool isKeepFit = _goal == "KEEP_FIT";
+    final int total = isKeepFit ? 4 : 5;
     return _buildStepContainer(
-      step: "Langkah 4/5",
+      step: "Langkah 4/$total",
       title: "Frekuensi Latihan Harian",
-      onNext: _nextStep,
+      onNext: isKeepFit ? _finishSetup : _nextStep,
+      isLast: isKeepFit,
       theme: theme,
       children: [
         SetupOptionCard(
@@ -395,8 +386,9 @@ class _SetupPageState extends State<SetupPage> {
   }
 
   Widget _buildTargetWeightStep(ThemeProvider theme) {
+    final int total = 5;
     return _buildStepContainer(
-      step: "Langkah 5/5",
+      step: "Langkah 5/$total",
       title: "Target Berat Badan",
       onNext: _finishSetup,
       isLast: true,

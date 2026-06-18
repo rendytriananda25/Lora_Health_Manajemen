@@ -3,8 +3,6 @@ import 'package:lora_1/core/usecases/usecase.dart';
 import 'package:lora_1/features/dashboard/domain/entities/weather_entity.dart';
 import 'package:lora_1/features/dashboard/domain/repositories/dashboard_repository.dart';
 
-/// UseCase: Ambil data cuaca, AQI, dan UV.
-/// Satu tugas saja — Single Responsibility.
 class GetWeatherData extends UseCase<WeatherEntity, WeatherParams> {
   final DashboardRepository repository;
 
@@ -16,7 +14,6 @@ class GetWeatherData extends UseCase<WeatherEntity, WeatherParams> {
   }
 }
 
-/// Parameter input untuk GetWeatherData.
 class WeatherParams {
   final String langCode;
   const WeatherParams({this.langCode = 'id'});

@@ -1,9 +1,8 @@
-/// Entity profil user — data inti yang dibutuhkan dashboard.
 class UserProfileEntity {
   final String name;
   final String? localPhotoPath;
-  final String fitnessLevel;  // NEVER, BEGINNER, INTERMEDIATE, EXPERT
-  final String fitnessGoal;   // WEIGHT_LOSS, MUSCLE_GAIN, KEEP_FIT
+  final String fitnessLevel;
+  final String fitnessGoal;
   final List<String> favoriteSports;
   final int exp;
 

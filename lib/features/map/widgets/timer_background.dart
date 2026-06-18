@@ -63,21 +63,16 @@ class _TimerBackgroundState extends State<TimerBackground> {
     return "${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}";
   }
 
-  // 🔥 LOGIKA "SELESAI SESI" — User WAJIB ikuti semua gerakan berurutan
   void _handleComplete(String name, String result) {
-    // 1. Simpan hasil latihannya
     widget.onCompleteExercise(name, result);
 
-    // 2. Cek masih ada exercise selanjutnya?
     if (_currentExerciseIndex < widget.exercises.length - 1) {
-      // ✅ GESER KE KARTU SELANJUTNYA SECARA OTOMATIS
       _pageController.animateToPage(
         _currentExerciseIndex + 1,
         duration: const Duration(milliseconds: 600),
         curve: Curves.easeOutCubic,
       );
     } else {
-      // Semua exercise selesai → Stop sesi
       widget.onStop();
     }
   }
@@ -89,9 +84,7 @@ class _TimerBackgroundState extends State<TimerBackground> {
 
     final screenHeight = MediaQuery.of(context).size.height;
     final bottomPad = MediaQuery.of(context).padding.bottom;
-    // Navbar space dinamis berdasarkan tinggi layar
     final navbarSpace = (screenHeight * 0.14).clamp(90.0, 130.0);
-    // Top spacing dinamis (status bar + timer area)
     final topSpace = (screenHeight * 0.09).clamp(50.0, 80.0);
 
     return Container(
@@ -213,7 +206,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
     );
   }
 
-  // ✅ PREVIEW LIST (READ-ONLY) — User lihat daftar gerakan, tidak bisa pilih/skip
   Widget _buildPreStartPreview(LanguageProvider lang, ThemeProvider theme) {
     return Column(
       children: [
@@ -295,7 +287,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
     );
   }
 
-  // ═══ FUTURISTIC SESSION DONE SCREEN ═══
   Widget _buildSessionDoneMessage(LanguageProvider lang, ThemeProvider theme) {
     final timeLeft = SessionCompletionService.getTimeUntilNextSession();
     final timeStr = SessionCompletionService.formatDuration(timeLeft);
@@ -307,11 +298,9 @@ class _TimerBackgroundState extends State<TimerBackground> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ── FUTURISTIC CHECK ICON ──
             Stack(
               alignment: Alignment.center,
               children: [
-                // Outer glow ring
                 Container(
                   width: 130,
                   height: 130,
@@ -327,7 +316,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
                     ),
                   ),
                 ),
-                // Middle ring
                 Container(
                   width: 100,
                   height: 100,
@@ -339,7 +327,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
                     ),
                   ),
                 ),
-                // Inner ring
                 Container(
                   width: 76,
                   height: 76,
@@ -369,7 +356,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
 
             const SizedBox(height: 28),
 
-            // ── TITLE ──
             Text(
               "$sessionLabel Selesai",
               style: TextStyle(
@@ -383,7 +369,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
 
             const SizedBox(height: 12),
 
-            // ── SUBTITLE ──
             Text(
               "Latihan telah diselesaikan.\nTubuhmu butuh recovery untuk performa maksimal.",
               style: TextStyle(
@@ -396,7 +381,6 @@ class _TimerBackgroundState extends State<TimerBackground> {
 
             const SizedBox(height: 28),
 
-            // ── COUNTDOWN CARD (Glassmorphism) ──
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               decoration: BoxDecoration(
@@ -459,10 +443,9 @@ class _ForwardBlockingScrollPhysics extends ScrollPhysics {
 
   @override
   double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    // 🛑 Block Move to Next (Swipe Left / Negative Offset)
+
     if (offset < 0.0) return 0.0;
 
-    // ✅ Allow Move to Prev (Swipe Right / Positive Offset)
     return super.applyPhysicsToUserOffset(position, offset);
   }
 }

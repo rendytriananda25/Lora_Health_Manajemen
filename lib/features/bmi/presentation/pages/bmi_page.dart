@@ -4,7 +4,6 @@ import 'package:lora_1/core/services/language_provider.dart';
 import 'package:lora_1/core/services/theme_provider.dart';
 import 'package:lora_1/features/bmi/presentation/providers/bmi_provider.dart';
 
-// Clean Code: Import Widgets Terpisah
 import '../../widgets/glass_card.dart';
 import '../../widgets/human_painter.dart';
 import '../../widgets/gauge_painter.dart';
@@ -14,11 +13,9 @@ class BMIPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Agar halaman ikut rebuild saat bahasa berubah
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
     
-    // Gunakan Consumer untuk listen perubahan BMI State
     return Consumer<BmiProvider>(
       builder: (context, bmiProvider, child) {
         return Scaffold(
@@ -74,7 +71,6 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  // --- HALAMAN 1: TINGGI BADAN ---
   Widget _buildHeightPage(
       BuildContext context, LanguageProvider lang, ThemeProvider theme, BmiProvider bmiProvider) {
     double normalizedHeight = (bmiProvider.height - 100) / 150;
@@ -96,6 +92,7 @@ class BMIPage extends StatelessWidget {
             SizedBox(
               height: 400,
               width: 100,
+              key: ValueKey('height_wheel_${bmiProvider.isLoaded}_${bmiProvider.resetCount}'),
               child: ListWheelScrollView.useDelegate(
                 itemExtent: 50,
                 perspective: 0.005,
@@ -186,7 +183,6 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  // --- HALAMAN 2: BERAT BADAN ---
   Widget _buildWeightPage(
       BuildContext context, LanguageProvider lang, ThemeProvider theme, BmiProvider bmiProvider) {
     return Column(
@@ -253,7 +249,6 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  // --- HALAMAN 3: RESULT ---
   Widget _buildResultPage(
       BuildContext context, LanguageProvider lang, ThemeProvider theme, BmiProvider bmiProvider) {
     return Column(
@@ -319,6 +314,7 @@ class BMIPage extends StatelessWidget {
         _buildNextButton(
           lang.translate('bmi.recalculate'),
           onTap: bmiProvider.reset,
+          forceEnabled: true,
         ),
         const SizedBox(height: 50),
       ],
@@ -343,35 +339,47 @@ class BMIPage extends StatelessWidget {
     );
   }
 
-  Widget _buildNextButton(String text, {required VoidCallback onTap}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 30),
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        decoration: BoxDecoration(
-          color: const Color(0xFF008BFF),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFF008BFF).withOpacity(0.4),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
+  Widget _buildNextButton(String text, {required VoidCallback onTap, bool forceEnabled = false}) {
+    return Consumer<BmiProvider>(
+      builder: (context, bmiProvider, _) {
+        final isEnabled = forceEnabled || bmiProvider.currentPage < 2;
+
+        return GestureDetector(
+          onTap: isEnabled ? onTap : null,
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 30),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              color: isEnabled
+                  ? const Color(0xFF008BFF)
+                  : const Color(0xFF008BFF).withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: isEnabled
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFF008BFF).withOpacity(0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ]
+                  : null,
             ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            child: Center(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isEnabled
+                      ? Colors.white
+                      : Colors.white.withOpacity(0.6),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

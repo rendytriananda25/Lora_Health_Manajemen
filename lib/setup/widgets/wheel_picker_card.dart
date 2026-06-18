@@ -49,7 +49,6 @@ class _WheelPickerCardState extends State<WheelPickerCard> {
     _lastSoundAt = now;
     try {
       await _audioPlayer.stop();
-      // Pastikan file ini ada, jika tidak, disable sound
       await _audioPlayer.play(AssetSource('sounds/click.wav'), volume: 0.3);
     } catch (_) {}
   }
@@ -62,7 +61,7 @@ class _WheelPickerCardState extends State<WheelPickerCard> {
       height: 160,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: theme.boxColor, // Adaptive Color
+        color: theme.boxColor,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: theme.textColor.withOpacity(0.1)),
       ),
@@ -71,7 +70,7 @@ class _WheelPickerCardState extends State<WheelPickerCard> {
           Text(
             widget.title,
             style: TextStyle(
-              color: theme.textColor.withOpacity(0.7), // Adaptive Text
+              color: theme.textColor.withOpacity(0.7),
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -81,7 +80,6 @@ class _WheelPickerCardState extends State<WheelPickerCard> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Selection Indicator (Lines)
                 Container(
                   height: 34,
                   decoration: BoxDecoration(
@@ -93,7 +91,6 @@ class _WheelPickerCardState extends State<WheelPickerCard> {
                     ),
                   ),
                 ),
-                // Wheel
                 ListWheelScrollView.useDelegate(
                   controller: _controller,
                   itemExtent: 34,
@@ -113,7 +110,7 @@ class _WheelPickerCardState extends State<WheelPickerCard> {
                         child: Text(
                           '${widget.min + index}',
                           style: TextStyle(
-                            color: theme.textColor, // Adaptive Number
+                            color: theme.textColor,
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),

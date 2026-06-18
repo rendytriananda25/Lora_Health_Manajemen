@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart'; 
 
-// ✅ FILE INI STANDALONE - TANPA KONEKSI KE PAGE MANAPUN
-// Hanya untuk referensi atau testing isolasi
 
 class WeatherDetailPage extends StatefulWidget {
-  final Map<String, dynamic> weatherData; // Data kiriman dari Dashboard
+  final Map<String, dynamic> weatherData;
   const WeatherDetailPage({super.key, required this.weatherData});
 
   @override

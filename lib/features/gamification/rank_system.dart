@@ -73,7 +73,7 @@ class RankSystem {
 
   static int getNextRankExp(int exp) {
     final current = getRank(exp);
-    if (current.id >= 6) return current.minExp; // Max rank capped
+    if (current.id >= 6) return current.minExp;
     final next = ranks[current.id + 1];
     return next.minExp;
   }

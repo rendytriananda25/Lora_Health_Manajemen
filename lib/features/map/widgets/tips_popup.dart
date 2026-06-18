@@ -7,8 +7,8 @@ import 'package:lora_1/core/services/theme_provider.dart';
 class TipsPopup extends StatelessWidget {
   final bool showTips;
   final String selectedSport;
-  final String targetText; // ✅ Contoh: "10 KM" atau "15-25 Menit"
-  final String weatherAdvice; // ✅ Contoh: "Bahaya Heat Exhaustion"
+  final String targetText;
+  final String weatherAdvice;
   final VoidCallback onToggle;
 
   const TipsPopup({
@@ -115,7 +115,6 @@ class TipsPopup extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // ✅ Tampilkan Target (Misal: 10 KM) secara menonjol
                   Text(
                     targetText,
                     style: TextStyle(
@@ -125,7 +124,6 @@ class TipsPopup extends StatelessWidget {
                     ),
                   ),
                   Divider(color: theme.textColor.withOpacity(0.1), height: 20),
-                  // ✅ Tampilkan Saran Cuaca dari JSON
                   Row(
                     children: [
                       const Icon(

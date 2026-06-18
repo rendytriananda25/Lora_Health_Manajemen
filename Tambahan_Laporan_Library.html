@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: black; }
+  h2 { font-size: 16pt; font-weight: bold; margin-bottom: 10px; }
+  h3 { font-size: 14pt; font-weight: bold; margin-top: 15px; margin-bottom: 5px; }
+  ul { margin-top: 5px; margin-bottom: 15px; }
+  li { margin-bottom: 5px; }
+  b { font-weight: bold; }
+  i { font-style: italic; }
+  .note { background-color: #f2f2f2; padding: 10px; border-left: 4px solid #008BFF; margin-top: 20px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<h2>LAMPIRAN: DAFTAR PUSTAKA LIBRARY (DEPEDENSI) APLIKASI</h2>
+<p>Dalam pengembangan aplikasi <i>Lora Health Management</i>, penulis memanfaatkan berbagai pustaka (<i>library</i>) eksternal untuk memastikan kinerja aplikasi yang optimal, aman, dan berskala industri. Berikut adalah daftar library yang digunakan beserta fungsinya masing-masing:</p>
+
+<h3>1. Manajemen State & Arsitektur Inti</h3>
+<ul>
+  <li><b>provider:</b> Digunakan sebagai pengelola <i>state</i> (State Management) utama aplikasi, mendukung penerapan <i>Clean Architecture</i> agar logika bisnis dan antarmuka (UI) terpisah dengan baik.</li>
+</ul>
+
+<h3>2. Backend, Database & Autentikasi (Firebase)</h3>
+<ul>
+  <li><b>firebase_core:</b> Penghubung inti antara aplikasi Flutter dengan infrastruktur <i>cloud</i> Firebase.</li>
+  <li><b>firebase_auth:</b> Menangani sistem autentikasi dan keamanan akses pengguna secara <i>real-time</i>.</li>
+  <li><b>firebase_database:</b> Mengelola <i>Realtime Database</i> untuk sinkronisasi riwayat olahraga, kalori, dan metrik kesehatan pengguna antar perangkat.</li>
+  <li><b>cloud_firestore:</b> Database tambahan untuk menyimpan struktur dokumen hierarkis yang lebih kompleks.</li>
+  <li><b>google_sign_in:</b> Mengaktifkan integrasi otorisasi pihak ketiga (<i>Single Sign-On</i>) menggunakan akun Google.</li>
+  <li><b>flutter_facebook_auth:</b> Mengaktifkan integrasi otorisasi pihak ketiga menggunakan akun Facebook.</li>
+</ul>
+
+<h3>3. Sistem Pemetaan, GPS & Tracking Olahraga</h3>
+<ul>
+  <li><b>geolocator & geolocator_android:</b> Mesin utama untuk mengakses dan memantau sensor GPS perangkat (<i>Location Services</i>). Berfungsi mengukur kecepatan dan jarak tempuh olahraga.</li>
+  <li><b>flutter_map:</b> Menyediakan kanvas peta interaktif berbasis data <i>OpenStreetMap</i> untuk memvisualisasikan rute pengguna.</li>
+  <li><b>latlong2:</b> Library matematis untuk kalkulasi jarak dan interpolasi koordinat Latitude/Longitude dengan tingkat presisi tinggi.</li>
+</ul>
+
+<h3>4. Proses Latar Belakang & Sistem Notifikasi</h3>
+<ul>
+  <li><b>flutter_local_notifications:</b> Mengelola dan memunculkan notifikasi antarmuka di perangkat pengguna (contoh: Notifikasi rekaman aktif).</li>
+  <li><b>flutter_background:</b> Memastikan proses pelacakan (<i>tracking</i>) GPS tidak dimatikan paksa oleh sistem operasi Android saat layar perangkat dimatikan.</li>
+  <li><b>alarm & timezone:</b> Menangani penjadwalan alarm atau pengingat sesi olahraga secara lokal, yang disesuaikan dengan zona waktu pengguna.</li>
+</ul>
+
+<h3>5. Antarmuka Visual & Pengolahan Media</h3>
+<ul>
+  <li><b>youtube_player_flutter:</b> Menanamkan (<i>embed</i>) pemutar video tutorial dari YouTube langsung ke dalam aplikasi.</li>
+  <li><b>audioplayers:</b> Menangani pemutaran efek suara (<i>Sound Effects</i>) antarmuka dan notifikasi peringatan olahraga.</li>
+  <li><b>smooth_page_indicator:</b> Membuat indikator navigasi halaman yang mulus pada menu panduan olahraga.</li>
+  <li><b>mobile_scanner:</b> Memanfaatkan sensor kamera untuk keperluan pemindaian <i>QR Code</i> dan <i>Barcode</i>.</li>
+</ul>
+
+<h3>6. Utilitas, Pemformatan & Penyimpanan Lokal</h3>
+<ul>
+  <li><b>shared_preferences:</b> Mengelola penyimpanan data preferensi lokal yang bersifat ringan, seperti pengaturan tema (<i>Dark/Light Mode</i>) dan preferensi bahasa.</li>
+  <li><b>http:</b> Memfasilitasi permintaan jaringan ke API eksternal, khususnya untuk menarik data cuaca dari <i>OpenWeatherMap</i>.</li>
+  <li><b>intl:</b> Menangani pemformatan lokalisasi teks, angka, dan konversi format penanggalan yang kompleks.</li>
+  <li><b>permission_handler:</b> Menangani alur perizinan akses komponen perangkat keras (Lokasi, Kamera, Notifikasi) secara elegan sesuai standar keamanan sistem operasi.</li>
+  <li><b>url_launcher:</b> Membuka tautan eksternal (<i>browser</i>, telepon, atau surel) langsung dari dalam aplikasi.</li>
+  <li><b>country_code_picker:</b> Memfasilitasi antarmuka pemilihan kode negara untuk keperluan profil pengguna.</li>
+  <li><b>file_picker & path_provider:</b> Mengakses sistem penyimpanan internal (<i>Storage</i>) perangkat untuk memilih file atau gambar dari galeri pengguna.</li>
+</ul>
+
+<div class="note">
+  <b>Argumen Pertahanan (Defense Argument) untuk Sidang:</b><br>
+  Jika ditanya mengenai banyaknya pustaka yang digunakan, Anda dapat menjawab: <i>"Aplikasi ini dibangun bukan sekadar sebagai purwarupa (prototype), melainkan ditargetkan sebagai aplikasi produksi (Production-Ready). Sebagai contoh, kombinasi <b>flutter_background</b> dan <b>geolocator_android</b> merupakan best practice wajib di industri agar pelacakan GPS dapat berjalan stabil di latar belakang, tanpa terinterupsi oleh fitur penghemat baterai sistem operasi Android."</i>
+</div>
+
+</body>
+</html>

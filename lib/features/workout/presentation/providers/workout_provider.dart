@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:lora_1/features/workout/domain/repositories/workout_repository.dart';
 import 'package:lora_1/features/workout/domain/usecases/calculate_calories.dart';
 import 'package:lora_1/features/workout/domain/usecases/workout_utils.dart';
@@ -15,12 +16,6 @@ import 'package:lora_1/features/gamification/badge_service.dart';
 import 'package:lora_1/core/services/language_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-/// ═══════════════════════════════════════════════════════════════
-/// WorkoutProvider — State Management untuk halaman Map/Workout.
-///
-/// Semua logika bisnis (kalkulasi kalori, target by level, dll)
-/// sudah dipindah ke UseCase. Provider ini hanya mengorkestrasi.
-/// ═══════════════════════════════════════════════════════════════
 class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   final WorkoutRepository _repository;
   final CalculateCalories _calculateCalories;
@@ -42,7 +37,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
   }
 
-  // ─── STATE ─────────────────────────────────────────────────
   final ValueNotifier<int> secondsNotifier = ValueNotifier<int>(0);
   final ValueNotifier<double> distanceNotifier = ValueNotifier<double>(0.0);
 
@@ -75,10 +69,8 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   Timer? _timer;
   StreamSubscription<Position>? _positionStream;
 
-  // 🔄 DAILY ROLLING: Track hari terakhir routine di-generate
   int _lastGeneratedDayOfYear = -1;
 
-  // ─── PUBLIC GETTERS ────────────────────────────────────────
   bool get isGpsSport => _checkSportType.isGpsSport(selectedSport);
 
   String getTarget() => _getTargetByLevel(selectedSport, userLevel);
@@ -86,11 +78,22 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
   String translateSportName(String sport, String langCode) =>
       _translateSport(sport, langCode);
 
-  // ─── APP LIFECYCLE (Daily Rolling) ─────────────────────────
+  bool _isAppInBackground = false;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && !isRecording) {
-      _checkDayChanged();
+    if (state == AppLifecycleState.resumed) {
+      _isAppInBackground = false;
+      if (!isRecording) {
+        _checkDayChanged();
+      } else {
+        _cancelTrackingNotification();
+      }
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _isAppInBackground = true;
+      if (isRecording) {
+        _updateTrackingNotification();
+      }
     }
   }
 
@@ -101,19 +104,16 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
         _lastGeneratedDayOfYear != todayDayOfYear) {
       _lastGeneratedDayOfYear = todayDayOfYear;
       sessionCompleted = false;
-      // generateRoutine will be called by the page when it detects the change
       notifyListeners();
     }
   }
 
-  /// Flag: true jika hari sudah berganti sejak generate terakhir
   bool get isDayChanged {
     final now = DateTime.now();
     final todayDayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
     return _lastGeneratedDayOfYear != todayDayOfYear;
   }
 
-  // ─── INIT ──────────────────────────────────────────────────
   Future<void> init() async {
     final now = DateTime.now();
     _lastGeneratedDayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
@@ -183,7 +183,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  // ─── GENERATE ROUTINE (delegasi ke WorkoutData) ────────────
   Future<void> generateRoutine(LanguageProvider lang) async {
     debugPrint('🔄 generateRoutine: sport=$selectedSport, goal=$userGoal, level=$userLevel');
 
@@ -201,10 +200,18 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
       return;
     }
 
+    // Adjust intensity based on goal and fitness level
+    String adjustedLevel = userLevel;
+    if (userGoal == 'WEIGHT_LOSS' && userLevel == 'NEVER') {
+      adjustedLevel = 'SOMETIMES';
+    } else if (userGoal == 'MUSCLE_GAIN' && userLevel == 'DAILY') {
+      adjustedLevel = 'DAILY';
+    }
+
     final result = WorkoutData.generateRoutine(
       sportType: selectedSport,
       goal: userGoal,
-      level: userLevel,
+      level: adjustedLevel,
       gender: userGender,
       weather: weatherCondition,
       temp: tempValue,
@@ -221,7 +228,59 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     notifyListeners();
   }
 
-  // ─── TRACKING ──────────────────────────────────────────────
+  static const int _trackingNotifId = 888;
+  final FlutterLocalNotificationsPlugin _notifPlugin = FlutterLocalNotificationsPlugin();
+  bool _notifToggle = false;
+
+
+  String _formatTime(int totalSec) {
+    int min = totalSec ~/ 60;
+    int sec = totalSec % 60;
+    return '${min.toString().padLeft(2, '0')}:${sec.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _updateTrackingNotification() async {
+    if (!_isAppInBackground) return;
+
+
+    _notifToggle = !_notifToggle;
+    final String recDot = _notifToggle ? '🔴' : '⚫';
+    final String timeStr = _formatTime(secondsNotifier.value);
+    final String distStr = distanceNotifier.value.toStringAsFixed(2);
+
+    final androidDetails = AndroidNotificationDetails(
+      'lora_tracking',
+      'Tracking Olahraga',
+      channelDescription: 'Notifikasi saat tracking olahraga aktif',
+      importance: Importance.low,
+      priority: Priority.low,
+      ongoing: true,
+      autoCancel: false,
+      showWhen: false,
+      playSound: false,
+      enableVibration: false,
+      styleInformation: BigTextStyleInformation(
+        isGpsSport
+            ? '$recDot  $timeStr   •   $distStr km'
+            : '$recDot  $timeStr',
+        contentTitle: '$recDot REC — $selectedSport',
+      ),
+    );
+
+    await _notifPlugin.show(
+      _trackingNotifId,
+      '$recDot REC — $selectedSport',
+      isGpsSport
+          ? '⏱ $timeStr   •   📍 $distStr km'
+          : '⏱ $timeStr',
+      NotificationDetails(android: androidDetails),
+    );
+  }
+
+  Future<void> _cancelTrackingNotification() async {
+    await _notifPlugin.cancel(_trackingNotifId);
+  }
+
   void startTracking() {
     HapticFeedback.mediumImpact();
     isRecording = true;
@@ -229,37 +288,43 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     distanceNotifier.value = 0.0;
     routePoints.clear();
     showTips = false;
+    _locationService.resetFilter();
     notifyListeners();
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       secondsNotifier.value++;
+
+      _updateTrackingNotification();
     });
 
     if (isGpsSport) {
       _positionStream = _locationService.getPositionStream().listen((pos) {
-        LatLng newPoint = LatLng(pos.latitude, pos.longitude);
+        LatLng? lastPoint = routePoints.isNotEmpty ? routePoints.last : null;
+        final filtered = _locationService.filterPoint(pos, lastPoint);
+        if (filtered == null) return;
+
         if (routePoints.isNotEmpty) {
           distanceNotifier.value += _locationService.calculateDistance(
             routePoints.last,
-            newPoint,
+            filtered,
           );
         }
-        routePoints.add(newPoint);
-        currentLocation = newPoint;
+        routePoints.add(filtered);
+        currentLocation = filtered;
         notifyListeners();
       });
     }
   }
 
-  /// Eksekusi stop dan simpan sesi. Return GamificationResult jika ada.
   Future<GamificationResult?> executeStop() async {
     isSaving = true;
     notifyListeners();
 
     _timer?.cancel();
     _positionStream?.cancel();
+    await _cancelTrackingNotification();
 
-    // ✅ Kalkulasi kalori menggunakan UseCase
+
     int caloriesBurned = _calculateCalories(
       sport: selectedSport,
       weightKg: userWeight,
@@ -280,11 +345,16 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
               .map((e) => "${e['name']}: ${e['result']}")
               .join(', ')
           : null,
+
+      path: isGpsSport
+          ? routePoints.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList()
+          : null,
+
+      type: isGpsSport ? 'TRACKING' : selectedSport.toUpperCase().replaceAll(' ', '_'),
     );
 
     await _repository.saveWorkoutSession(session);
 
-    // Gamification
     final sessionData = {
       'workout_details': !isGpsSport ? workoutSessionData : null,
       'calories': caloriesBurned,
@@ -363,7 +433,6 @@ class WorkoutProvider extends ChangeNotifier with WidgetsBindingObserver {
     );
   }
 
-  /// Helper: Dapatkan greeting cuaca berdasarkan suhu & bahasa.
   String getWeatherGreeting(LanguageProvider lang) {
     String firstName = userName.split(' ')[0];
     if (tempValue >= 18 && tempValue <= 27) {

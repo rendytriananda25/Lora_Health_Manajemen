@@ -14,7 +14,7 @@ class HistoryLariDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 FIX: Panggil Provider di sini
+
     final lang = Provider.of<LanguageProvider>(context);
     final theme = Provider.of<ThemeProvider>(context);
 
@@ -117,11 +117,10 @@ class HistoryLariDetailPage extends StatelessWidget {
   }
 
   Widget _buildRouteMap(ThemeProvider theme) {
-    // 🔥 PERBAIKAN: Cara baca data yang lebih aman (cegah crash tipe data)
+
     List<LatLng> points = [];
     if (data['path'] != null && data['path'] is List) {
       points = (data['path'] as List).map((p) {
-        // Pastikan lat/lng dibaca sebagai double
         double lat = (p['lat'] as num).toDouble();
         double lng = (p['lng'] as num).toDouble();
         return LatLng(lat, lng);
@@ -130,7 +129,6 @@ class HistoryLariDetailPage extends StatelessWidget {
 
     return FlutterMap(
       options: MapOptions(
-        // Jika point kosong, default ke lokasi user (bisa disesuaikan) atau Monas/Pusat Kota
         initialCenter: points.isNotEmpty
             ? points.last
             : const LatLng(-6.8898, 109.6713),
@@ -145,7 +143,7 @@ class HistoryLariDetailPage extends StatelessWidget {
             'a',
             'b',
             'c',
-          ], // Tambahkan subdomain agar map loading cepat
+          ],
           retinaMode: true,
         ),
         PolylineLayer(
@@ -158,14 +156,13 @@ class HistoryLariDetailPage extends StatelessWidget {
             ),
           ],
         ),
-        // Opsional: Tambahkan Marker Start & Finish biar keren
         if (points.isNotEmpty)
           MarkerLayer(
             markers: [
               Marker(
                 point: points.first,
                 child: const Icon(Icons.circle, color: Colors.green, size: 15),
-              ), // Start
+              ),
               Marker(
                 point: points.last,
                 child: const Icon(
@@ -173,7 +170,7 @@ class HistoryLariDetailPage extends StatelessWidget {
                   color: Colors.red,
                   size: 30,
                 ),
-              ), // Finish
+              ),
             ],
           ),
       ],

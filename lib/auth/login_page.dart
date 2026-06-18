@@ -15,14 +15,11 @@ class _LoginPageState extends State<LoginPage>
     with SingleTickerProviderStateMixin {
   final AuthService _authService = AuthService();
 
-  // Controllers
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // State
   bool _isLoading = false;
 
-  // Animations
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
@@ -60,7 +57,6 @@ class _LoginPageState extends State<LoginPage>
     super.dispose();
   }
 
-  // --- LOGIC HANDLERS ---
 
   Future<void> _handleEmailLogin() async {
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
@@ -73,7 +69,6 @@ class _LoginPageState extends State<LoginPage>
     setState(() => _isLoading = true);
     HapticFeedback.mediumImpact();
 
-    // Panggil Service (Clean Code)
     User? user = await _authService.loginOrRegisterEmail(
       _emailController.text.trim(),
       _passwordController.text.trim(),
@@ -107,12 +102,10 @@ class _LoginPageState extends State<LoginPage>
 
   @override
   Widget build(BuildContext context) {
-    // UI Helpers
     final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     final bool isKeyboardOpen = keyboardHeight > 0;
     final double safePaddingBottom = MediaQuery.of(context).padding.bottom;
 
-    // Overlay Style
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -127,7 +120,6 @@ class _LoginPageState extends State<LoginPage>
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          // 1. Background Image
           Positioned.fill(
             child: Image.asset(
               'assets/images/hitam.jpg',
@@ -136,7 +128,6 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          // 2. Gradient Overlay
           Positioned.fill(
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 500),
@@ -154,7 +145,6 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          // 3. Content ScrollView
           SafeArea(
             top: false,
             bottom: false,
@@ -177,7 +167,6 @@ class _LoginPageState extends State<LoginPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // HEADER (Welcome Text)
                         SlideTransition(
                           position: _slideAnimation,
                           child: FadeTransition(
@@ -210,7 +199,6 @@ class _LoginPageState extends State<LoginPage>
 
                         const Spacer(),
 
-                        // LOGIN FORM
                         SlideTransition(
                           position: _slideAnimation,
                           child: FadeTransition(
@@ -242,7 +230,6 @@ class _LoginPageState extends State<LoginPage>
                           ),
                         ),
 
-                        // SOCIAL BUTTONS (Hidden when keyboard open)
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
@@ -304,7 +291,6 @@ class _LoginPageState extends State<LoginPage>
                           ),
                         ),
 
-                        // Bottom Spacer for Keyboard
                         if (isKeyboardOpen) const SizedBox(height: 10),
                       ],
                     ),
@@ -314,7 +300,6 @@ class _LoginPageState extends State<LoginPage>
             ),
           ),
 
-          // Loading Indicator Overlay (Optional specific loader)
           if (_isLoading)
             Positioned.fill(
               child: Container(

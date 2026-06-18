@@ -6,29 +6,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class WorkoutData {
-  // 🔄 VARIABLE RUNTIME (Diisi dari Firebase)
+  /// Public access for JSON export tools
+  static Map<String, dynamic> get defaultWorkoutLibrary =>
+      _defaultWorkoutLibrary;
+  static Map<String, dynamic> get progressionData => _progressionData;
+
   static Map<String, dynamic>? _onlineWorkoutData;
 
-  // ============================================================
-  // 📚 REFERENSI ILMIAH PROGRESIVITAS:
-  // - ACSM (2021). Guidelines for Exercise Testing and Prescription, 11th Ed.
-  //   → Progressive overload 5-10%/minggu, deload setiap 4 minggu (W4 = 70% volume)
-  // - NSCA (2016). Essentials of Strength Training and Conditioning, 4th Ed.
-  //   → "2-for-2 Rule", rep range hipertrofi 8-12 RM
-  // - Schoenfeld, B.J. (2010). Journal of Strength and Conditioning Research, 24(10).
-  //   → Validasi rep range 8-12 untuk muscle gain
-  // - Garber, C.E., et al. (2011). Medicine & Science in Sports & Exercise, 43(7).
-  //   → Weight loss: 150-300 menit/minggu moderate intensity
-  // ============================================================
-
-  // 🔥 DATA PROGRESIVITAS — Per goal × per gerakan × per level × per minggu
-  // W4 = DELOAD WEEK (volume -30% untuk recovery & pencegahan cedera)
-  // Loop 4 minggu tanpa batas, base naik otomatis tiap siklus via startDate
   static final Map<String, dynamic> _progressionData = {
-    // ══════════════════════════════════════════════════════
-    // 🔥 WEIGHT LOSS — Fokus: Kardio + HIIT, rep tinggi
-    // Referensi: ACSM 150-300 mnt/minggu moderate intensity
-    // ══════════════════════════════════════════════════════
     "WEIGHT_LOSS": {
       "Jumping Jacks": {
         "NEVER": {
@@ -83,7 +68,6 @@ class WorkoutData {
         },
       },
       "Burpees": {
-        // Gerakan kompleks: kenaikan konservatif 5-7% (risiko overuse injury)
         "NEVER": {
           "W1": "5 Reps",
           "W2": "6 Reps",
@@ -136,7 +120,6 @@ class WorkoutData {
         },
       },
       "Squat Jump": {
-        // Plyometric: kenaikan konservatif, risiko lutut jika terlalu cepat
         "NEVER": {
           "W1": "8 Reps",
           "W2": "10 Reps",
@@ -215,7 +198,6 @@ class WorkoutData {
         },
       },
       "Tuck Jumps": {
-        // High impact plyometric: kenaikan paling konservatif
         "NEVER": {
           "W1": "5 Reps",
           "W2": "6 Reps",
@@ -243,10 +225,6 @@ class WorkoutData {
       },
     },
 
-    // ══════════════════════════════════════════════════════
-    // 💪 MUSCLE GAIN — Fokus: Strength, sets × reps, hipertrofi
-    // Referensi: NSCA 8-12 RM untuk hipertrofi, istirahat 60-90 detik
-    // ══════════════════════════════════════════════════════
     "MUSCLE_GAIN": {
       "Push Up": {
         "NEVER": {
@@ -275,7 +253,6 @@ class WorkoutData {
         },
       },
       "Diamond Push Up": {
-        // Isolasi trisep: hindari overload sendi siku, mulai konservatif
         "NEVER": {
           "W1": "3x5 Reps",
           "W2": "3x6 Reps",
@@ -354,7 +331,6 @@ class WorkoutData {
         },
       },
       "Bulgarian Split Squat": {
-        // Unilateral: beban lebih berat per kaki, awali konservatif
         "NEVER": {
           "W1": "3x6/Kaki",
           "W2": "3x8/Kaki",
@@ -459,7 +435,6 @@ class WorkoutData {
         },
       },
       "Handstand Push-Up (Wall)": {
-        // Gerakan advanced: pemula wajib kuasai Pike Push Up dulu
         "NEVER": {
           "W1": "SKIP - Kuasai Pike Push Up dulu",
           "W2": "SKIP",
@@ -487,14 +462,8 @@ class WorkoutData {
       },
     },
 
-    // ══════════════════════════════════════════════════════
-    // 🌿 KEEP FIT — Fokus: Mobilitas + Maintenance
-    // Referensi: ACSM maintenance = 60-70% dari training load
-    // Kenaikan lebih lambat, fokus durasi & kualitas gerak
-    // ══════════════════════════════════════════════════════
     "KEEP_FIT": {
       "Pemanasan Dinamis": {
-        // Durasi pemanasan tetap (tidak perlu progresivitas)
         "NEVER": {
           "W1": "5 Menit",
           "W2": "5 Menit",
@@ -573,7 +542,6 @@ class WorkoutData {
         },
       },
       "Cat-Cow Stretch": {
-        // Mobility: durasi tidak perlu naik signifikan
         "NEVER": {
           "W1": "1 Menit",
           "W2": "1.5 Menit",
@@ -678,7 +646,6 @@ class WorkoutData {
         },
       },
       "Cooling Down": {
-        // Pendinginan: tetap (tidak perlu progresivitas)
         "NEVER": {
           "W1": "5 Menit",
           "W2": "5 Menit",
@@ -707,7 +674,6 @@ class WorkoutData {
     },
   };
 
-  // 💾 DATA LOKAL (SOURCE CODE) - Editable oleh Admin di sini
   static final Map<String, dynamic> _defaultWorkoutLibrary = {
     "running": {
       "title": "RUNNING MISSION",
@@ -846,63 +812,63 @@ class WorkoutData {
           "target": "50 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/xkk7kMUZP24",
         },
         {
           "name": "Mikan Drill + Form Shooting",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/_VcY9M49JAs",
         },
         {
           "name": "Zig-Zag Defensive Slides",
           "target": "4 Full Court",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/NPBXuAd9JQs",
         },
         {
           "name": "Physical: Push Ups",
           "target": "3 Sets x 15",
           "type": "reps",
           "icon_code": 59405,
-          "video_url": "",
+          "video_url": "https://youtu.be/1g82D68N-ys",
         },
         {
           "name": "Crossover Dribble Drill",
           "target": "3 Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/7kFuB5Wc970",
         },
         {
           "name": "Pull-Up Jumper (Mid-Range)",
           "target": "20 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/glny6njDcbE",
         },
         {
           "name": "Suicide Sprints",
           "target": "5 Sets",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/6XYSqfInJFU",
         },
         {
           "name": "Box Out & Rebound Drill",
           "target": "15 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/pFRlEOeWpKY",
         },
         {
           "name": "Free Throw Routine",
           "target": "20 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/TXRGIMIFEls",
         },
       ],
       "female_template": [
@@ -911,77 +877,80 @@ class WorkoutData {
           "target": "10 Menit",
           "type": "time",
           "icon_code": 58788,
-          "video_url": "",
+          "video_url": "https://youtu.be/DAjPcYxPPBg",
         },
         {
           "name": "Finger Tip Taps",
           "target": "2 Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=finger+tip+taps+basketball+drill",
         },
         {
           "name": "Pocket Dribble Focus",
           "target": "2 Menit/Tangan",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/-N2tkn62dvg",
         },
         {
           "name": "Catch & Shoot Midrange",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/ow16151mQDE",
         },
         {
           "name": "Free Throw Pressure",
           "target": "10 Reps (Miss=Sprint)",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/hXE4PpjSnkg",
         },
         {
           "name": "Injury Prevention",
           "target": "Latihan Glute & Hamstring (3x12 Squat)",
           "type": "info",
           "icon_code": 61279,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=basketball+injury+prevention+glute+hamstring+workout",
         },
         {
           "name": "Behind-the-Back Dribble",
           "target": "2 Menit/Tangan",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/Ze9QKvjZxYQ",
         },
         {
           "name": "Layup Drill (Both Hands)",
           "target": "10 Reps/Tangan",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/HaLql0ueNpY",
         },
         {
           "name": "Defensive Shuffle & Sprint",
           "target": "5 Full Court",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/4A6KqSJX8Ek",
         },
         {
           "name": "V-Cut & Catch Shoot",
           "target": "15 Reps",
           "type": "reps",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url": "https://youtu.be/QpSXkMuMf7Q",
         },
         {
           "name": "Passing Accuracy Drill",
           "target": "3 Menit",
           "type": "time",
           "icon_code": 60230,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=basketball+passing+accuracy+drill",
         },
       ],
     },
@@ -1000,77 +969,82 @@ class WorkoutData {
           "target": "100 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/QKmC5ixM9xk",
         },
         {
           "name": "Inside-Outside Dribbling",
           "target": "20 Meters x 5",
           "type": "dist",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/naEccnjzLxM",
         },
         {
           "name": "Wall Pass (First Touch)",
           "target": "50 Reps/Kaki",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/H4cRSKFzSKY",
         },
         {
           "name": "Rondo Simulation / High Press",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/AqnzDcnWYxU",
         },
         {
           "name": "Long Ball Accuracy",
           "target": "20 Reps (30m)",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=long+ball+accuracy+football+drill",
         },
         {
           "name": "Agility Ladder Runs",
           "target": "5 Sets",
           "type": "reps",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url": "https://youtu.be/9ZTRUVLjGzI",
         },
         {
           "name": "Cone Weave Dribbling",
           "target": "10 Cones x 4",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/vnngDOCy9C8",
         },
         {
           "name": "Heading Accuracy",
           "target": "15 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=heading+accuracy+football+drill",
         },
         {
           "name": "1v1 Attacking Moves",
           "target": "10 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=1v1+attacking+moves+football+drill",
         },
         {
           "name": "Crossing & Finishing",
           "target": "15 Reps/Sisi",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=crossing+and+finishing+football+drill",
         },
         {
           "name": "Short Passing Combinations",
           "target": "5 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=short+passing+combinations+football+drill",
         },
       ],
       "female_template": [
@@ -1079,77 +1053,83 @@ class WorkoutData {
           "target": "10 Cones (1m gap)",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/Hgs2LOZwbC0",
         },
         {
           "name": "Passing Triangle",
           "target": "10 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/N_w6d6y4i58",
         },
         {
           "name": "Possession Control / 5v5 Sim",
           "target": "{duration} Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=possession+control+5v5+football+drill",
         },
         {
           "name": "Shooting from Distance",
           "target": "20 Shots",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=shooting+from+distance+football+tutorial",
         },
         {
           "name": "Counter Attack Sprint",
           "target": "60m Sprint to Finish",
           "type": "dist",
           "icon_code": 59382,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=counter+attack+sprint+football+drill",
         },
         {
           "name": "FIFA 11+ Prevention",
           "target": "Ligament Strength (ACL Focus)",
           "type": "info",
           "icon_code": 61279,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=fifa+11+injury+prevention+exercises",
         },
         {
           "name": "Juggling (Ball Control)",
           "target": "3 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/dvQOcAP9LNg",
         },
         {
           "name": "Through Ball Drill",
           "target": "10 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/Wcee52kwWjg",
         },
         {
           "name": "Quick Turn & Shoot",
           "target": "12 Reps",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url": "https://youtu.be/_f9ZIh8ESn4",
         },
         {
           "name": "Defensive Positioning Drill",
           "target": "5 Menit",
           "type": "time",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=defensive+positioning+football+drill",
         },
         {
           "name": "Set Piece Practice",
           "target": "10 Free Kicks",
           "type": "reps",
           "icon_code": 60231,
-          "video_url": "",
+          "video_url":
+              "https://www.youtube.com/results?search_query=free+kick+set+piece+practice+football",
         },
       ],
     },
@@ -1228,49 +1208,49 @@ class WorkoutData {
             "target": "30 Reps",
             "type": "reps",
             "icon_code": 59375,
-            "video_url": "",
+            "video_url": "https://youtu.be/tPmybsDX8ZY",
           },
           {
             "name": "Bicycle Crunches",
             "target": "24 Reps",
             "type": "reps",
             "icon_code": 59375,
-            "video_url": "",
+            "video_url": "https://youtu.be/NWzlS1Lp1e8",
           },
           {
             "name": "Lateral Lunges",
             "target": "16 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url": "https://youtu.be/rvqLVxYqEvo",
           },
           {
             "name": "Star Jumps",
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 58788,
-            "video_url": "",
+            "video_url": "https://youtu.be/eRMQuN34v7w",
           },
           {
             "name": "Bear Crawl",
             "target": "30 Detik",
             "type": "time",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/LCVMqEmgglo",
           },
           {
             "name": "Inchworm",
             "target": "8 Reps",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/-q1XGQ2VMUU",
           },
           {
             "name": "Shadow Boxing",
             "target": "2 Menit",
             "type": "time",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/J4j3AOVWuHE",
           },
         ],
         "MUSCLE_GAIN": [
@@ -1342,49 +1322,50 @@ class WorkoutData {
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/G2mlaEfpEIM",
           },
           {
             "name": "Archer Push Up",
             "target": "8 Reps/Sisi",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/MxVbNel13Ek",
           },
           {
             "name": "Glute Bridge",
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url":
+                "https://www.youtube.com/results?search_query=glute+bridge+exercise+tutorial",
           },
           {
             "name": "Side Plank",
             "target": "30 Detik/Sisi",
             "type": "time",
             "icon_code": 61460,
-            "video_url": "",
+            "video_url": "https://youtu.be/NXr4Fw8q60o",
           },
           {
             "name": "Calf Raises",
             "target": "25 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url": "https://youtu.be/eMTy3qylqnE",
           },
           {
             "name": "Superman Pull",
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 60235,
-            "video_url": "",
+            "video_url": "https://youtu.be/0rVIf0RpZcA",
           },
           {
             "name": "Decline Push Up",
             "target": "10 Reps",
             "type": "reps",
             "icon_code": 59405,
-            "video_url": "",
+            "video_url": "https://youtu.be/SKPab2YC8BE",
           },
         ],
         "KEEP_FIT": [
@@ -1450,71 +1431,61 @@ class WorkoutData {
             "target": "15 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url":
+                "https://www.youtube.com/results?search_query=glute+bridge+exercise+tutorial",
           },
           {
             "name": "Dead Bug",
             "target": "12 Reps",
             "type": "reps",
             "icon_code": 59375,
-            "video_url": "",
+            "video_url": "https://youtu.be/4XLEnwUr1d8",
           },
           {
             "name": "Wall Sit",
             "target": "30 Detik",
             "type": "time",
             "icon_code": 59132,
-            "video_url": "",
+            "video_url": "https://youtu.be/cWTZ8Am1Ee0",
           },
           {
             "name": "Standing Calf Raises",
             "target": "20 Reps",
             "type": "reps",
             "icon_code": 59387,
-            "video_url": "",
+            "video_url": "https://youtu.be/eMTy3qylqnE",
           },
           {
             "name": "Shoulder Tap Plank",
             "target": "16 Reps",
             "type": "reps",
             "icon_code": 61460,
-            "video_url": "",
+            "video_url": "https://youtu.be/eyeuugrpLYA",
           },
           {
             "name": "Hip Circles",
             "target": "1 Menit",
             "type": "time",
             "icon_code": 58788,
-            "video_url": "",
+            "video_url": "https://youtu.be/x-5h_QUOem8",
           },
           {
             "name": "World's Greatest Stretch",
             "target": "8 Reps/Sisi",
             "type": "reps",
             "icon_code": 60235,
-            "video_url": "",
+            "video_url": "https://youtu.be/ExuOImbFFFY",
           },
         ],
       },
     },
   };
 
-  // -------------------------------------------------------
-  // 🔧 HELPER: Hitung minggu ke berapa berdasarkan TOTAL SESI AKTIF
-  // Bukan dari tanggal kalender, tapi dari berapa kali user benar-benar workout
-  // Setiap 7 sesi = naik 1 minggu, loop setiap 4 minggu (28 sesi)
-  // -------------------------------------------------------
   static String getCurrentWeekKey(int totalSessions) {
-    // 0-6 sesi = W1, 7-13 = W2, 14-20 = W3, 21-27 = W4 (Deload)
-    // 28+ = loop kembali (siklus baru)
     final weekNumber = (totalSessions ~/ 7) % 4;
     return "W${weekNumber + 1}";
   }
 
-  // -------------------------------------------------------
-  // 🔧 HELPER: Ambil target reps yang sudah diprogresifkan
-  // Return "—" jika data tidak tersedia (fallback ke target default)
-  // -------------------------------------------------------
   static String getProgressiveTarget({
     required String exerciseName,
     required String goal,
@@ -1534,7 +1505,6 @@ class WorkoutData {
     }
   }
 
-  // 🔥 UTAMA: Generate Routine berdasarkan Data (Online / Local)
   static Map<String, dynamic> generateRoutine({
     required String sportType,
     required String goal,
@@ -1544,10 +1514,10 @@ class WorkoutData {
     required int temp,
     bool isIndoor = false,
     int frequency = 1,
-    int totalSessions = 0, // 🔥 Total sesi dari gamification (bukan tanggal)
+    int totalSessions = 0,
+
     LanguageProvider? lang,
   }) {
-    // 1. Pilih Sumber Data
     Map<String, dynamic> library = _onlineWorkoutData ?? _defaultWorkoutLibrary;
 
     String sportKey = _mapSportKey(sportType);
@@ -1568,9 +1538,6 @@ class WorkoutData {
     String weatherAdvice = "";
     List<Map<String, dynamic>> exercises = [];
 
-    // --- LOGIKA PER CABANG OLAHRAGA ---
-
-    // A. LARI & SEPEDA
     if (sportKey == "running" || sportKey == "cycling") {
       weatherAdvice = _getWeatherText(
         sportKey,
@@ -1608,9 +1575,7 @@ class WorkoutData {
       if (userGender == "FEMALE" && sportData['female_extra'] != null) {
         exercises.add(Map<String, dynamic>.from(sportData['female_extra']));
       }
-    }
-    // B. BASKET & BOLA
-    else if (sportKey == "basketball" || sportKey == "football") {
+    } else if (sportKey == "basketball" || sportKey == "football") {
       final levelData = sportData['levels'][userLevel] ?? {"duration": 45};
       double duration = (levelData['duration'] as num).toDouble();
 
@@ -1645,14 +1610,13 @@ class WorkoutData {
         );
       }
 
-      // 🔄 DAILY ROLLING: Rotasi gerakan basket/bola setiap hari
       String warmupName = template.isNotEmpty ? template.first['name'] : '';
-      exercises = _selectDailyExercises(template, 5,
+      exercises = _selectDailyExercises(
+        template,
+        5,
         alwaysIncludeNames: [warmupName],
       );
-    }
-    // C. HOME WORKOUT — 🔥 DENGAN PROGRESIVITAS
-    else {
+    } else {
       weatherAdvice = _getWeatherText(
         "home",
         sportData['weather_advice'],
@@ -1676,14 +1640,16 @@ class WorkoutData {
         rawList.map((x) => Map<String, dynamic>.from(x)),
       );
 
-      // 🔄 DAILY ROLLING: Rotasi gerakan home workout setiap hari
       List<String> fixedNames = [];
       if (goalKey == "KEEP_FIT") {
         fixedNames = ['Pemanasan Dinamis', 'Cooling Down'];
       }
-      exercises = _selectDailyExercises(fullPool, 6, alwaysIncludeNames: fixedNames);
+      exercises = _selectDailyExercises(
+        fullPool,
+        6,
+        alwaysIncludeNames: fixedNames,
+      );
 
-      // 🔥 TERAPKAN PROGRESIVITAS berdasarkan total sesi aktif
       String weekKey = getCurrentWeekKey(totalSessions);
 
       for (var ex in exercises) {
@@ -1693,13 +1659,11 @@ class WorkoutData {
           level: userLevel,
           weekKey: weekKey,
         );
-        // Update target hanya jika data progresivitas tersedia dan bukan SKIP
         if (progressiveTarget != "—" && !progressiveTarget.startsWith("SKIP")) {
           ex['target'] = progressiveTarget;
         }
       }
 
-      // Female Adjustments for Reps (tetap berlaku)
       if (userGender == "FEMALE" && userGoal.contains("WEIGHT")) {
         for (var ex in exercises) {
           if (ex['type'] == 'reps') {
@@ -1715,8 +1679,6 @@ class WorkoutData {
       }
     }
 
-    // 🔥 SESSION LOGIC — Sinkron dengan SessionCompletionService
-    // Pagi: 05:00–14:59 | Sore: 15:00–22:59 | Istirahat: 23:00–04:59
     String sessionLabel = "";
     bool isRestTime = false;
 
@@ -1725,13 +1687,12 @@ class WorkoutData {
       if (hour >= 23 || hour < 5) {
         isRestTime = true;
       } else if (hour >= 15) {
-        sessionLabel = " (Sesi Sore ☀️)";
+        sessionLabel = " (Sesi Sore)";
       } else {
-        sessionLabel = " (Sesi Pagi 🌅)";
+        sessionLabel = " (Sesi Pagi)";
       }
     }
 
-    // Process Icons
     for (var ex in exercises) {
       if (ex['icon_code'] != null) {
         ex['icon'] = IconData(ex['icon_code'], fontFamily: 'MaterialIcons');
@@ -1740,11 +1701,10 @@ class WorkoutData {
       }
     }
 
-    // Add Lora Advice / Rest Card
     if (isRestTime) {
       exercises.clear();
       exercises.add({
-        "name": "Waktunya Istirahat 🌙",
+        "name": "Waktunya Istirahat",
         "target": "Tubuh butuh recovery untuk performa maksimal besok.",
         "type": "info",
         "icon": Icons.nights_stay,
@@ -1774,16 +1734,6 @@ class WorkoutData {
     };
   }
 
-  // --- HELPER FUNCTIONS ---
-
-  // 🔄 DAILY ROLLING: Pilih subset gerakan berbeda setiap hari
-  // Menggunakan seed dari tanggal agar konsisten sepanjang hari
-  // tapi berubah keesokan harinya
-  //
-  // ✅ ATURAN URUTAN:
-  //   1. "Pemanasan Dinamis" → SELALU di posisi PERTAMA
-  //   2. Gerakan inti (rolling) → di tengah
-  //   3. "Cooling Down" → SELALU di posisi TERAKHIR
   static List<Map<String, dynamic>> _selectDailyExercises(
     List<Map<String, dynamic>> pool,
     int exercisesPerDay, {
@@ -1797,7 +1747,6 @@ class WorkoutData {
     final daySeed = now.year * 1000 + dayOfYear + uidHashCode;
     final random = Random(daySeed);
 
-    // Pisahkan: warmup, cooldown, dan sisanya
     Map<String, dynamic>? warmup;
     Map<String, dynamic>? cooldown;
     List<Map<String, dynamic>> rotatable = [];
@@ -1809,22 +1758,18 @@ class WorkoutData {
       } else if (name == 'Cooling Down') {
         cooldown = ex;
       } else if (alwaysIncludeNames.contains(name)) {
-        // Fixed lainnya (selain warmup/cooldown) → masuk rotatable agar tetap ikut
-        rotatable.insert(0, ex); // prioritas di depan
+        rotatable.insert(0, ex);
       } else {
         rotatable.add(ex);
       }
     }
 
-    // Hitung berapa gerakan inti yang perlu dipilih
     int fixedCount = (warmup != null ? 1 : 0) + (cooldown != null ? 1 : 0);
     int pickCount = (exercisesPerDay - fixedCount).clamp(0, rotatable.length);
 
-    // Acak & ambil sejumlah pickCount
     rotatable.shuffle(random);
     List<Map<String, dynamic>> selected = rotatable.take(pickCount).toList();
 
-    // Susun ulang: warmup → inti → cooldown
     List<Map<String, dynamic>> result = [];
     if (warmup != null) result.add(warmup);
     result.addAll(selected);
@@ -1902,7 +1847,6 @@ class WorkoutData {
     return res;
   }
 
-  // 🔥 FUNGSI ADMIN: Upload ke Firebase
   static Future<void> seedToFirebase() async {
     try {
       final db = FirebaseDatabase.instanceFor(
@@ -1919,7 +1863,6 @@ class WorkoutData {
     }
   }
 
-  // 🔥 FUNGSI CLIENT: Ambil dari Firebase
   static Future<void> fetchFromFirebase() async {
     try {
       final ref = FirebaseDatabase.instance.ref("data/workout_data");

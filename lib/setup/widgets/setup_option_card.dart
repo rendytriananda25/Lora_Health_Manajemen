@@ -28,12 +28,12 @@ class SetupOptionCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFF008BFF).withOpacity(0.15)
-              : theme.boxColor, // Adaptive Box Color
+              : theme.boxColor,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF008BFF)
-                : theme.textColor.withOpacity(0.1), // Adaptive Border
+                : theme.textColor.withOpacity(0.1),
             width: 1.5,
           ),
         ),
@@ -58,7 +58,7 @@ class SetupOptionCard extends StatelessWidget {
                     style: TextStyle(
                       color: isSelected
                           ? const Color(0xFF008BFF)
-                          : theme.textColor, // Adaptive Text
+                          : theme.textColor,
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
@@ -70,7 +70,7 @@ class SetupOptionCard extends StatelessWidget {
                       style: TextStyle(
                         color: theme.textColor.withOpacity(
                           0.54,
-                        ), // Adaptive Subtext
+                        ),
                         fontSize: 12,
                       ),
                     ),

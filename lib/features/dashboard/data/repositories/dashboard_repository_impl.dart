@@ -1,4 +1,6 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:lora_1/core/errors/either.dart';
 import 'package:lora_1/core/errors/failures.dart';
 import 'package:lora_1/core/errors/exceptions.dart';
@@ -8,12 +10,8 @@ import 'package:lora_1/features/dashboard/domain/repositories/dashboard_reposito
 import 'package:lora_1/features/dashboard/data/datasources/weather_remote_datasource.dart';
 import 'package:lora_1/features/dashboard/data/datasources/user_remote_datasource.dart';
 import 'package:lora_1/features/dashboard/data/nutrition_data.dart';
+import 'package:geocoding/geocoding.dart';
 
-/// Implementasi DashboardRepository.
-/// Tugasnya:
-///   1. Panggil DataSource untuk ambil data mentah
-///   2. Tangkap exception → ubah jadi Failure
-///   3. Konversi data mentah → Entity
 class DashboardRepositoryImpl implements DashboardRepository {
   final WeatherRemoteDataSource weatherDataSource;
   final UserRemoteDataSource userDataSource;
@@ -30,8 +28,25 @@ class DashboardRepositoryImpl implements DashboardRepository {
       final wData = raw['weather'];
       final aData = raw['aqi'];
 
+      String preciseLocation = wData['name'] ?? 'Unknown';
+      try {
+        final lat = (wData['coord']['lat'] as num).toDouble();
+        final lon = (wData['coord']['lon'] as num).toDouble();
+        final placemarks = await placemarkFromCoordinates(lat, lon);
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          if (place.subLocality != null && place.subLocality!.isNotEmpty) {
+            preciseLocation = place.subLocality!;
+          } else if (place.locality != null && place.locality!.isNotEmpty) {
+            preciseLocation = place.locality!;
+          }
+        }
+      } catch (e) {
+        debugPrint('Geocoding error: $e');
+      }
+
       final entity = WeatherEntity(
-        city: wData['name'] ?? 'Unknown',
+        city: preciseLocation,
         temperature: wData['main']['temp'].toInt().toString(),
         condition: wData['weather'][0]['description'] ?? '',
         aqi: (aData['list'][0]['main']['aqi'] as int) * 25,
@@ -58,7 +73,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
         fitnessLevel: raw['fitnessLevel'] ?? 'NEVER',
         fitnessGoal: raw['fitnessGoal'] ?? 'KEEP_FIT',
         favoriteSports: List<String>.from(raw['favoriteSports'] ?? []),
-        exp: 0, // EXP dihandle oleh stream terpisah
+        exp: 0,
       );
 
       return Result.right(entity);
@@ -73,12 +88,10 @@ class DashboardRepositoryImpl implements DashboardRepository {
   @override
   Future<Result<Map<String, dynamic>>> getNutritionData() async {
     try {
-      // Online-first, fallback ke lokal
       var data = await NutritionData.fetchFromFirebase();
       data ??= NutritionData.foodRecommendations;
       return Result.right(data);
     } catch (e) {
-      // Fallback ke data lokal jika error
       return Result.right(NutritionData.foodRecommendations);
     }
   }
@@ -90,6 +103,44 @@ class DashboardRepositoryImpl implements DashboardRepository {
       return Result.right(gained);
     } catch (e) {
       return Result.left(ServerFailure('Gagal cek daily login'));
+    }
+  }
+
+  @override
+  Future<Result<Map<String, dynamic>?>> getLatestBmiFromHistory() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        return Result.right(null);
+      }
+
+      final ref = FirebaseDatabase.instance.ref("users/${user.uid}/history");
+      final snapshot = await ref.orderByChild('time').limitToLast(10).get();
+
+      if (!snapshot.exists) {
+        return Result.right(null);
+      }
+
+      final historyList = snapshot.value as Map<dynamic, dynamic>;
+      Map<String, dynamic>? latestBmi;
+
+      for (var entry in historyList.entries) {
+        final item = Map<String, dynamic>.from(entry.value as Map);
+        if (item['type'] == 'BMI') {
+          latestBmi = {
+            'score': double.tryParse(item['bmi_score']?.toString() ?? '0') ?? 0.0,
+            'status': item['status'] ?? '',
+            'weight': item['weight'],
+            'height': item['height'],
+            'time': item['time'],
+          };
+        }
+      }
+
+      return Result.right(latestBmi);
+    } catch (e) {
+      debugPrint('Error getting latest BMI: $e');
+      return Result.right(null);
     }
   }
 

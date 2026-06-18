@@ -48,7 +48,8 @@
     "highlyRecommended": "Muy Recomendado",
     "avoidLimit": "Evitar / Limitar",
     "environmentStatus": "Estado Ambiental",
-    "viewProgress": "Ver Progreso",
+    "viewProgress": "Progreso y Estadísticas Mensuales",
+    "yourMonthlyProgress": "Tu Progreso Mensual",
     "dailyPlan": "Tu Menú Diario"
   },
   "weather": {

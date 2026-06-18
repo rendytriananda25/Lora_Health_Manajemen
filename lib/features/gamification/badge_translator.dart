@@ -10,7 +10,7 @@ class BadgeTranslator {
       case "Langkah Pertama":
         return lang.currentLanguage == 'en' ? "First Step" : lang.currentLanguage == 'es' ? "Primer Paso" : "第一歩";
       case "On Fire!":
-        return title; // Universal
+        return title;
       case "Dedikasi":
         return lang.currentLanguage == 'en' ? "Dedication" : lang.currentLanguage == 'es' ? "Dedicación" : "献身";
       case "Pelari 10K":
@@ -18,9 +18,9 @@ class BadgeTranslator {
       case "Calorie Burner":
         return lang.currentLanguage == 'en' ? "Calorie Burner" : lang.currentLanguage == 'es' ? "Quemador de Calorías" : "カロリーバーナー";
       case "Early Bird":
-        return title; // Universal
+        return title;
       case "Night Owl":
-        return title; // Universal
+        return title;
       case "Marathoner":
         return lang.currentLanguage == 'en' ? "Marathoner" : lang.currentLanguage == 'es' ? "Maratonista" : "マラソンランナー";
       default:

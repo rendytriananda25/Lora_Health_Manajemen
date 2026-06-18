@@ -33,7 +33,7 @@ class _SportSelectionViewState extends State<SportSelectionView> {
               Text(
                 "Pilih Olahraga",
                 style: TextStyle(
-                  color: theme.textColor, // Adaptive Text
+                  color: theme.textColor,
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1,
@@ -43,7 +43,7 @@ class _SportSelectionViewState extends State<SportSelectionView> {
               Text(
                 "Pilih jenis olahraga yang kamu suka (Boleh lebih dari satu)",
                 style: TextStyle(
-                  color: theme.textColor.withOpacity(0.54), // Adaptive Subtext
+                  color: theme.textColor.withOpacity(0.54),
                   fontSize: 16,
                 ),
               ),
@@ -57,7 +57,7 @@ class _SportSelectionViewState extends State<SportSelectionView> {
               end: Alignment.bottomCenter,
               colors: [
                 Colors.transparent,
-                theme.bgColor, // Adaptive Mask
+                theme.bgColor,
                 theme.bgColor,
                 Colors.transparent,
               ],
@@ -82,7 +82,7 @@ class _SportSelectionViewState extends State<SportSelectionView> {
                       borderRadius: BorderRadius.circular(22),
                       color: isSelected
                           ? const Color(0xFF008BFF).withOpacity(0.8)
-                          : theme.boxColor, // Adaptive Card Base
+                          : theme.boxColor,
                       border: Border.all(
                         color: isSelected
                             ? const Color(0xFF008BFF)
@@ -114,7 +114,6 @@ class _SportSelectionViewState extends State<SportSelectionView> {
                               ),
                             ),
                           ),
-                          // Gradient Overlay to ensure text readability
                           Container(
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
@@ -123,7 +122,7 @@ class _SportSelectionViewState extends State<SportSelectionView> {
                                 colors: [
                                   Colors.black.withOpacity(
                                     0.8,
-                                  ), // Always dark for text contrast
+                                  ),
                                   Colors.transparent,
                                 ],
                               ),
@@ -137,7 +136,7 @@ class _SportSelectionViewState extends State<SportSelectionView> {
                                   child: Text(
                                     sport['name']!,
                                     style: const TextStyle(
-                                      color: Colors.white, // Always White
+                                      color: Colors.white,
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       shadows: [

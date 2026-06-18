@@ -16,7 +16,7 @@ class HistoryBMIDetailPage extends StatefulWidget {
 }
 
 class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
-  String _gender = 'MALE'; // Default
+  String _gender = 'MALE';
 
   @override
   void initState() {
@@ -24,7 +24,6 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
     _fetchUserGender();
   }
 
-  // Ambil Data Gender dari Firebase
   Future<void> _fetchUserGender() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -57,13 +56,11 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
     final theme = Provider.of<ThemeProvider>(context);
     final data = widget.data;
 
-    // Format tanggal
     DateTime dt = DateTime.parse(
       data['time'] ?? DateTime.now().toIso8601String(),
     );
     String formattedDate = DateFormat('dd MMMM yyyy, HH:mm').format(dt);
 
-    // Parse Data
     String bmiScore;
     if (data['bmi_score'] != null) {
       bmiScore = data['bmi_score'].toString();
@@ -82,10 +79,9 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
       backgroundColor: theme.bgColor,
       body: Stack(
         children: [
-          // LAYER 1: FIXED VISUALIZATION (BACKGROUND)
           Positioned.fill(
             bottom:
-                MediaQuery.of(context).size.height * 0.4, // Sisakan ruang bawah
+                MediaQuery.of(context).size.height * 0.4,
             child: _buildBMIVisualization(
               status,
               weightVal,
@@ -95,7 +91,6 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
             ),
           ),
 
-          // LAYER 2: SCROLLABLE SHEET (FOREGROUND)
           DraggableScrollableSheet(
             initialChildSize: 0.50,
             minChildSize: 0.50,
@@ -125,7 +120,6 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Handle Bar
                       Center(
                         child: Container(
                           width: 40,
@@ -138,7 +132,6 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
                         ),
                       ),
 
-                      // --- HEADER HASIL ---
                       Text(
                         lang.translate('history.bmiResultTitle'),
                         style: const TextStyle(
@@ -162,7 +155,6 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
                         height: 40,
                       ),
 
-                      // --- STATISTIK BMI ---
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -188,12 +180,10 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
 
                       const SizedBox(height: 30),
 
-                      // --- REKOMENDASI NUTRISI ---
                       _buildNutritionAdvice(status, theme),
 
                       const SizedBox(height: 20),
 
-                      // Info Gender
                       Center(
                         child: Text(
                           "Kalkulasi disesuaikan untuk ${_gender == 'MALE' ? 'Pria' : 'Wanita'}",
@@ -212,7 +202,6 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
             },
           ),
 
-          // Tombol Kembali
           Positioned(
             top: 50,
             left: 20,
@@ -237,7 +226,7 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
     ThemeProvider theme,
   ) {
     Color bodyColor;
-    // 🔥 UPDATE WARNA SESUAI REQUEST USER 🔥
+
     if (status.contains('UNDERWEIGHT') || status.contains('KURANG')) {
       bodyColor = Colors.blue;
     } else if (status.contains('NORMAL') || status.contains('IDEAL')) {
@@ -318,7 +307,8 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
                   status,
                   style: TextStyle(
                     color: bodyColor,
-                    fontSize: 14, // 🔥 DIKECILKAN 🔥
+                    fontSize: 14,
+
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.5,
                   ),
@@ -448,7 +438,7 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B), // Dark Blue Card Base
+        color: const Color(0xFF1E293B),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: color.withOpacity(0.3)),
         boxShadow: [
@@ -557,11 +547,10 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
                 "Telur Utuh 🥚",
                 "Susu Full Cream 🥛",
               ],
-        // 🔥 WARNA SESUAI REQUEST: BIRU 🔥
+
         "color": Colors.blue,
       };
     } else if (status.contains('OVER') || status.contains('OBES')) {
-      // Logic khusus: Obesitas = Merah, Overweight = Orens
       bool isObes = status.contains('OBES');
       return {
         "title": isFemale ? "Detox & Fat Loss" : "Cutting & Pembakaran Lemak",
@@ -574,11 +563,10 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
           "Teh Hijau 🍵",
           "Buah Berry 🫐",
         ],
-        // 🔥 WARNA SESUAI REQUEST: MERAH (OBES) / ORANGE (OVER) 🔥
+
         "color": isObes ? Colors.red : Colors.orange,
       };
     } else {
-      // NORMAL
       return {
         "title": "Maintain Vitalitas Tubuh",
         "desc":
@@ -588,7 +576,7 @@ class _HistoryBMIDetailPageState extends State<HistoryBMIDetailPage> {
           "Ayam Tanpa Lemak 🍗",
           "Salad Buah 🥗",
         ],
-        // 🔥 WARNA SESUAI REQUEST: HIJAU 🔥
+
         "color": Colors.green,
       };
     }

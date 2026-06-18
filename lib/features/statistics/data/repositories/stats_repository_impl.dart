@@ -4,7 +4,6 @@ import 'package:lora_1/core/errors/failures.dart';
 import 'package:lora_1/features/statistics/domain/repositories/stats_repository.dart';
 import 'package:lora_1/features/statistics/data/datasources/stats_remote_datasource.dart';
 
-/// Implementasi StatsRepository.
 class StatsRepositoryImpl implements StatsRepository {
   final StatsRemoteDataSource dataSource;
 

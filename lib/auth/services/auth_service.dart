@@ -10,21 +10,18 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseDatabase _db = FirebaseDatabase.instance;
 
-  // Login Email (Auto Register jika belum ada)
   Future<User?> loginOrRegisterEmail(
     String email,
     String password,
     BuildContext context,
   ) async {
     try {
-      // 1. Coba Login
       UserCredential cred = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       return cred.user;
     } on FirebaseAuthException catch (e) {
-      // 2. Jika User Not Found -> Coba Register
       if (e.code == 'user-not-found' || e.code == 'invalid-credential') {
         try {
           UserCredential regCred = await _auth.createUserWithEmailAndPassword(
@@ -46,7 +43,6 @@ class AuthService {
     }
   }
 
-  // Google Login
   Future<User?> signInWithGoogle() async {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
@@ -68,7 +64,6 @@ class AuthService {
     return null;
   }
 
-  // Facebook Login
   Future<User?> signInWithFacebook() async {
     try {
       final LoginResult result = await FacebookAuth.instance.login();
@@ -87,16 +82,13 @@ class AuthService {
     return null;
   }
 
-  // Cek Data User & Navigasi
   Future<void> checkUserAndNavigate(BuildContext context, User user) async {
     final userRef = _db.ref("users/${user.uid}");
 
-    // Auto Generate Username dari Email/Display Name
     String autoName =
         user.displayName ??
         (user.email != null ? user.email!.split('@')[0] : "User Lora");
 
-    // Update Basic Info
     await userRef.update({
       "username": autoName,
       "email": user.email ?? "",
@@ -104,18 +96,15 @@ class AuthService {
       "last_login": ServerValue.timestamp,
     });
 
-    // Cek Apakah Sudah Pilih Olahraga?
     final sportSnapshot = await userRef.child("favorite_sports").get();
 
     if (context.mounted) {
       if (sportSnapshot.exists) {
-        // User Lama -> Dashboard
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const Navbar()),
         );
       } else {
-        // User Baru -> Pilih Olahraga
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const SetupPage()),

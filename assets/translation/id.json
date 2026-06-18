@@ -48,7 +48,8 @@
     "highlyRecommended": "Sangat Direkomendasikan",
     "avoidLimit": "Hindari / Batasi",
     "environmentStatus": "Status Lingkungan",
-    "viewProgress": "Lihat Progress",
+    "viewProgress": "Progres & Statistik Bulanan",
+    "yourMonthlyProgress": "Progres Bulanan Kamu",
     "dailyPlan": "Menu Harian Kamu"
   },
   "weather": {
