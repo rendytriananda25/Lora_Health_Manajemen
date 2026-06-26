@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 import 'core/services/language_provider.dart';
 import 'core/services/theme_provider.dart';
@@ -68,6 +69,7 @@ void main() async {
   );
 
   // --- Phase 2: Firebase must init before anything uses it ---
+  await dotenv.load(fileName: ".env.local");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await WorkoutData.seedToFirebase(); // Seed updated URLs to firebase
 
