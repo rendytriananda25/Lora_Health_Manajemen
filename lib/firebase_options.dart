@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -40,55 +41,52 @@ class DefaultFirebaseOptions {
     }
   }
 
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBTFWgqxiVHXQdgguoDIYVwdO1GKMTwDAU',
-    appId: '1:1015515769306:web:2d73de6aa3110b3fdd38e3',
-    messagingSenderId: '1015515769306',
-    projectId: 'lora-1-b0d0c',
-    authDomain: 'lora-1-b0d0c.firebaseapp.com',
-    storageBucket: 'lora-1-b0d0c.firebasestorage.app',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_WEB_API_KEY'] ?? 'AIzaSyBTFWgqxiVHXQdgguoDIYVwdO1GKMTwDAU',
+    appId: dotenv.env['FIREBASE_WEB_APP_ID'] ?? '1:1015515769306:web:2d73de6aa3110b3fdd38e3',
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '1015515769306',
+    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c',
+    authDomain: '${dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c'}.firebaseapp.com',
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? 'lora-1-b0d0c.firebasestorage.app',
     measurementId: 'G-ZCBJLBZGLQ',
-    databaseURL:
-        'https://lora-1-b0d0c-default-rtdb.asia-southeast1.firebasedatabase.app', // atau https://lora-1-b0d0c.firebaseio.com
+    databaseURL: dotenv.env['FIREBASE_DATABASE_URL'] ?? 'https://lora-1-b0d0c-default-rtdb.asia-southeast1.firebasedatabase.app',
   );
 
-  static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAfhHv4npJh_yJ7Uc1hG58uotxOiNwrkX8',
-    appId: '1:1015515769306:android:938229b02a8380fcdd38e3',
-    messagingSenderId: '1015515769306',
-    projectId: 'lora-1-b0d0c',
-    storageBucket: 'lora-1-b0d0c.firebasestorage.app',
+  static FirebaseOptions get android => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_ANDROID_API_KEY'] ?? 'AIzaSyAfhHv4npJh_yJ7Uc1hG58uotxOiNwrkX8',
+    appId: dotenv.env['FIREBASE_ANDROID_APP_ID'] ?? '1:1015515769306:android:938229b02a8380fcdd38e3',
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '1015515769306',
+    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c',
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? 'lora-1-b0d0c.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDrsttPUR4DR7GM3puE8HnXzaC6qNhpmpo',
-    appId: '1:1015515769306:ios:ea59006d910728c6dd38e3',
-    messagingSenderId: '1015515769306',
-    projectId: 'lora-1-b0d0c',
-    storageBucket: 'lora-1-b0d0c.firebasestorage.app',
-    iosClientId:
-        '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
+  static FirebaseOptions get ios => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_IOS_API_KEY'] ?? 'AIzaSyDrsttPUR4DR7GM3puE8HnXzaC6qNhpmpo',
+    appId: dotenv.env['FIREBASE_IOS_APP_ID'] ?? '1:1015515769306:ios:ea59006d910728c6dd38e3',
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '1015515769306',
+    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c',
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? 'lora-1-b0d0c.firebasestorage.app',
+    iosClientId: dotenv.env['FIREBASE_IOS_CLIENT_ID'] ?? '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
     iosBundleId: 'com.example.lora1',
   );
 
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDrsttPUR4DR7GM3puE8HnXzaC6qNhpmpo',
-    appId: '1:1015515769306:ios:ea59006d910728c6dd38e3',
-    messagingSenderId: '1015515769306',
-    projectId: 'lora-1-b0d0c',
-    storageBucket: 'lora-1-b0d0c.firebasestorage.app',
-    iosClientId:
-        '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
+  static FirebaseOptions get macos => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_IOS_API_KEY'] ?? 'AIzaSyDrsttPUR4DR7GM3puE8HnXzaC6qNhpmpo',
+    appId: dotenv.env['FIREBASE_IOS_APP_ID'] ?? '1:1015515769306:ios:ea59006d910728c6dd38e3',
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '1015515769306',
+    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c',
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? 'lora-1-b0d0c.firebasestorage.app',
+    iosClientId: dotenv.env['FIREBASE_IOS_CLIENT_ID'] ?? '1015515769306-u51eslc72akma2p6o6bsnno6qsmrr596.apps.googleusercontent.com',
     iosBundleId: 'com.example.lora1',
   );
 
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBTFWgqxiVHXQdgguoDIYVwdO1GKMTwDAU',
+  static FirebaseOptions get windows => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_WEB_API_KEY'] ?? 'AIzaSyBTFWgqxiVHXQdgguoDIYVwdO1GKMTwDAU',
     appId: '1:1015515769306:web:ad76c81b5a66753fdd38e3',
-    messagingSenderId: '1015515769306',
-    projectId: 'lora-1-b0d0c',
-    authDomain: 'lora-1-b0d0c.firebaseapp.com',
-    storageBucket: 'lora-1-b0d0c.firebasestorage.app',
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '1015515769306',
+    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c',
+    authDomain: '${dotenv.env['FIREBASE_PROJECT_ID'] ?? 'lora-1-b0d0c'}.firebaseapp.com',
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? 'lora-1-b0d0c.firebasestorage.app',
     measurementId: 'G-JMC4KE1VCP',
   );
 }

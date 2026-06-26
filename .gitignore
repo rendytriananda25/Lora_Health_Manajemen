@@ -47,3 +47,5 @@ app.*.map.json
 # Secrets and API Keys
 android/app/google-services.json
 lib/core/constants/secrets.dart
+.env
+.env.local
